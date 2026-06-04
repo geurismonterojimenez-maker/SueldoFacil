@@ -447,6 +447,8 @@ export default function App() {
             </div>
 
             {/* GRID DE HERRAMIENTAS - MAQUETACIÓN BENTO */}
+            <AdsenseMock slot="home-after-search" type="banner" />
+
             <div className="space-y-4">
               <div className="flex justify-between items-baseline border-b border-slate-200 pb-3">
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -504,6 +506,10 @@ export default function App() {
                   <button onClick={() => selectTab('horas_extras')} className="text-xs font-bold text-blue-600 hover:text-blue-750 flex items-center gap-1 pt-4 mt-4 border-t border-slate-100">
                     Comenzar Cálculo <ArrowRight className="w-3.5 h-3.5" />
                   </button>
+                </div>
+
+                <div className="md:col-span-2 lg:col-span-3">
+                  <AdsenseMock slot="home-tools-infeed" type="infeed" />
                 </div>
 
                 {/* ASISTENTE IA */}
@@ -622,6 +628,8 @@ export default function App() {
             </div>
 
             {/* SECCIÓN FAQS GENERALES PRE-CARGADAS */}
+            <AdsenseMock slot="home-before-faq" type="square" />
+
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 space-y-6">
               <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-blue-600" />
@@ -637,7 +645,6 @@ export default function App() {
               </div>
             </div>
 
-            <AdsenseMock slot="home-footer" type="banner" />
           </div>
         )}
 
