@@ -98,6 +98,46 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
     res.json(calc);
   });
 
+  // FEED & RSS Auto-Detection endpoints for Google AdSense crawlers (in-feed ads / automated matching)
+  const generateFeedXML = () => {
+    return `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Sueldo Fácil - Calculadoras Laborales y Financieras Dominicanas</title>
+    <link>https://sueldofacil.com</link>
+    <description>Blog Educativo y herramientas financieras de Ley 16-92 y normativas de la TSS en República Dominicana</description>
+    <language>es-do</language>
+    <lastBuildDate>Thu, 04 Jun 2026 13:28:28 GMT</lastBuildDate>
+    <atom:link href="https://sueldofacil.com/feed.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Guía Definitiva sobre Prestaciones Laborales y Liquidación en República Dominicana</title>
+      <link>https://sueldofacil.com/blog/guia-definitiva-liquidacion-prestaciones-dominicana</link>
+      <guid>https://sueldofacil.com/blog/guia-definitiva-liquidacion-prestaciones-dominicana</guid>
+      <pubDate>Mon, 01 Jun 2026 12:00:00 GMT</pubDate>
+      <description><![CDATA[¿Te despidieron o deseas renunciar? Te enseñamos cómo se calculan el preaviso, la cesantía y otros derechos conforme a la Ley 16-92.]]></description>
+    </item>
+    
+    <item>
+      <title>Cómo calcula la DGII el Impuesto Sobre la Renta (ISR) para Empleados en RD</title>
+      <link>https://sueldofacil.com/blog/como-funciona-impuesto-sobre-la-renta-personas-fisicas-rd</link>
+      <guid>https://sueldofacil.com/blog/como-funciona-impuesto-sobre-la-renta-personas-fisicas-rd</guid>
+      <pubDate>Fri, 15 May 2026 12:00:00 GMT</pubDate>
+      <description><![CDATA[Te explicamos los tramos salariales vigentes para 2026 y cómo la deducción de la AFP reduce tus obligaciones impositivas.]]></description>
+    </item>
+  </channel>
+</rss>`;
+  };
+
+  const handleFeedRequest = (req: any, res: any) => {
+    res.set("Content-Type", "application/rss+xml; charset=utf-8");
+    res.status(200).send(generateFeedXML());
+  };
+
+  app.get("/feed.xml", handleFeedRequest);
+  app.get("/rss.xml", handleFeedRequest);
+  app.get("/feed", handleFeedRequest);
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
