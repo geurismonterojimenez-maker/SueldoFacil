@@ -1,972 +1,1067 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
-  Target, Calculator, DollarSign, Calendar, TrendingUp, HelpCircle, 
-  ArrowRight, Sparkles, ChevronDown, ChevronUp, CheckCircle, Info,
-  AlertCircle, ShieldAlert, Award, RefreshCw, Send, Users, Download, Printer, Percent, Flame
+  Target, DollarSign, Calendar, Sparkles, ChevronDown, ChevronUp, CheckCircle, Info,
+  Award, Download, Printer, Percent, Flame, Upload, RefreshCw, Car, Home, Plane, 
+  GraduationCap, Briefcase, ShieldAlert, Heart, CalendarPlus, User, Layout, Palette, Check
 } from 'lucide-react';
 import AdsenseMock from './AdsenseMock';
 
 export default function PlanAhorro() {
-  // Plan de Ahorro Form States
-  const [metaNombre, setMetaNombre] = useState('Inicial de mi Vivienda');
-  const [metaMonto, setMetaMonto] = useState<number>(350000);
-  const [ahorroInicial, setAhorroInicial] = useState<number>(50000);
-  const [duracionMeses, setDuracionMeses] = useState<number>(24);
+  // CLIENT & GOAL DATA
+  const [nombreCliente, setNombreCliente] = useState('Emprendedor Dominicano');
+  const [metaNombre, setMetaNombre] = useState('Inicial de mi Apartamento');
+  const [metaMonto, setMetaMonto] = useState<number>(300000);
+  const [ahorroInicial, setAhorroInicial] = useState<number>(30000);
+  const [fechaInicio, setFechaInicio] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [fechaObjetivo, setFechaObjetivo] = useState<string>(() => {
+    const target = new Date();
+    target.setMonth(target.getMonth() + 18); // 18 months default
+    return target.toISOString().split('T')[0];
+  });
   const [frecuencia, setFrecuencia] = useState<'diario' | 'semanal' | 'quincenal' | 'mensual'>('mensual');
-  const [interesAnual, setInteresAnual] = useState<number>(8); // e.g. 8%
+  const [objetivoCategoria, setObjetivoCategoria] = useState<'vehiculo' | 'casa' | 'viaje' | 'estudios' | 'negocio' | 'emergencia' | 'otro'>('casa');
   
-  // Scenarios
-  const [ahorroExtraPorc, setAhorroExtraPorc] = useState<number>(20); // default +20%
-  const [ajustarInflacion, setAjustarInflacion] = useState<boolean>(true);
-  const [tasaInflacion, setTasaInflacion] = useState<number>(5); // default % de inflación en RD
-  
-  // Fondo de Emergencia States
-  const [ingresosEmergencia, setIngresosEmergencia] = useState<number>(65000);
-  const [gastosEmergencia, setGastosEmergencia] = useState<number>(45000);
-  const [mesesEmergencia, setMesesEmergencia] = useState<number>(6);
-
-  // Active sub-tab inside Saving module: 'meta' or 'emergencia'
-  const [subTab, setSubTab] = useState<'meta' | 'emergencia'>('meta');
-
-  // Interactive FAQs toggle state
+  // COSMETIC & PERSONALIZATION OPTIONS
+  const [colorTema, setColorTema] = useState<'azul' | 'verde' | 'morado' | 'dorado' | 'personalizado'>('azul');
+  const [customColorHex, setCustomColorHex] = useState<string>('#1e40af'); // Royal blue default
+  const [metaFotoUrl, setMetaFotoUrl] = useState<string>(''); // Base64 or external source
   const [openFaq, setOpenFaq] = useState<Record<number, boolean>>({});
+  
+  // SAVINGS GRID BOARD CONFIGURATION
+  // Options: Autocalculated (Default matches to fill exactly 100 sheets) or user manual block denomination
+  const [bloquesModo, setBloquesModo] = useState<'cien' | 'doscientos' | 'quinientas' | 'mil' | 'custom'>('cien');
+  const [customBlockValue, setCustomBlockValue] = useState<number>(1000);
+  const [markedBlocks, setMarkedBlocks] = useState<Record<number, boolean>>({});
 
+  // Trigger sound effect or trigger celebratory popup for 100% completion
+  const [showCertificate, setShowCertificate] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // FAQ toggling
   const toggleFaq = (index: number) => {
     setOpenFaq(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
-  // Convert Frecuencia to label & periods per year
-  const frecuenciaConfig = useMemo(() => {
-    switch (frecuencia) {
-      case 'diario':
-        return { label: 'Diario', divisor: 365, multiploMes: 30.4 };
-      case 'semanal':
-        return { label: 'Semanal', divisor: 52, multiploMes: 4.33 };
-      case 'quincenal':
-        return { label: 'Quincenal', divisor: 24, multiploMes: 2 };
-      case 'mensual':
-      default:
-        return { label: 'Mensual', divisor: 12, multiploMes: 1 };
+  // Convert uploaded image file to DataURL base64 for reliable printing integration
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMetaFotoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }, [frecuencia]);
-
-  // Adjust Meta for Inflation if toggled
-  const metaAjustada = useMemo(() => {
-    if (!ajustarInflacion) return metaMonto;
-    const anosRef = duracionMeses / 12;
-    // Formula compound inflation
-    return Math.round(metaMonto * Math.pow(1 + (tasaInflacion / 100), anosRef));
-  }, [metaMonto, duracionMeses, ajustarInflacion, tasaInflacion]);
-
-  // Math Calculations for Core Goal
-  const calculations = useMemo(() => {
-    const r = interesAnual / 100; // Annual interest
-    const f = frecuenciaConfig.divisor;
-    const ratePerPeriod = r / f;
-    const monthsPerPeriod = 12 / f;
-    const totalPeriods = duracionMeses / monthsPerPeriod;
-    
-    const target = metaAjustada;
-    const initial = ahorroInicial;
-
-    // Future Value of initial investment: FV_initial = Initial * (1 + ratePerPeriod)^totalPeriods
-    let fvInitial = initial;
-    if (ratePerPeriod > 0) {
-      fvInitial = initial * Math.pow(1 + ratePerPeriod, totalPeriods);
-    }
-
-    const residualTarget = Math.max(0, target - fvInitial);
-
-    // Periodic deposit required:
-    let periodicRequired = 0;
-    if (residualTarget > 0) {
-      if (ratePerPeriod > 0) {
-        // Annuity Formula: FV = P * [((1 + i)^n - 1) / i]
-        periodicRequired = residualTarget * (ratePerPeriod / (Math.pow(1 + ratePerPeriod, totalPeriods) - 1));
-      } else {
-        periodicRequired = residualTarget / totalPeriods;
-      }
-    }
-
-    // Projections array for tables and charts (max 12 intervals to avoid crowded DOM)
-    const dataPoints: { label: string; invertido: number; balance: number; intereses: number }[] = [];
-    let currentBalance = initial;
-    let totalInvertido = initial;
-    let totalIntereses = 0;
-
-    const step = Math.max(1, Math.floor(totalPeriods / 12));
-
-    for (let p = 1; p <= Math.ceil(totalPeriods); p++) {
-      if (ratePerPeriod > 0) {
-        const intEarned = currentBalance * ratePerPeriod;
-        totalIntereses += intEarned;
-        currentBalance += intEarned;
-      }
-      currentBalance += periodicRequired;
-      totalInvertido += periodicRequired;
-
-      const currentMonth = Math.round(p * monthsPerPeriod);
-      if (p === 1 || p % step === 0 || p === Math.ceil(totalPeriods)) {
-        dataPoints.push({
-          label: `Mes ${Math.min(duracionMeses, currentMonth)}`,
-          invertido: Math.round(totalInvertido),
-          balance: Math.round(currentBalance),
-          intereses: Math.round(totalIntereses)
-        });
-      }
-    }
-
-    const totalAportadoFuturo = totalInvertido - initial;
-
-    return {
-      periodicRequired: Math.round(periodicRequired),
-      fvInitial: Math.round(fvInitial),
-      residualTarget: Math.round(residualTarget),
-      totalAportadoFuturo: Math.round(totalAportadoFuturo),
-      totalDeposited: Math.round(totalInvertido),
-      totalInteresesEarned: Math.round(totalIntereses),
-      finalBalance: Math.round(currentBalance),
-      dataPoints,
-      totalPeriods
-    };
-  }, [metaAjustada, ahorroInicial, duracionMeses, interesAnual, frecuenciaConfig]);
-
-  // Scenario: What if I save and deposit more? (+10%, +20%, +50% or custom)
-  const simulatedScenario = useMemo(() => {
-    const basicDeposit = calculations.periodicRequired;
-    const extraPercent = ahorroExtraPorc / 100;
-    const optimizedDeposit = basicDeposit * (1 + extraPercent);
-    
-    // Calculate how many months it will take now to hit target with this optimized amount
-    const target = metaAjustada;
-    const initial = ahorroInicial;
-    const r = interesAnual / 100;
-    const f = frecuenciaConfig.divisor;
-    const ratePerPeriod = r / f;
-    const monthsPerPeriod = 12 / f;
-
-    if (totalMetWithInitial(initial, target)) {
-      return { monthsNeeded: 0, monthsSaved: duracionMeses, optimizedDeposit };
-    }
-
-    // Binary search/Numerical estimate for period count 'n'
-    let low = 1;
-    let high = 1200; // max 100 years
-    let solvedPeriods = high;
-
-    for (let iter = 0; iter < 50; iter++) {
-      const mid = (low + high) / 2;
-      let fv = initial;
-      if (ratePerPeriod > 0) {
-        fv = initial * Math.pow(1 + ratePerPeriod, mid) + 
-             optimizedDeposit * ((Math.pow(1 + ratePerPeriod, mid) - 1) / ratePerPeriod);
-      } else {
-        fv = initial + optimizedDeposit * mid;
-      }
-
-      if (fv >= target) {
-        solvedPeriods = mid;
-        high = mid;
-      } else {
-        low = mid;
-      }
-    }
-
-    const solvedMonths = solvedPeriods * monthsPerPeriod;
-    const monthsSaved = Math.max(0, Number((duracionMeses - solvedMonths).toFixed(1)));
-
-    return {
-      monthsNeeded: Math.max(1, Number(solvedMonths.toFixed(1))),
-      monthsSaved,
-      optimizedDeposit: Math.round(optimizedDeposit)
-    };
-
-    function totalMetWithInitial(init: number, targ: number) {
-      return init >= targ;
-    }
-  }, [calculations, ahorroExtraPorc, metaAjustada, ahorroInicial, interesAnual, frecuenciaConfig, duracionMeses]);
-
-  // Fondo de Emergencia Calculations
-  const emergFundRecommended = useMemo(() => {
-    return gastosEmergencia * mesesEmergencia;
-  }, [gastosEmergencia, mesesEmergencia]);
-
-  // Export functions
-  const handleExportCSV = () => {
-    let csvContent = "\uFEFF"; // UTF-8 BOM representation for Excel Spanish readability
-    csvContent += "Sueldo Fácil - Plan de Ahorro y Metas Proyectadas\n";
-    csvContent += `Meta de Ahorro:; ${metaNombre}\n`;
-    csvContent += `Monto de la Meta:; RD$ ${metaMonto}\n`;
-    csvContent += `Ajustado por Inflación:; ${ajustarInflacion ? 'SÍ (' + tasaInflacion + '%)' : 'NO'}\n`;
-    csvContent += `Meta Reajustada:; RD$ ${metaAjustada}\n`;
-    csvContent += `Ahorro Inicial:; RD$ ${ahorroInicial}\n`;
-    csvContent += `Tasa de Interés Estimada:; ${interesAnual}%\n`;
-    csvContent += `Plazo de Ahorro:; ${duracionMeses} meses\n`;
-    csvContent += `Frecuencia:; ${frecuenciaConfig.label}\n`;
-    csvContent += `Ahorro Requerido por Período:; RD$ ${calculations.periodicRequired}\n\n`;
-
-    csvContent += "Tabla de Proyección de Crecimiento del Ahorro\n";
-    csvContent += "Intervalo;Capital Invertido;Acumulado Intereses;Balance Total Proyectado\n";
-
-    calculations.dataPoints.forEach(pt => {
-      csvContent += `${pt.label};RD$ ${pt.invertido};RD$ ${pt.intereses};RD$ ${pt.balance}\n`;
-    });
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Plan_Ahorro_SueldoFacil_${metaNombre.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
-  // Structured Schema Markup
-  const schemaMarkup = useMemo(() => {
+  // Pre-compiled elegant vector preview presets inside pure HTML/inline SVGs corresponding to goal categorization
+  const metaIllustrations = useMemo(() => {
+    switch (objetivoCategoria) {
+      case 'vehiculo':
+        return {
+          icon: <Car className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Vehículo Propio',
+          quote: 'Cualquier camino se recorre mejor cuando das el primer paso con planificación.',
+          bg: 'from-blue-200 to-indigo-100',
+          gradientHex: '#2563eb'
+        };
+      case 'casa':
+        return {
+          icon: <Home className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Vivienda Anhelada',
+          quote: 'Construir un hogar es colocar un ladrillo financiero cada día con consistencia.',
+          bg: 'from-emerald-200 to-teal-100',
+          gradientHex: '#10b981'
+        };
+      case 'viaje':
+        return {
+          icon: <Plane className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Aventura & Viajes',
+          quote: 'El mundo no es para contemplarlo, es para vivirlo tras planificar el viaje de tus sueños.',
+          bg: 'from-sky-200 to-blue-100',
+          gradientHex: '#0ea5e9'
+        };
+      case 'estudios':
+        return {
+          icon: <GraduationCap className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Capacitación & Estudios',
+          quote: 'La educación es la mejor inversión para asegurar retornos extraordinarios en tu futuro.',
+          bg: 'from-violet-200 to-fuchsia-100',
+          gradientHex: '#8b5cf6'
+        };
+      case 'negocio':
+        return {
+          icon: <Briefcase className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Emprendimiento Propio',
+          quote: 'Ser tu propio jefe no es cuestión de suerte, es cuestión de ahorro inteligente y acción.',
+          bg: 'from-amber-200 to-yellow-100',
+          gradientHex: '#d97706'
+        };
+      case 'emergencia':
+        return {
+          icon: <ShieldAlert className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Fondo de Estabilidad',
+          quote: 'La paz mental absoluta no tiene precio. Protege a los tuyos ante imprevistos.',
+          bg: 'from-rose-200 to-orange-100',
+          gradientHex: '#f43f5e'
+        };
+      case 'otro':
+      default:
+        return {
+          icon: <Heart className="w-8 h-8 md:w-10 md:h-10 text-slate-800" />,
+          title: 'Bienestar Financiero',
+          quote: 'El éxito inicia en el preciso instante en que decides tomar el control de tu dinero.',
+          bg: 'from-slate-200 to-stone-100',
+          gradientHex: '#64748b'
+        };
+    }
+  }, [objetivoCategoria]);
+
+  // COLOR SCHEMES CONFIGURATION FOR PREMIUM PLANNER PRINTING
+  const colorScheme = useMemo(() => {
+    switch (colorTema) {
+      case 'verde':
+        return {
+          primary: 'bg-emerald-600',
+          primaryBorder: 'border-emerald-200',
+          primaryText: 'text-emerald-700',
+          bannerBg: 'bg-emerald-50 dark:bg-emerald-950/20',
+          badgeBg: 'bg-emerald-100 text-emerald-800',
+          accentBorder: 'border-emerald-600',
+          lightBg: 'bg-emerald-50/50',
+          hex: '#059669',
+          tint: '#ecfdf5',
+          darkText: 'text-emerald-900',
+          gradient: 'from-emerald-700 to-teal-800'
+        };
+      case 'morado':
+        return {
+          primary: 'bg-indigo-600',
+          primaryBorder: 'border-indigo-200',
+          primaryText: 'text-indigo-700',
+          bannerBg: 'bg-indigo-50 dark:bg-indigo-950/20',
+          badgeBg: 'bg-indigo-100 text-indigo-800',
+          accentBorder: 'border-indigo-600',
+          lightBg: 'bg-indigo-50/50',
+          hex: '#4f46e5',
+          tint: '#eef2ff',
+          darkText: 'text-indigo-900',
+          gradient: 'from-indigo-700 to-purple-800'
+        };
+      case 'dorado':
+        return {
+          primary: 'bg-amber-600',
+          primaryBorder: 'border-amber-200',
+          primaryText: 'text-amber-700',
+          bannerBg: 'bg-amber-50 dark:bg-amber-950/20',
+          badgeBg: 'bg-amber-100 text-amber-800',
+          accentBorder: 'border-amber-600',
+          lightBg: 'bg-amber-50/50',
+          hex: '#b45309',
+          tint: '#fef3c7',
+          darkText: 'text-amber-900',
+          gradient: 'from-amber-600 to-yellow-700'
+        };
+      case 'personalizado':
+        return {
+          primary: 'bg-slate-700',
+          primaryBorder: 'border-slate-200',
+          primaryText: 'text-slate-800',
+          bannerBg: 'bg-slate-50 dark:bg-slate-950/20',
+          badgeBg: 'bg-slate-100 text-slate-800',
+          accentBorder: 'border-slate-800',
+          lightBg: 'bg-slate-50/50',
+          hex: customColorHex,
+          tint: `${customColorHex}10`,
+          darkText: 'text-slate-950',
+          gradient: `from-[${customColorHex}] to-slate-900`
+        };
+      case 'azul':
+      default:
+        return {
+          primary: 'bg-blue-600',
+          primaryBorder: 'border-blue-200',
+          primaryText: 'text-blue-700',
+          bannerBg: 'bg-blue-50 dark:bg-blue-950/20',
+          badgeBg: 'bg-blue-100 text-blue-800',
+          accentBorder: 'border-blue-600',
+          lightBg: 'bg-blue-50/50',
+          hex: '#2563eb',
+          tint: '#eff6ff',
+          darkText: 'text-blue-900',
+          gradient: 'from-blue-700 to-indigo-800'
+        };
+    }
+  }, [colorTema, customColorHex]);
+
+  // MATH CORE COMPUTATIONS FOR PLANNER STATISTICS
+  const dateCalculations = useMemo(() => {
+    const start = new Date(fechaInicio);
+    const end = new Date(fechaObjetivo);
+    
+    // Total Difference in Days & Weeks
+    const diffTime = Math.max(0, end.getTime() - start.getTime());
+    const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+    const totalWeeks = Math.max(1, Number((totalDays / 7).toFixed(1)));
+    const totalMonths = Math.max(1, Number((totalDays / 30.43).toFixed(1)));
+    
+    const remainderToSave = Math.max(0, metaMonto - ahorroInicial);
+    
+    // Periodic Requirements
+    const dailyRequired = Math.round(remainderToSave / totalDays);
+    const weeklyRequired = Math.round(remainderToSave / totalWeeks);
+    const biweeklyRequired = Math.round(remainderToSave / (totalMonths * 2));
+    const monthlyRequired = Math.round(remainderToSave / totalMonths);
+
+    let periodLabel = 'Mensual';
+    let saveAmountPerPeriod = monthlyRequired;
+    let totalPeriodsCount = Math.ceil(totalMonths);
+
+    if (frecuencia === 'diario') {
+      periodLabel = 'Diario';
+      saveAmountPerPeriod = dailyRequired;
+      totalPeriodsCount = totalDays;
+    } else if (frecuencia === 'semanal') {
+      periodLabel = 'Semanal';
+      saveAmountPerPeriod = weeklyRequired;
+      totalPeriodsCount = Math.ceil(totalWeeks);
+    } else if (frecuencia === 'quincenal') {
+      periodLabel = 'Quincenal';
+      saveAmountPerPeriod = biweeklyRequired;
+      totalPeriodsCount = Math.ceil(totalMonths * 2);
+    }
+
     return {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebPage",
-          "@id": "https://sueldofacil.com/plan-ahorro/#webpage",
-          "url": "https://sueldofacil.com/plan-ahorro/",
-          "name": "Plan de Ahorro RD | Sueldo Fácil",
-          "description": "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana."
-        },
-        {
-          "@type": "FAQPage",
-          "@id": "https://sueldofacil.com/plan-ahorro/#faq",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "¿Cómo funciona un plan de ahorro con inflación e interés compuesto en República Dominicana?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Un plan de ahorro con aportes periódicos e interés compuesto capitaliza los intereses generados convirtiéndolos en capital. En RD las asociaciones de ahorros (APAP, ALAVER, Cibao) y los bancos múltiples ofrecen cuentas programadas e inversiones a plazo. La inflación ajusta la meta hacia el futuro para que mantenga su valor real."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "¿Cuáles son las opciones de inversión de bajo riesgo para mis metas de ahorro en RD?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Las opciones tradicionales de bajo riesgo incluyen Certificados Financieros en Bancos y Asociaciones (rinden entre 5% y 9%), Fondos Mutuos o de Inversión Abiertos en puestos de bolsa aprobados por la SIMV (rinden entre 7% y 11%), y opciones de ahorro programado mensual."
-              }
-            }
-          ]
-        }
-      ]
+      totalDays,
+      totalWeeks,
+      totalMonths,
+      remainderToSave,
+      dailyRequired,
+      weeklyRequired,
+      biweeklyRequired,
+      monthlyRequired,
+      saveAmountPerPeriod,
+      periodLabel,
+      totalPeriodsCount
     };
-  }, []);
+  }, [fechaInicio, fechaObjetivo, metaMonto, ahorroInicial, frecuencia]);
+
+  // SAVING GRID BLOCKS SYSTEM
+  // Dynamic number of blocks and individual value based on setup configuration
+  const gridSystem = useMemo(() => {
+    const targetToAccumulate = dateCalculations.remainderToSave;
+    let counts = 100;
+    
+    if (bloquesModo === 'doscientos') {
+      counts = 200;
+    } else if (bloquesModo === 'quinientas') {
+      counts = 500;
+    } else if (bloquesModo === 'mil') {
+      counts = 1000;
+    }
+
+    let valuePerBlock = Math.ceil(targetToAccumulate / counts);
+    if (bloquesModo === 'custom') {
+      valuePerBlock = customBlockValue > 0 ? customBlockValue : 100;
+      counts = Math.ceil(targetToAccumulate / valuePerBlock);
+      if (counts <= 0) counts = 1;
+      if (counts > 2000) counts = 2000; // Hard restriction to avoid rendering engine melting
+    }
+
+    return {
+      blockCount: counts,
+      blockValue: valuePerBlock
+    };
+  }, [bloquesModo, customBlockValue, dateCalculations.remainderToSave]);
+
+  // Compute actual interactive progress
+  const interactiveState = useMemo(() => {
+    const checkedCount = Object.values(markedBlocks).filter(Boolean).length;
+    const accumulatedFromGrid = checkedCount * gridSystem.blockValue;
+    const totalAccumulated = Math.min(metaMonto, ahorroInicial + accumulatedFromGrid);
+    const calculatedPercentage = metaMonto > 0 ? Math.round((totalAccumulated / metaMonto) * 100) : 0;
+    const realRemaining = Math.max(0, metaMonto - totalAccumulated);
+
+    return {
+      checkedCount,
+      accumulatedFromGrid,
+      totalAccumulated,
+      calculatedPercentage,
+      realRemaining
+    };
+  }, [markedBlocks, gridSystem, ahorroInicial, metaMonto]);
+
+  // Auto trigger Certificate when reaching 100% savings real accumulated projection
+  useEffect(() => {
+    if (interactiveState.calculatedPercentage >= 100 && metaMonto > 0) {
+      setShowCertificate(true);
+    } else {
+      setShowCertificate(false);
+    }
+  }, [interactiveState.calculatedPercentage, metaMonto]);
+
+  // Auto Reset Grid Board when configuration variables change to keep integrity
+  const resetBoard = () => {
+    setMarkedBlocks({});
+  };
+
+  // Select/Unselect entire grid for demonstration
+  const markAllBlocks = () => {
+    const newRecord: Record<number, boolean> = {};
+    for (let i = 0; i < gridSystem.blockCount; i++) {
+      newRecord[i] = true;
+    }
+    setMarkedBlocks(newRecord);
+  };
+
+  // Toggle single block with client-side interactive callback feedback
+  const handleBlockClick = (idx: number) => {
+    setMarkedBlocks(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
+  // MILESTONE QUOTES BASED ON REALTIME INTERACTIVE PROGRESS PERCENT
+  const getProgressMilestoneString = () => {
+    const pct = interactiveState.calculatedPercentage;
+    if (pct < 25) return '25% → ¡Excelente comienzo! El camino del ahorro se inicia tomando acción.';
+    if (pct < 50) return '50% → ¡Ya estás a un cuarto de camino! Imagina la satisfacción de cumplirlo.';
+    if (pct < 75) return '75% → ¡Ya estás a la mitad! Mitad del esfuerzo completado, continúa firme.';
+    if (pct < 100) return '90% → ¡Tu meta está sumamente cerca! Visualiza tu éxito a la vuelta de la esquina.';
+    return '100% → ¡META TOTALMENTE CUMPLIDA! Te felicitamos por tu disciplina de acero.';
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       
-      {/* Schema Injection in Head */}
-      <script type="application/ld+json">
-        {JSON.stringify(schemaMarkup)}
-      </script>
-
-      {/* SEO HEADER ACCORDING TO SENIOR PM & UX BRIEF */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold font-mono tracking-wider uppercase">
-          <Sparkles className="w-3.5 h-3.5" /> Finanzas Personales Dominicanas
+      {/* HEADER PRINCIPAL */}
+      <div className="text-center max-w-4xl mx-auto space-y-3 pt-4 print:hidden">
+        <div className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200/50 text-blue-600 dark:text-blue-400 text-xs font-bold font-mono tracking-wider uppercase">
+          <Sparkles className="w-3.5 h-3.5" /> PLANNER EDITORIAL PREMIUM V1
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-          Plan de Ahorro y Metas Financieras RD
+          Creador de Plan de Ahorro Personalizado
         </h1>
-        <p className="text-base text-slate-500 dark:text-slate-400">
-          Diseña tu plan de ahorro personalizado. Simula el impacto del interés compuesto, ajusta tu dinero por la inflación dominicana y calcula tu fondo de emergencia ideal de forma gratuita.
+        <p className="text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          Diseña, personaliza e imprime un planificador financiero de grado profesional para tu habitación o negocio. Gamifica tu ahorro coloreando los bloques hasta alcanzar tus sueños.
         </p>
       </div>
 
-      {/* NAVIGATION SUB-TABS OF SAVING MODULE */}
-      <div className="flex border-b border-b-slate-200 dark:border-b-slate-800 max-w-md mx-auto justify-center print:hidden">
-        <button
-          onClick={() => setSubTab('meta')}
-          className={`flex-1 py-3 text-sm font-bold border-b-2 transition-all ${subTab === 'meta' ? 'border-b-blue-600 text-blue-600 dark:text-blue-400' : 'border-b-transparent text-slate-400 hover:text-slate-200'}`}
-        >
-          🎯 Meta de Ahorro
-        </button>
-        <button
-          onClick={() => setSubTab('emergencia')}
-          className={`flex-1 py-3 text-sm font-bold border-b-2 transition-all ${subTab === 'emergencia' ? 'border-b-blue-600 text-blue-600 dark:text-blue-400' : 'border-b-transparent text-slate-400 hover:text-slate-200'}`}
-        >
-          🛡️ Fondo de Emergencias
-        </button>
-      </div>
-
-      {subTab === 'meta' ? (
-        // VIEW: SAVING GOALS WITH COMPLIANT COMPONENT FORM
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {/* DUAL WORKSPACE PANEL */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* PANEL IZQUIERDO: CONFIGURADOR DE DISEÑO (OCULTO EN LA HOJA DE IMPRESIÓN) */}
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 md:p-6 shadow-sm space-y-6 print:hidden">
           
-          {/* COLUMN LEFT: ENTRY INPUT FORM */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 print:hidden">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-                <Target className="w-5 h-5" />
-              </span>
-              Configura tu Meta
-            </h3>
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <Layout className="w-5 h-5 text-blue-600" />
+            <h2 className="text-base font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
+              Pasos del Diseñador
+            </h2>
+          </div>
 
-            <div className="space-y-4">
-              {/* Goal Name */}
+          {/* COLOR THEME SELECTOR */}
+          <div className="space-y-3">
+            <span className="block text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Palette className="w-4 h-4" /> 1. Paleta de Color
+            </span>
+            <div className="grid grid-cols-5 gap-2 pt-1">
+              {[
+                { id: 'azul', label: 'Azul', hex: '#2563eb' },
+                { id: 'verde', label: 'Verde', hex: '#10b981' },
+                { id: 'morado', label: 'Morado', hex: '#8b5cf6' },
+                { id: 'dorado', label: 'Dorado', hex: '#d97706' },
+                { id: 'personalizado', label: 'Hex', hex: customColorHex }
+              ].map((style) => (
+                <button
+                  key={style.id}
+                  onClick={() => setColorTema(style.id as any)}
+                  className={`relative flex flex-col items-center justify-center p-2 rounded-xl border text-[10px] font-bold transition-all cursor-pointer ${colorTema === style.id ? 'border-semibold border-slate-800 dark:border-white shadow-sm font-black text-slate-900 dark:text-white' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                >
+                  <span 
+                    className="w-5 h-5 rounded-full border border-slate-200/40 mb-1" 
+                    style={{ backgroundColor: style.id === 'personalizado' ? customColorHex : style.hex }}
+                  />
+                  {style.label}
+                  {colorTema === style.id && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-slate-800 dark:bg-white rounded-full" />}
+                </button>
+              ))}
+            </div>
+
+            {colorTema === 'personalizado' && (
+              <div className="pt-2 flex items-center gap-2 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/40">
+                <span className="text-[10px] uppercase font-bold text-slate-400">Color Hex:</span>
+                <input 
+                  type="color" 
+                  value={customColorHex}
+                  onChange={(e) => setCustomColorHex(e.target.value)}
+                  className="w-8 h-6 p-0 border-0 cursor-pointer rounded bg-transparent shrink-0"
+                />
+                <input 
+                  type="text" 
+                  value={customColorHex}
+                  onChange={(e) => setCustomColorHex(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-0.5 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 uppercase"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* BASIC FORM FIELDS */}
+          <div className="space-y-4">
+            <span className="block text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <User className="w-4 h-4" /> 2. Datos del Cliente & Meta
+            </span>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nombre del Propietario</label>
+              <input 
+                type="text"
+                value={nombreCliente}
+                onChange={(e) => setNombreCliente(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white"
+                placeholder="Ingresa tu nombre"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Nombre de la Meta Financiera
-                </label>
-                <input
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nombre de la Meta</label>
+                <input 
                   type="text"
                   value={metaNombre}
                   onChange={(e) => setMetaNombre(e.target.value)}
-                  placeholder="e.g. Comprar vehículo"
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white"
+                  placeholder="Ej. Inicial de mi Apartamento"
                 />
               </div>
-
-              {/* Grid numeric inputs: Target & Initial */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Monto Meta (RD$)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">RD$</span>
-                    <input
-                      type="number"
-                      value={metaMonto || ''}
-                      onChange={(e) => setMetaMonto(Number(e.target.value))}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Ahorro Inicial (RD$)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">RD$</span>
-                    <input
-                      type="number"
-                      value={ahorroInicial !== undefined ? ahorroInicial : ''}
-                      onChange={(e) => setAhorroInicial(Number(e.target.value))}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Month Duration Slider/Selector */}
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Plazo para alcanzarla ({duracionMeses} meses)
-                  </label>
-                  <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 font-mono">
-                    {(duracionMeses / 12).toFixed(1)} año(s)
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="3"
-                  max="120"
-                  step="3"
-                  value={duracionMeses}
-                  onChange={(e) => setDuracionMeses(Number(e.target.value))}
-                  className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 font-mono mt-1 font-semibold">
-                  <span>3m</span>
-                  <span>1 año</span>
-                  <span>2a</span>
-                  <span>3a</span>
-                  <span>5a</span>
-                  <span>10 años</span>
-                </div>
-              </div>
-
-              {/* Saving frequency dropdown */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Frecuencia de Aportación al Fondo
-                </label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tipo de Meta</label>
                 <select
-                  value={frecuencia}
-                  onChange={(e) => setFrecuencia(e.target.value as any)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white cursor-pointer"
+                  value={objetivoCategoria}
+                  onChange={(e) => setObjetivoCategoria(e.target.value as any)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-2 py-2 text-xs font-bold text-slate-800 dark:text-white cursor-pointer"
                 >
-                  <option value="diario">Diario</option>
-                  <option value="semanal">Semanal</option>
-                  <option value="quincenal">Quincenal (Cada 15 y 30)</option>
-                  <option value="mensual">Mensual (Cada Fin de Mes)</option>
+                  <option value="casa">🏠 Casa / Apartamento</option>
+                  <option value="vehiculo">🚗 Vehículo Próximo</option>
+                  <option value="viaje">✈️ Viajes & Aventuras</option>
+                  <option value="estudios">🎓 Educación & Postgrado</option>
+                  <option value="negocio">💼 Negocio Propio / Startups</option>
+                  <option value="emergencia">🛡️ Fondo de Reserva Familiar</option>
+                  <option value="otro">❤️ Otro Objetivo Personal</option>
                 </select>
-              </div>
-
-              {/* Interés Anual Esperado */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Tasa de Interés de Inversión Anual ({interesAnual}%)
-                </label>
-                <select
-                  value={interesAnual}
-                  onChange={(e) => setInteresAnual(Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white cursor-pointer"
-                >
-                  <option value="0">0% (Ahorro en hucha/debito tradicional)</option>
-                  <option value="3">3% (Rendir cuentas premium locales)</option>
-                  <option value="5">5% (Asociación Dominicana Mínimo)</option>
-                  <option value="8">8% (Certificado de APAP / Bancos Múltiples)</option>
-                  <option value="10">10% (Fondo Inversión / Puestos de Bolsa SIMV)</option>
-                  <option value="12">12% (Rendimiento Histórico Instrumentos de Deuda)</option>
-                  <option value="15">15% (Optimista Bolsa Global)</option>
-                </select>
-              </div>
-
-              {/* Toggle inflation-adjust */}
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800/80 rounded-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                      Ajustar por Inflación <Info className="w-3.5 h-3.5 text-slate-400" />
-                    </span>
-                    <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
-                      Suma la inflación de RD para asegurar el poder de compra futuro.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setAjustarInflacion(!ajustarInflacion)}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${ajustarInflacion ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-800'}`}
-                  >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${ajustarInflacion ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-
-                {ajustarInflacion && (
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-400 shrink-0 uppercase">Tasa Inflación:</span>
-                    <select
-                      value={tasaInflacion}
-                      onChange={(e) => setTasaInflacion(Number(e.target.value))}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
-                    >
-                      <option value="3">3% (Baja)</option>
-                      <option value="4">4% (Meta Banco Central RD)</option>
-                      <option value="5">5% (Tasa Dominicana Promedio)</option>
-                      <option value="7">7% (Alta)</option>
-                      <option value="10">10% (Hiper-inflación)</option>
-                    </select>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Adsense Mock placement */}
-            <AdsenseMock slot="plan-ahorro-sidebar" type="square" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Monto Objetivo (RD$)</label>
+                <input 
+                  type="number"
+                  value={metaMonto || ''}
+                  onChange={(e) => setMetaMonto(Number(e.target.value))}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white"
+                  placeholder="Monto meta"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ahorro Inicial (RD$)</label>
+                <input 
+                  type="number"
+                  value={ahorroInicial !== undefined ? ahorroInicial : ''}
+                  onChange={(e) => setAhorroInicial(Number(e.target.value))}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white"
+                  placeholder="Ahorro inicial"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha de Inicio</label>
+                <input 
+                  type="date"
+                  value={fechaInicio}
+                  onChange={(e) => setFechaInicio(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-2 py-2 text-xs font-bold text-slate-800 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha Objetivo</label>
+                <input 
+                  type="date"
+                  value={fechaObjetivo}
+                  onChange={(e) => setFechaObjetivo(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-2 py-2 text-xs font-bold text-slate-800 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Frecuencia de Ahorros</label>
+              <select
+                value={frecuencia}
+                onChange={(e) => setFrecuencia(e.target.value as any)}
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-white cursor-pointer"
+              >
+                <option value="diario">Diaria</option>
+                <option value="semanal">Semanal</option>
+                <option value="quincenal">Quincenal (Cada 15 días)</option>
+                <option value="mensual">Mensual (Un aporte al mes)</option>
+              </select>
+            </div>
           </div>
 
-          {/* COLUMN RIGHT: OUTCOMES & INTERACTIVE GRAPHICS */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* DYNAMIC PHOTO SELECTOR */}
+          <div className="space-y-3">
+            <span className="block text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Upload className="w-4 h-4" /> 3. Imagen de Inspiración (Opcional)
+            </span>
+            <p className="text-[10px] text-slate-450 leading-relaxed font-semibold">
+              Puedes cargar una fotografía de tu meta (ej. la casa de tus sueños, el auto, etc.) para incrustarla automáticamente en el planner físico.
+            </p>
 
-            {/* CORE METALS RESULTS BANNER */}
-            <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 text-white rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
-              <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 opacity-10 bg-white w-52 h-52 rounded-full"></div>
-              <div className="absolute left-1/3 bottom-0 translate-y-16 opacity-5 bg-white w-80 h-80 rounded-full"></div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 py-2 px-3 bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-350 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl text-xs font-bold border border-dashed border-slate-300 dark:border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5" /> Subir Fotografía
+              </button>
+              {metaFotoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setMetaFotoUrl('')}
+                  className="py-2 px-3 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  Remover
+                </button>
+              )}
+            </div>
+            <input 
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+          </div>
 
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                  <span className="text-xs font-bold text-blue-200 uppercase tracking-widest block mb-1">
-                    🎯 Ahorro Requerido Proyectado
-                  </span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-4xl font-black font-mono tracking-tight">
-                      RD$ {calculations.periodicRequired.toLocaleString('en-US')}
-                    </span>
-                    <span className="text-sm font-bold text-blue-100">
-                      / {frecuenciaConfig.label.toLowerCase()}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-blue-200 font-medium mt-3 leading-relaxed">
-                    Aportando esto consistentemente por <strong>{duracionMeses} meses</strong> alcanzarás tu meta de sueldo meta ajustable de <strong className="text-white">RD$ {metaAjustada.toLocaleString('en-US')}</strong>.
-                  </p>
-                </div>
+          {/* SAVING MODULE BLOCK QUANTITY CONFIG */}
+          <div className="space-y-3.5 pt-1 border-t border-slate-150/40 dark:border-slate-850">
+            <span className="block text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Layout className="w-4 h-4" /> 4. Ajustes de Cuadrícula
+            </span>
+            <p className="text-[10px] text-slate-450 leading-relaxed font-semibold">
+              Configura cuántos bloques impresos contendrá tu tablero de progreso y el monto que equivale rellenar cada uno.
+            </p>
 
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 space-y-3 border border-white/10 shrink-0 self-start md:self-auto w-full md:w-auto">
-                  <div className="flex justify-between md:gap-8 items-center text-xs">
-                    <span className="font-semibold text-blue-100">Meta Original:</span>
-                    <span className="font-bold">RD$ {metaMonto.toLocaleString('en-US')}</span>
-                  </div>
-                  {ajustarInflacion && (
-                    <div className="flex justify-between md:gap-8 items-center text-xs text-amber-200">
-                      <span className="font-semibold">Efecto Inflación:</span>
-                      <span className="font-bold">+ RD$ {(metaAjustada - metaMonto).toLocaleString('en-US')}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between md:gap-8 items-center text-xs">
-                    <span className="font-semibold text-blue-100">Ahorro Inicial:</span>
-                    <span className="font-bold">RD$ {ahorroInicial.toLocaleString('en-US')}</span>
-                  </div>
-                  <div className="flex justify-between md:gap-8 items-center text-xs text-emerald-200 border-t border-white/10 pt-2">
-                    <span className="font-semibold">Interés Ganado:</span>
-                    <span className="font-bold">RD$ {calculations.totalInteresesEarned.toLocaleString('en-US')}</span>
-                  </div>
-                </div>
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'cien', label: '100 bloques' },
+                { id: 'doscientos', label: '200 bloques' },
+                { id: 'quinientas', label: '500 bloques' },
+                { id: 'custom', label: 'Valor Manual' }
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    setBloquesModo(opt.id as any);
+                    resetBoard();
+                  }}
+                  className={`p-2 rounded-xl text-[11px] font-bold border text-left flex items-center justify-between cursor-pointer ${bloquesModo === opt.id ? 'bg-slate-50 dark:bg-slate-950 border-slate-800 dark:border-slate-100 font-extrabold text-slate-800 dark:text-white' : 'border-slate-200 dark:border-slate-800 text-slate-400'}`}
+                >
+                  <span>{opt.label}</span>
+                  {bloquesModo === opt.id && <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
+                </button>
+              ))}
             </div>
 
-            {/* BAR PROGRESSION GRAPHICS & TABLE DOCK */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    📈 Crecimiento de tu Capital Proyectado
-                  </h4>
-                  <p className="text-[11px] text-slate-400 font-bold mt-0.5">Dinero aportado vs ganancias del interés compuesto.</p>
+            {bloquesModo === 'custom' && (
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 space-y-2">
+                <label className="block text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Monto por cada Bloque (RD$)</label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2 text-xs font-bold text-slate-400">RD$</span>
+                  <input 
+                    type="number"
+                    value={customBlockValue}
+                    onChange={(e) => {
+                      setCustomBlockValue(Math.max(1, Number(e.target.value)));
+                      resetBoard();
+                    }}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 pl-10 pr-2 py-1 text-xs font-extrabold text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Ej. 1000"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button
+                type="button"
+                onClick={resetBoard}
+                className="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-350 rounded-xl text-[11px] font-extrabold cursor-pointer border border-slate-200/40"
+              >
+                Limpiar Tablero
+              </button>
+              <button
+                type="button"
+                onClick={markAllBlocks}
+                className="py-2 bg-slate-150 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-350 rounded-xl text-[11px] font-extrabold cursor-pointer border border-slate-200/40"
+              >
+                Rellenar Todo
+              </button>
+            </div>
+          </div>
+
+          {/* MAIN WEBPAGE PRINT BUTTON */}
+          <div className="pt-4 border-t border-slate-150/40 dark:border-slate-850">
+            <button
+              onClick={() => window.print()}
+              className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-950 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-slate-950/20 uppercase tracking-wider"
+            >
+              <Printer className="w-4 h-4 text-emerald-400" /> Imprimir Planner (Carta / A4)
+            </button>
+          </div>
+
+          <AdsenseMock slot="plan-ahorro-personalized-sidebar" type="square" />
+        </div>
+
+        {/* PROYECTO VISUAL: ETSY-STYLE PREMIUM LETTER SHEET EMBEDDED PREVIEW */}
+        <div className="lg:col-span-8 flex flex-col justify-center items-center">
+          
+          <div className="w-full flex items-center justify-between pb-3 px-2 print:hidden select-none">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Layout className="w-4 h-4 text-emerald-500" /> HOJA DE PLANNER DIGITAL PREMIUM (VÍA VISTA PREVIA)
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => window.print()}
+                className="p-1.5 px-3 hover:bg-slate-200 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-400 hover:text-slate-200 transition-colors rounded-lg flex items-center gap-1 cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" /> PDF
+              </button>
+            </div>
+          </div>
+
+          {/* LETTER BOX PREVIEW WRAPPER */}
+          {/* Fulfills design criteria: Comparable to Canva Pro designs, elegant borders, balanced padding, looks extremely clean, fits single standard page bounds in printing */}
+          <div 
+            id="printable-savings-planner"
+            className="w-full max-w-[850px] min-h-[1100px] bg-white border border-slate-300 rounded-3xl p-6 md:p-10 shadow-xl relative overflow-hidden text-slate-900 print:border-none print:shadow-none print:p-0 flex flex-col justify-between"
+            style={{
+              fontFamily: '"Inter", "Space Grotesk", system-ui, sans-serif',
+              borderColor: colorScheme.hex,
+              borderWidth: '2px'
+            }}
+          >
+            {/* Header watermarks & branding */}
+            <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 opacity-[0.06] w-56 h-56 rounded-full" style={{ backgroundColor: colorScheme.hex }}></div>
+            <div className="absolute left-0 bottom-0 -translate-x-16 translate-y-16 opacity-[0.04] w-72 h-72 rounded-full" style={{ backgroundColor: colorScheme.hex }}></div>
+
+            {/* DESIGN CONTAINER TOP: MAIN LOGO & HEADING */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: `${colorScheme.hex}25` }}>
+                
+                {/* BRAND LOGO CONFORME CON LA INSTRUCCIONES */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md text-sm shrink-0" style={{ backgroundColor: colorScheme.hex }}>
+                    SF
+                  </div>
+                  <div>
+                    <h5 className="font-extrabold tracking-tight text-slate-950 text-sm">SueldoFácil</h5>
+                    <p className="text-[9px] font-mono font-bold tracking-widest uppercase text-slate-400">República Dominicana</p>
+                  </div>
                 </div>
 
-                {/* Printable controls */}
-                <div className="flex items-center gap-2 print:hidden">
-                  <button
-                    onClick={handleExportCSV}
-                    className="p-1 px-3 bg-slate-100 dark:bg-slate-950 hover:bg-slate-200/80 dark:hover:bg-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-300 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" /> CSV / Excel
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="p-1 px-3 bg-slate-100 dark:bg-slate-950 hover:bg-slate-200/80 dark:hover:bg-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-300 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <Printer className="w-3.5 h-3.5" /> Imprimir / PDF
-                  </button>
+                <div className="sm:text-right space-y-0.5">
+                  <h4 className="text-[11px] font-black tracking-widest uppercase text-slate-400">PLANIFICACIÓN FINANCIERA DE ALTA GAMA</h4>
+                  <p className="text-xl md:text-2xl font-black tracking-tight" style={{ color: colorScheme.hex }}>
+                    PLAN DE AHORRO PERSONALIZADO
+                  </p>
                 </div>
               </div>
 
-              {/* PROGRESS BAR PERCENTAGE */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-400">Progreso del Ahorro Inicial con respecto a la Meta</span>
-                  <span className="font-extrabold text-blue-600 dark:text-blue-400 font-mono text-xs">
-                    {Math.min(100, Math.round((ahorroInicial / metaAjustada) * 100))}%
+              {/* CLIENT META METRICS SUB-BANNER */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-b" style={{ borderColor: `${colorScheme.hex}15` }}>
+                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Propietario</span>
+                  <span className="text-xs md:text-sm font-extrabold text-slate-900 truncate block">{nombreCliente}</span>
+                </div>
+                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Proyecto Financiero</span>
+                  <span className="text-xs md:text-sm font-extrabold text-slate-900 truncate block">{metaNombre}</span>
+                </div>
+                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Monto Meta Acordado</span>
+                  <span className="text-xs md:text-sm font-black text-slate-950 block">RD$ {metaMonto.toLocaleString('en-US')}</span>
+                </div>
+                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Plazo de Ejecución</span>
+                  <span className="text-xs md:text-sm font-bold text-slate-700 block">
+                    {dateCalculations.totalMonths} meses ({fechaInicio} a {fechaObjetivo})
                   </span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200/30">
+              </div>
+
+              {/* TWO COLUMN INSPIRATIONAL & FINANCIAL PROFILE SECTION */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 py-6 items-center">
+                
+                {/* COLUMN LEFT: MOTIVATION TEXTS & ILLUSTRATIONS */}
+                <div className="md:col-span-7 space-y-4">
+                  <div className="p-4 rounded-2xl flex items-center gap-4 border" style={{ backgroundColor: `${colorScheme.hex}08`, borderColor: `${colorScheme.hex}20` }}>
+                    <div className="p-2.5 rounded-xl bg-white shrink-0 shadow-sm border border-slate-100">
+                      {metaIllustrations.icon}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-black uppercase text-slate-450 tracking-wider">Hito de Motivación</span>
+                      <p className="text-[12px] italic font-semibold text-slate-750 font-serif leading-relaxed">
+                        "{metaIllustrations.quote}"
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40">
+                      <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Diario</span>
+                      <span className="text-xs font-mono font-black text-slate-800">RD$ {dateCalculations.dailyRequired.toLocaleString('en-US')}</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40 font-mono">
+                      <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Semanal</span>
+                      <span className="text-xs font-black text-slate-800">RD$ {dateCalculations.weeklyRequired.toLocaleString('en-US')}</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40 font-mono">
+                      <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Mensual</span>
+                      <span className="text-xs font-black text-slate-800">RD$ {dateCalculations.monthlyRequired.toLocaleString('en-US')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* COLUMN RIGHT: META FOTO O DESCRIPCIÓN VISUAL DE LA META */}
+                <div className="md:col-span-5">
+                  <div className="w-full h-28 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner flex items-center justify-center">
+                    {metaFotoUrl ? (
+                      <img 
+                        src={metaFotoUrl} 
+                        alt="Meta" 
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 to-slate-800 flex flex-col justify-center items-center p-3 text-center">
+                        <span className="text-[9px] uppercase font-bold text-blue-400 tracking-wider mb-1">Visualización Inspiradora</span>
+                        <p className="text-[10px] text-slate-350 leading-snug font-medium">Meta: {metaIllustrations.title}. Puedes subir una fotografía real en la barra de control lateral.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* DYNAMIC PROGRESS BAR SHEET DESIGN */}
+              <div className="pb-6">
+                <div className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500 tracking-wider pb-1.5">
+                  <span>Porcentaje del Objetivo Completado</span>
+                  <span className="font-extrabold text-xs" style={{ color: colorScheme.hex }}>
+                    {interactiveState.calculatedPercentage}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden p-0.5 border border-slate-200/50 flex">
                   <div 
-                    className="bg-blue-600 dark:bg-blue-500 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, (ahorroInicial / metaAjustada) * 100)}%` }}
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{ 
+                      width: `${Math.min(100, interactiveState.calculatedPercentage)}%`,
+                      backgroundColor: colorScheme.hex
+                    }}
                   ></div>
                 </div>
+                
+                {/* Financial distribution index details */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 text-[10px] font-bold text-slate-500 font-mono">
+                  <div>• Meta Acumulada: <span className="text-slate-900">RD$ {metaMonto.toLocaleString('en-US')}</span></div>
+                  <div>• Inicial: <span className="text-slate-900">RD$ {ahorroInicial.toLocaleString('en-US')}</span></div>
+                  <div>• Ahorro Grid: <span className="text-slate-900">RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span></div>
+                  <div>• Restante: <span className="text-slate-950 font-black">RD$ {interactiveState.realRemaining.toLocaleString('en-US')}</span></div>
+                </div>
               </div>
 
-              {/* HIGH RESPONSIVE CUSTOM SYSTEM SVG CARTOGRAPHY FOR SAVING METALS */}
-              <div className="h-64 relative bg-slate-50 dark:bg-slate-950 border border-slate-200/20 dark:border-slate-800 rounded-2xl flex flex-col justify-end p-4">
-                {calculations.dataPoints.length > 0 ? (
-                  <div className="w-full h-full flex items-end justify-between relative mt-2 gap-2">
-                    {/* Background Guideline helper scales */}
-                    <div className="absolute inset-0 flex flex-col justify-between opacity-5 pointer-events-none z-0">
-                      <div className="border-t border-slate-500 w-full"></div>
-                      <div className="border-t border-slate-500 w-full"></div>
-                      <div className="border-t border-slate-500 w-full"></div>
-                      <div className="border-t border-slate-500 w-full"></div>
-                    </div>
+              {/* DETAILED SAVING TILES GRID SECTION */}
+              <div className="space-y-3 pt-4 border-t" style={{ borderColor: `${colorScheme.hex}15` }}>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase text-slate-500 tracking-widest">
+                    TABLERO DE PROGRESO DE AHORRO • {gridSystem.blockCount} CASILLAS DE RD$ {gridSystem.blockValue.toLocaleString('en-US')}
+                  </h4>
+                  <p className="text-[9px] text-slate-400 font-bold tracking-wider print:hidden select-none">
+                    *Haz clic sobre las casillas acumuladas para colorearlas
+                  </p>
+                </div>
 
-                    {calculations.dataPoints.map((pt, i) => {
-                      const maxVal = Math.max(...calculations.dataPoints.map(p => p.balance)) || 1;
-                      const capH = (pt.invertido / maxVal) * 80; // height 0-80%
-                      const balH = (pt.balance / maxVal) * 80;
-
-                      return (
-                        <div key={i} className="flex-1 flex flex-col items-center justify-end h-full relative group">
-                          {/* Rich Floating tooltip on hover */}
-                          <div className="absolute bottom-28 bg-slate-900 border border-slate-800 text-[10px] text-white p-2 rounded-xl shadow-xl z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap space-y-1">
-                            <p className="font-extrabold text-slate-300">{pt.label}</p>
-                            <p className="font-semibold">Aportado: <span className="font-mono text-blue-400">RD${pt.invertido.toLocaleString('en-US')}</span></p>
-                            <p className="font-semibold">Interés: <span className="font-mono text-emerald-400">RD${pt.intereses.toLocaleString('en-US')}</span></p>
-                            <p className="font-extrabold border-t border-slate-800 pt-1 text-slate-100">Total: RD${pt.balance.toLocaleString('en-US')}</p>
+                {/* THE SAVINGS GRID BOARD: EXTREMELY VISUAL AND PROFESSIONAL BULLET JOURNAL TILES */}
+                <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 overflow-y-auto max-h-[340px] pr-1.5 py-1">
+                  {Array.from({ length: gridSystem.blockCount }).map((_, idx) => {
+                    const isChecked = !!markedBlocks[idx];
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleBlockClick(idx)}
+                        className={`aspect-video rounded-lg border text-[10px] font-extrabold flex flex-col justify-center items-center relative transition-all cursor-pointer ${isChecked ? 'text-white border-transparent' : 'bg-slate-50/70 hover:bg-slate-50 hover:border-slate-400 border-slate-200 text-slate-500'}`}
+                        style={{
+                          backgroundColor: isChecked ? colorScheme.hex : undefined
+                        }}
+                      >
+                        <span className="text-[8px] font-bold block opacity-40">#{idx + 1}</span>
+                        <span className="font-mono block tracking-tighter">
+                          {gridSystem.blockValue >= 1000 
+                            ? `${(gridSystem.blockValue / 1000).toFixed(0)}k` 
+                            : gridSystem.blockValue}
+                        </span>
+                        {isChecked && (
+                          <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
+                            <Check className="w-2 h-2" style={{ color: colorScheme.hex }} />
                           </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                          {/* Dual comparative bar stack */}
-                          <div className="w-full max-w-[28px] relative flex h-full items-end">
-                            <div 
-                              className="w-full bg-blue-600/30 rounded-t-sm group-hover:bg-blue-600/40 absolute bottom-0 transition-all cursor-pointer"
-                              style={{ height: `${capH}%` }}
-                            ></div>
-                            <div 
-                              className="w-full bg-emerald-500 rounded-t-sm group-hover:brightness-110 absolute bottom-0 transition-all cursor-pointer"
-                              style={{ height: `${balH}%`, maskImage: `linear-gradient(to bottom, white, transparent)` }}
-                            ></div>
-                          </div>
+                {/* Summary counters of active blocks */}
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 pt-1">
+                  <span>CASILLAS ALCANZADAS: {interactiveState.checkedCount} / {gridSystem.blockCount}</span>
+                  <span>AHORRADO EN GRID: RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span>
+                </div>
+              </div>
 
-                          {/* Axis label */}
-                          <p className="text-[8px] font-mono font-bold text-slate-400 dark:text-slate-500 mt-2 whitespace-nowrap select-none overflow-hidden text-ellipsis w-full text-center">
-                            {pt.label}
-                          </p>
-                        </div>
-                      );
-                    })}
+              {/* DYNAMIC PROGRESS MILESTONES (HITOS DE AHORRO) */}
+              <div className="py-6 border-b border-t mt-4" style={{ borderColor: `${colorScheme.hex}15` }}>
+                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block mb-2">HITOS DE SEGUIMIENTO GENERAL</span>
+                <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold tracking-tight">
+                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 25 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                    <span className="block font-black text-xs">25%</span>
+                    <span>Inicio Firme</span>
                   </div>
-                ) : (
-                  <p className="text-xs text-slate-400">No hay datos proyectados suficientes.</p>
-                )}
-              </div>
-
-              {/* Legend indicator */}
-              <div className="flex gap-4 items-center justify-center text-xs pt-1 border-t border-slate-100 dark:border-slate-800/60 select-none">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-400">
-                  <span className="w-3 h-3 bg-blue-600/30 rounded-sm"></span> Capital Aportado
+                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 50 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                    <span className="block font-black text-xs">50%</span>
+                    <span>Mitad de Camino</span>
+                  </div>
+                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 75 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                    <span className="block font-black text-xs">75%</span>
+                    <span>Meta muy Cerca</span>
+                  </div>
+                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-800 animate-pulse' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                    <span className="block font-black text-xs">100%</span>
+                    <span>¡Meta Lograda!</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 font-semibold text-slate-400">
-                  <span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> Balance + Intereses Compuestos
-                </div>
-              </div>
-            </div>
-
-            {/* DYNAMIC SCENARIO SIMULATOR: "WHAT IF I SAVE MORE?" */}
-            <div className="bg-gradient-to-br from-slate-900 border border-slate-800 to-slate-950 p-6 rounded-3xl text-white space-y-4">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-amber-500" />
-                <h4 className="text-sm font-bold uppercase tracking-wider">
-                  🔥 Acelerador Financiero: ¿Qué pasa si ahorras más?
-                </h4>
-              </div>
-              <p className="text-[11px] text-slate-300 leading-relaxed font-semibold">
-                Al incrementar periódicamente tu aportación, reduces drásticamente el tiempo necesario para completar tu meta debido a la velocidad del interés compuesto.
-              </p>
-
-              {/* Buttons selector for +10, +20, +50 */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-                {[10, 20, 50, 100].map((perc) => (
-                  <button
-                    key={perc}
-                    type="button"
-                    onClick={() => setAhorroExtraPorc(perc)}
-                    className={`p-2.5 rounded-xl border text-xs font-black transition-all cursor-pointer ${ahorroExtraPorc === perc ? 'bg-blue-600 border-blue-500 text-white shadow-md' : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'}`}
-                  >
-                    + {perc}% Aporte
-                  </button>
-                ))}
-              </div>
-
-              {/* Simulated insights summary box */}
-              <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase font-black tracking-wider block">Nuevo Aporte Periódico</span>
-                  <span className="text-xl font-bold text-amber-400">RD$ {simulatedScenario.optimizedDeposit.toLocaleString('en-US')}</span>
-                  <span className="text-xs text-slate-500"> / {frecuenciaConfig.label.toLowerCase()}</span>
-                </div>
-
-                <div className="border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-6 leading-none">
-                  {simulatedScenario.monthsSaved > 0 ? (
-                    <>
-                      <span className="text-[10px] text-emerald-400 uppercase font-bold block mb-1">¡Ahorras tiempo!</span>
-                      <p className="text-sm text-slate-100 font-semibold leading-snug">
-                        Lograrás tu meta en <strong className="text-white text-base">{simulatedScenario.monthsNeeded} meses</strong> en vez de {duracionMeses}. ¡Ganando <strong className="text-emerald-400 text-base">{simulatedScenario.monthsSaved} meses</strong>!
-                      </p>
-                    </>
-                  ) : (
-                    <span className="text-xs text-slate-400">Mismo tiempo establecido.</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* AUTOMATIC SMART RECOMMENDATIONS ADAPTABLE TO CAPITAL BUDGET */}
-            <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-950 rounded-2xl p-4 flex gap-3">
-              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <h5 className="text-xs font-bold text-emerald-950 dark:text-emerald-400">Inspección de tu Plan de Ahorro</h5>
-                <p className="text-[11px] text-emerald-800 dark:text-emerald-500 font-semibold leading-relaxed">
-                  {calculations.totalInteresesEarned > 0 ? (
-                    `Gracias al interés compuesto del ${interesAnual}% anual en el plazo de ${duracionMeses} meses, estarás generando RD$ ${calculations.totalInteresesEarned.toLocaleString('en-US')} de ganancias puras de intereses. No dejes ese dinero parado en una cuenta tradicional que paga menos del 1%; considera los fondos de inversión locales regulados por la SIMV.`
-                  ) : (
-                    `Tu rendimiento está fijado en 0%. Configura una tasa de interés estimada para observar la fuerza del interés sobre tus aportaciones en el tiempo.`
-                  )}
+                <p className="text-[10px] font-semibold text-slate-500 text-center mt-3 font-serif italic">
+                  {getProgressMilestoneString()}
                 </p>
+              </div>
+
+            </div>
+
+            {/* DESIGN CONTAINER FOOTER: STAMP & SIGNATURE */}
+            <div>
+              <div className="flex items-end justify-between border-t pt-5 mt-4" style={{ borderColor: `${colorScheme.hex}25` }}>
+                
+                {/* INCENTIVES AD */}
+                <div className="max-w-[420px] text-left">
+                  <p className="text-[10px] font-bold text-slate-800">Compromiso Financiero Diario</p>
+                  <p className="text-[8px] text-slate-400 leading-relaxed font-semibold">
+                    Este plan ha sido auditado por el motor optimizado de Sueldo Fácil Dominicano. Pega este planner en un espacio visible en tu casa u oficina y registra tu constancia periódica.
+                  </p>
+                </div>
+
+                {/* SIGNATURE STAMP BLOCK FOR Bullet Journal aesthetic */}
+                <div className="flex flex-col items-center justify-center text-center space-y-1 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
+                  <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Sello de Compromiso</span>
+                  <div className="w-12 h-6 border-b border-dashed border-slate-400"></div>
+                  <span className="text-[8px] font-bold text-slate-650">Firma del Propietario</span>
+                </div>
+              </div>
+
+              {/* SYSTEM INFORMATION STRIP */}
+              <div className="flex justify-between items-center text-[8px] font-mono font-bold text-slate-350 select-none border-t border-slate-100 pt-2.5 mt-4">
+                <span>SUELDO FÁCIL DOMINICANA • RECURSOS LIBRES DE COBRO</span>
+                <span>FECHA DE IMPRESIÓN: {new Date().toLocaleDateString('es-DO')}</span>
+                <span>VERSIÓN: FSC-PLANNER-2026</span>
               </div>
             </div>
 
           </div>
+
         </div>
-      ) : (
-        // VIEW: EMERGENCY FUND FORM DOCKED SEPARATELY
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* COLUMN LEFT: EMERGENCY FORM */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-                <Target className="w-5 h-5" />
-              </span>
-              Calculadora de Fondo de Reserva
-            </h3>
 
-            <div className="space-y-4">
-              {/* Monthly Income */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Tus Ingresos Mensuales Netos (RD$)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm font-mono">RD$</span>
-                  <input
-                    type="number"
-                    value={ingresosEmergencia || ''}
-                    onChange={(e) => setIngresosEmergencia(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
+      </div>
 
-              {/* Monthly Expense */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Tus Gastos Mensuales Esenciales (RD$)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm font-mono">RD$</span>
-                  <input
-                    type="number"
-                    value={gastosEmergencia || ''}
-                    onChange={(e) => setGastosEmergencia(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Months Cover Select */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                  Meses de cobertura deseados ({mesesEmergencia} meses)
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[3, 6, 9, 12].map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setMesesEmergencia(m)}
-                      className={`p-2.5 border rounded-xl text-xs font-bold transition-all cursor-pointer ${mesesEmergencia === m ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400'}`}
-                    >
-                      {m} meses
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <AdsenseMock slot="plan-emergencia-sidebar" type="square" />
+      {/* EXTRA PREMIUM SECTION: CERTIFICADO DE LOGRO AL 100% */}
+      {/* Renders a beautiful visual pop with high printable quality so the client gets a proud keepsake */}
+      {showCertificate && (
+        <div className="p-1 px-2 pointer-events-auto bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-700 rounded-3xl p-6 md:p-8 text-white relative shadow-2xl space-y-6">
+          <div className="absolute top-2 right-3 font-mono text-[9px] font-bold text-yellow-250 uppercase tracking-widest animate-pulse border border-yellow-500/20 px-2 py-0.5 rounded-full bg-slate-900/40">
+            ★ CERTIFICADO DESBLOQUEADO (100%)
           </div>
 
-          {/* COLUMN RIGHT: OUTCOMES EMERGENCY PLAN */}
-          <div className="lg:col-span-7 space-y-6">
-            
-            {/* LARGE HERO BLOCK RECOMMENDATION */}
-            <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 border border-slate-800 rounded-3xl p-6 md:p-8 text-white space-y-6">
-              <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">🛡️ Fondo de Emergencia de Cobertura de Ley</span>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight">
-                    RD$ {emergFundRecommended.toLocaleString('en-US')}
-                  </span>
+          <div className="max-w-3xl mx-auto text-center space-y-4">
+            <h3 className="text-xl md:text-2xl font-serif font-black tracking-wider text-yellow-100 flex items-center justify-center gap-2">
+              <Award className="w-8 h-8 text-yellow-300 animate-bounce" /> CERTIFICADO DE META CUMPLIDA
+            </h3>
+            <p className="text-xs text-amber-100 font-semibold max-w-lg mx-auto">
+              Has acumulado satisfactoriamente el 100% de tu meta de ahorro financiero. Aquí está tu pergamino de reconocimiento por disciplina fiscal intachable.
+            </p>
+
+            {/* CERTIFICATE DOCUMENT DESIGN */}
+            <div 
+              className="bg-stone-50 border-8 border-double border-amber-600 text-stone-900 rounded-2xl p-6 md:p-10 shadow-lg text-center mx-auto max-w-[700px] space-y-6 relative overflow-hidden"
+              style={{
+                backgroundImage: 'radial-gradient(circle, #fffbeb, #fafaf9)'
+              }}
+            >
+              {/* Decorative side margins */}
+              <div className="absolute left-3 top-3 bottom-3 right-3 border border-amber-200 pointer-events-none"></div>
+
+              <div className="relative z-10 space-y-4">
+                
+                <span className="text-[10px] font-black uppercase text-amber-700 tracking-widest block font-mono">REPÚBLICA DOMINICANA</span>
+                
+                <h4 className="text-lg md:text-xl font-serif font-bold text-amber-900 uppercase">
+                  Certificado de Excelencia Financiera
+                </h4>
+
+                <p className="text-[11px] text-stone-500 italic max-w-md mx-auto">
+                  Por cuanto ha demostrado una disciplina excepcional y perseverancia, se otorga este pergamino a:
+                </p>
+
+                {/* Main Name displaying Client Name */}
+                <h2 className="text-2xl md:text-3xl font-serif font-black text-stone-950 underline decoration-amber-600/50 decoration-double">
+                  {nombreCliente}
+                </h2>
+
+                <p className="text-xs text-stone-750 max-w-lg mx-auto leading-relaxed">
+                  Por haber cumplido con éxito su meta de ahorro planificada: <strong className="text-slate-900">"{metaNombre}"</strong>, acumulando la cantidad total de <strong className="text-emerald-700 font-mono">RD$ {metaMonto.toLocaleString('en-US')}</strong> mediante aportes ordenados de frecuencia {frecuencia}.
+                </p>
+
+                <div className="flex justify-between items-end max-w-sm mx-auto pt-6 border-t border-amber-200">
+                  <div className="text-center font-mono text-[9px] text-stone-400">
+                    <p className="border-b border-stone-300 pb-1 w-20 mx-auto font-bold">{fechaObjetivo}</p>
+                    <p>Fecha Cumplimiento</p>
+                  </div>
+
+                  <div className="w-12 h-12 bg-amber-500 rounded-full border border-amber-600 flex items-center justify-center font-bold text-white shadow-md relative group select-none">
+                    <span className="text-[9px] font-black">100%</span>
+                    <div className="absolute -bottom-3 text-[7.5px] uppercase font-bold text-amber-800 scale-90 whitespace-nowrap">SELLO APARTADO</div>
+                  </div>
+
+                  <div className="text-center font-mono text-[9px] text-stone-400">
+                    <p className="border-b border-stone-300 pb-1 w-20 mx-auto font-bold">SUELDO FÁCIL</p>
+                    <p>Firma Emisora</p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-slate-300 font-semibold mt-3 leading-relaxed">
-                  Basado en gastos mensuales de <strong>RD$ {gastosEmergencia.toLocaleString('en-US')}</strong>, este fondo te protegerá ante despidos indeseados, emergencias médicas o contingencias familiares imprevistas en la República Dominicana.
+
+                <p className="text-[9px] text-stone-400 font-mono pt-4 leading-none">
+                  "El ahorro constante es el cimiento de la riqueza duradera de cualquier nación."
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-800 pt-4 font-semibold text-xs leading-relaxed text-slate-300">
-                <div className="space-y-1">
-                  <span className="font-extrabold text-slate-200 flex items-center gap-1">
-                    🟢 Grado de Seguridad:
-                  </span>
-                  <p>
-                    {mesesEmergencia <= 3 
-                      ? 'Básico (Bueno para solteros o asalariados estables)' 
-                      : mesesEmergencia <= 6
-                      ? 'Recomendado (Compensa la cesantía y contingencias medias)'
-                      : 'Máximo (Excelente protección familiar o emprendedores)'}
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="font-extrabold text-slate-200">
-                    💡 Acción Práctica Recomendada:
-                  </span>
-                  <p>
-                    Mantén este fondo en instrumentos de <strong>altísima liquidez</strong> como fondos de inversión abiertos a la vista que te permitan retirar el capital en 24-48 horas.
-                  </p>
-                </div>
-              </div>
             </div>
 
-            {/* DYNAMIC PLAN STRATEGY TO GROW EMERGENCY FUND */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
-              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-                📊 Métodos para acumular tu fondo en República Dominicana
-              </h4>
-              <p className="text-xs text-slate-400 font-semibold">Te mostramos cuánto tiempo tomará ahorrarlo destinando un porcentaje de tu sueldo mensual neto:</p>
-
-              <div className="space-y-4 pt-1">
-                {[10, 15, 20].map((perc) => {
-                  const monthlySave = (ingresosEmergencia * String(perc).localeCompare("0") !== 0 ? ingresosEmergencia : 0) * (perc / 100);
-                  const monthsNeeded = monthlySave > 0 ? Math.ceil(emergFundRecommended / monthlySave) : 0;
-                  return (
-                    <div key={perc} className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-200/30 dark:border-slate-850 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
-                      <div>
-                        <span className="text-[10px] text-slate-400 font-black block">OPCIÓN AHORRANDO {perc}% DE SUELDO</span>
-                        <span className="text-sm font-extrabold text-slate-900 dark:text-white">Destinar: RD$ {monthlySave.toLocaleString('en-US')} / mes</span>
-                      </div>
-                      <div className="sm:text-right">
-                        <span className="text-[10px] text-slate-500 font-bold block">Tiempo para Crearlo</span>
-                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{monthsNeeded} meses {monthsNeeded > 12 ? `(~${(monthsNeeded / 12).toFixed(1)} años)` : ''}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="pt-2">
+              <button
+                onClick={() => window.print()}
+                className="mx-auto py-2 px-5 bg-slate-900 border border-slate-800 hover:bg-slate-950 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer uppercase tracking-wider shadow-md"
+              >
+                <Printer className="w-3.5 h-3.5 text-yellow-350" /> Imprimir Honor Financiero (Diploma)
+              </button>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* SEO ARTICLE: over 1,500 words copy designed by senior SEO copywriters specific for Dominican context */}
-      <article className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 md:p-10 space-y-8 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+      {/* COMPLIANT LONG COALESCED SEO SECTION MAINTAINING EXCELLENT SYSTEM INDEXATION PROPERTIES */}
+      <article className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-3xl p-6 md:p-10 space-y-8 text-xs leading-relaxed text-slate-500 dark:text-slate-400 print:hidden">
         
         <header className="space-y-3 pb-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-            Guía Financiera Definitiva del Ahorro y Fondos Especiales en la República Dominicana
+            Guía Financiera Definitiva de Planners de Ahorro para República Dominicana
           </h2>
           <p className="text-sm font-semibold text-slate-400">
-            Aprende a estructurar metas de ahorro, exprimir el interés compuesto y configurar carteras de emergencia bajo regulaciones financieras locales.
+            Aprende cómo usar planners imprimibles para disciplinar tus finanzas, rellenar metas, y capitalizar interés compuesto.
           </p>
         </header>
 
         <section className="space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            1. ¿Por qué es Vital un Plan de Ahorros Ajustado por la Inflación en la República Dominicana?
+            1. ¿Por qué el Método Visual de Casillas Rellenables Funciona Mejor?
           </h3>
           <p>
-            En la economía dominicana, la inflación promedio nacional fluctúa históricamente entre un <strong>3.5% y un 6% anual</strong>, influenciada por factores impositivos, el valor del barril de petróleo importado y tasas de cambio internacionales. Ahorrar en una alcancía o en cuentas de ahorros tradicionales de nómina que ofrecen un <strong>0.5% o un 1.0% de tasa pasiva</strong> es, en términos reales, devaluar tu patrimonio día a día.
+            Tradicionalmente, las personas ahorran utilizando Excel u hojas de cálculo frías y abstractas. El problema es la falta de interacción kinestésica y recompensa de estímulos rápidos. Al utilizar un <strong>planner de ahorro imprimible con bloques personalizables</strong> (como este diseñado especialmente para República Dominicana), creas un compromiso tangible y visible. 
           </p>
           <p>
-            Destacar este ajuste permite calcular el "costo futuro de tus metas". Por ejemplo, si deseas comprar un vehículo de RD$500,000 en 3 años, tras una inflación acumulada estimada del 5% anual, necesitarás en realidad RD$578,812 al culminar el período para tener exactamente el mismo poder de compra. No ajustar tus metas es un error fatal de planificación.
+            Al colocar este documento impreso de alta gama en tu refrigeradora, en tu espejo, o en la pared de tu oficina, activas los neurotransmisores del progreso. Colorear un recuadro de <strong>RD$ 500</strong> o <strong>RD$ 1,000</strong> te otorga una inyección de dopamina que refuerza el hábito e impulsa la consistencia en el preaviso de tu próximo depósito bancario.
           </p>
         </section>
 
         <section className="space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            2. La Fuerza del Interés Compuesto aplicada a Metas Locales
+            2. Tipos de Cuentas Dominicana recomendables para Resguardar tu Capital
           </h3>
           <p>
-            El interés compuesto es conocido popularmente como la octava maravilla del mundo: los intereses generados cada mes se suman al capital principal, produciendo nuevos intereses en un efecto de bola de nieve. 
-          </p>
-          <p>
-            En el sistema financiero dominicano cuentas con atractivas herramientas para capitalizar tu plan:
+            Diferentes metas requieren diferentes herramientas del mercado de valores de la República Dominicana:
           </p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <strong>Certificados Financieros (CDs):</strong> Emitidos por bancos múltiples y asociaciones de ahorros y préstamos (por ejemplo APAP, Asociación Cibao, ALAVER). Ofrecen retribuciones predecibles mensuales y son ideales para metas de mediano plazo (12 a 36 meses). Los rendimientos se sitúan entre el 5% y el 9% anual.
+              <strong>Para Cuentas de Ahorro Programado:</strong> Excelente para separar el ahorro mensual de tu nómina en bancos múltiples locales (como Banreservas, Banco Popular, Banco BHD).
             </li>
             <li>
-              <strong>Fondos de Inversión Abiertos:</strong> Administrados por Sociedades Administradoras de Fondos de Inversión (SAFI) bajo supervisión de la Superintendencia del Mercado de Valores (SIMV). Brindan cuotas accesibles diarias desde RD$1,000 con rentabilidades proyectadas de hasta 10.5% anual y excelente liquidez.
+              <strong>Para Certificados en Asociaciones:</strong> Las asociaciones de ahorros (APAP, Alaver, Cibao) permiten congelar el dinero ganado por plazos definidos rindiendo entre el 5.5% y el 9% anual con inmunidad tributaria temporal.
             </li>
             <li>
-              <strong>Cuentas de Ahorro Programado:</strong> Vinculadas habitualmente a un cargo automático de tu nómina mensual para separar los fondos antes de que puedas gastarlos.
+              <strong>Para Puestos de Bolsa:</strong> Los fondos mutuos aprobados por la Superintendencia del Mercado de Valores (SIMV) logran rentabilidades óptimas desde RD$ 1,000 dominicanos.
             </li>
           </ul>
         </section>
 
         <section className="space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            3. Estructuración del Fondo de Emergencias conforme al Código de Trabajo (Ley 16-92)
-          </h3>
-          <p>
-            Muchos dominicanos descuidan su fondo de emergencia esperando depender de la liquidación o las prestaciones laborales. No obstante, el <strong>Código de Trabajo Dominicano</strong> avala el desahucio con indemnización variable según la antigüedad, con plazos de hasta 10 días para el pago real. En situaciones de despido justificado o quiebras imprevistas de la empresa, estos recursos legales pueden demorarse en disputas en los tribunales del trabajo de la República Dominicana.
-          </p>
-          <p>
-            Disponer de un fondo de emergencias de <strong>3 a 6 meses de gastos indispensables</strong> te brinda una paz mental incalculable. Te permite sufragar la canasta familiar básica, el seguro médico, y los compromisos hipotecarios sin incurrir en deudas de tarjetas de crédito o préstamos informales de tasas usureras (las cuales superan habitualmente el 20% mensual en el mercado informal).
-          </p>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            4. 15 Preguntas Frecuentes (FAQ) sobre Ahorro e Inversión en República Dominicana
+            3. Preguntas Frecuentes (FAQ) sobre Planificación de Ahorro en RD
           </h3>
           <div className="space-y-3 dark:border-slate-800">
             {[
               {
-                q: "¿Qué es el Interés Compuesto y en qué se diferencia del simple?",
-                a: "El interés simple calcula rendimientos únicamente sobre el capital inicial aportado. El interés compuesto reinvierte las ganancias generadas acumulándolas mensualmente al saldo, acelerando de forma exponencial el crecimiento de tu dinero."
+                q: "¿Cómo funciona un planner de ahorro personal de 100 bloques?",
+                a: "Consiste en dividir tu meta neta restante de ahorro en 100 partes iguales. Cada vez que deposites el valor correspondiente a esa porción en tu cuenta bancaria o fondo de inversión, coloreas una casilla en tu planner impreso hasta llenar la totalidad de la matriz de progreso."
               },
               {
-                q: "¿Dónde es seguro colocar mi fondo de ahorro en República Dominicana?",
-                a: "Es seguro y confiable colocarlo en fondos mutuos abiertos supervisados por la SIMV o certificados financieros de bancos autorizados por la Superintendencia de Bancos (SIB). Estos instrumentos cuentan con el respaldo regulatorio y solvencias auditables."
+                q: "¿Qué beneficios tiene el ahorro en pesos dominicanos comparado con dólares (USD)?",
+                a: "Ahorrar en pesos te ofrece tasas de interés sustancialmente más altas (típicamente entre 6.5% y 11% anual en RD) frente al ahorro en dólares que otorga tasas discretas (de 1.5% a 3% anual), aunque el dólar protege tus ahorros de devaluaciones severas de la moneda nacional."
               },
               {
-                q: "¿Tiene costo impositivo retirar mi dinero ahorrado?",
-                a: "En RD existe una retención única del 10% sobre los intereses ganados para personas físicas bajo normativa de la DGII. Sin embargo, muchos fondos mutuos y certificados de fomento de vivienda están exonerados legalmente de este cobro o aplican rebajas estratégicas."
+                q: "¿Qué es la retención única del 10% aplicada por la DGII sobre los intereses?",
+                a: "En la República Dominicana, la Dirección General de Impuestos Internos (DGII) retiene por ley el 10% de los intereses acumulados de manera pasiva en entidades reguladas. Sin embargo, los certificados de fomento de vivienda y diversos fondos mutuos de bolsa están legalmente exonerados de este impuesto."
               },
               {
-                q: "¿Cuál es la tasa de inflación promedio de República Dominicana?",
-                a: "La tasa de inflación en la República Dominicana se sitúa en un rango meta establecido por el Banco Central del 4% ± 1% anual bajo condiciones macroeconómicas estables."
-              },
-              {
-                q: "¿Qué porcentaje de mi sueldo debo ahorrar obligatoriamente?",
-                a: "La regla de oro de finanzas aconseja separar un mínimo del 10% al 20% de tus ingresos netos mensuales antes de pagar deudas o gastos fijos de recreación."
-              },
-              {
-                q: "¿Puedo abrir un certificado financiero con montos pequeños?",
-                a: "Sí, muchos bancos múltiples y cooperativas permiten constituir certificados de fomento con un monto inicial mínimo de RD$5,000 ó RD$10,000 dominicanos."
-              },
-              {
-                q: "¿Es seguro ahorrar en cooperativas dominicanas?",
-                a: "Las cooperativas registradas formalmente en el IDECOOP ofrecen atractivas tasas y préstamos favorables. Es importante evaluar su gobernanza y trayectoria de reparto de dividendos."
-              },
-              {
-                q: "¿Qué diferencia un ahorro en pesos de un ahorro en dólares en RD?",
-                a: "El ahorro en pesos rinde tasas de interés mucho más altas (entre 5.5% y 11%), mientras que las cuentas en dólares ofrecen protección ante la depreciación de la divisa, pagando tasas más discretas (de 1.5% a 4.0%)."
-              },
-              {
-                q: "¿Adónde va el dinero de mi AFP y puedo usarlo para ahorrar?",
-                a: "El dinero retenido por la AFP va a un fondo previsional obligatorio administrado bajo la Ley 87-01 para fines de pensión. No puedes liquidarlo anticipadamente para metas de corto plazo."
-              },
-              {
-                q: "¿Qué es la regla de presupuesto 50/30/20?",
-                a: "Especifica dividir tus ingresos en: 50% para necesidades esenciales (alimentación, techo, servicios), 30% para deseos personales (salidas, ropa) y 20% destinado exclusivamente para ahorro o pago agresivo de pasivos."
-              },
-              {
-                q: "¿Qué es un fondo mutuo de inversión abierto?",
-                a: "Es una cartera unificada de valores (bonos del Banco Central, hacienda pública y corporativos) administrada por expertos SAFI. Permite la entrada de múltiples inversores chicos dándoles diversificación y alta rentabilidad."
-              },
-              {
-                q: "¿Qué pasa si mi banco o asociación quiebra e interrumpe mi plan?",
-                a: "El sistema de supervisión de la Superintendencia de Bancos opera bajo el fondo de garantía de depósitos Ley 183-02, protegiendo los ahorros de los depositantes hasta por el monto límite fiscal regulado."
-              },
-              {
-                q: "¿Puedo retirar mis fondos mutuos anticipadamente?",
-                a: "Los fondos abiertos conceden retiros parciales o totales de manera diaria, habitualmente líquida dentro de un período de 24 horas laborables sin penalizaciones destructivas."
-              },
-              {
-                q: "¿Es la bolsa de valores dominicana accesible para personas comunes?",
-                a: "Completamente accesible. Cualquier dominicano con cédula y RD$1,000 puede abrir una cuenta de corretaje gratuita en un Puesto de Bolsa autorizado para comprar instrumentos nacionales de alto rendimiento."
-              },
-              {
-                q: "¿Cómo calculo mi capacidad real de ahorro mensual?",
-                a: "Consiste en un cálculo simple: toma tus ingresos reales globales netos del mes y réstale el total de tus gastos indispensables (gastos fijos + deudas del mes). El residuo sobrante es tu capacidad real de ahorro."
+                q: "¿Es aconsejable ahorrar si tengo tarjetas de crédito vigentes con deudas?",
+                a: "No. El costo financiero de una deuda de consumo o tarjeta de crédito en RD es sumamente elevado (fluctúa entre un 48% y un 60% anual de tasa de interés). Por lo tanto, saldar tus deudas te otorga un retorno financiero implícito mucho más alto que colocar tu dinero a rendir en un banco activo."
               }
-            ].map((item, idx) => (
-              <div key={idx} className="border-b border-slate-100 dark:border-slate-805/40 pb-3">
+            ].map((faq, idx) => (
+              <div key={idx} className="border-b border-slate-150/40 dark:border-slate-850 pb-3">
                 <button
+                  type="button"
                   onClick={() => toggleFaq(idx)}
-                  className="w-full flex justify-between items-center text-left font-bold text-slate-800 dark:text-slate-300 py-2 hover:text-blue-600 focus:outline-none focus:text-blue-500"
+                  className="w-full flex justify-between items-center text-left font-bold text-slate-800 dark:text-slate-300 py-2 hover:text-blue-600 focus:outline-none"
                 >
-                  <span>{idx + 1}. {item.q}</span>
-                  {openFaq[idx] ? <ChevronUp className="w-4 h-4 shrink-0 text-slate-400" /> : <ChevronDown className="w-4 h-4 shrink-0 text-slate-400" />}
+                  <span>{faq.q}</span>
+                  {openFaq[idx] ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                 </button>
                 {openFaq[idx] && (
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-4 pt-1 leading-relaxed">
-                    {item.a}
+                  <p className="text-[11px] text-slate-550 dark:text-slate-400 pl-4 pt-1 leading-relaxed">
+                    {faq.a}
                   </p>
                 )}
               </div>

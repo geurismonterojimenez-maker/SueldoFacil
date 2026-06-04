@@ -147,7 +147,7 @@ export default function App() {
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
       {/* HEADER PRINCIPAL */}
-      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
+      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors print:hidden ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* LOGO */}
@@ -733,7 +733,7 @@ export default function App() {
       </main>
 
       {/* FOOTER */}
-      <footer className={`border-t py-12 mt-12 transition-colors ${darkMode ? 'bg-slate-950 border-slate-900 text-slate-400' : 'bg-slate-900 border-slate-800 text-slate-350'}`}>
+      <footer className={`border-t py-12 mt-12 transition-colors print:hidden ${darkMode ? 'bg-slate-950 border-slate-900 text-slate-400' : 'bg-slate-900 border-slate-800 text-slate-350'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <div className="flex justify-center items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
