@@ -102,6 +102,23 @@ export default function PresupuestoAnual() {
     setVariableExpenses(variableExpenses.filter(i => i.id !== id));
   };
 
+  const normalizeMoneyInput = (value: string) => {
+    if (value === '') return 0;
+    return Math.max(0, Number(value));
+  };
+
+  const handleUpdateIncome = (id: string, patch: Partial<RowItem>) => {
+    setIncomes(prev => prev.map(item => item.id === id ? { ...item, ...patch } : item));
+  };
+
+  const handleUpdateFixed = (id: string, patch: Partial<RowItem>) => {
+    setFixedExpenses(prev => prev.map(item => item.id === id ? { ...item, ...patch } : item));
+  };
+
+  const handleUpdateVariable = (id: string, patch: Partial<RowItem>) => {
+    setVariableExpenses(prev => prev.map(item => item.id === id ? { ...item, ...patch } : item));
+  };
+
   // Core calculations taking scenario multipliers into account
   const baseTotals = useMemo(() => {
     const totalInc = incomes.reduce((acc, curr) => acc + curr.value, 0);
@@ -420,17 +437,32 @@ export default function PresupuestoAnual() {
             {/* Incomes rows rendered */}
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {incomes.map(item => (
-                <div key={item.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/20">
-                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-300">{item.label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">RD$ {item.value.toLocaleString('en-US')}</span>
-                    <button
-                      onClick={() => handleDeleteIncome(item.id)}
-                      className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_124px_28px] items-center gap-2 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/20">
+                  <input
+                    type="text"
+                    value={item.label}
+                    onChange={(e) => handleUpdateIncome(item.id, { label: e.target.value })}
+                    className="min-w-0 bg-transparent text-xs font-extrabold text-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-lg px-1"
+                    aria-label="Editar categoria de ingreso"
+                  />
+                  <div className="flex items-center gap-1 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 px-2 py-1">
+                    <span className="text-[10px] font-bold text-slate-400">RD$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={item.value}
+                      onChange={(e) => handleUpdateIncome(item.id, { value: normalizeMoneyInput(e.target.value) })}
+                      className="w-full bg-transparent text-right text-xs font-mono font-bold text-slate-500 dark:text-slate-400 focus:outline-none"
+                      aria-label={`Editar monto de ${item.label}`}
+                    />
                   </div>
+                  <button
+                    onClick={() => handleDeleteIncome(item.id)}
+                    className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
+                    aria-label={`Eliminar ${item.label}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -472,17 +504,32 @@ export default function PresupuestoAnual() {
             {/* scroll list */}
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {fixedExpenses.map(item => (
-                <div key={item.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/20">
-                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-300">{item.label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">RD$ {item.value.toLocaleString('en-US')}</span>
-                    <button
-                      onClick={() => handleDeleteFixed(item.id)}
-                      className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_124px_28px] items-center gap-2 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/20">
+                  <input
+                    type="text"
+                    value={item.label}
+                    onChange={(e) => handleUpdateFixed(item.id, { label: e.target.value })}
+                    className="min-w-0 bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-lg px-1"
+                    aria-label="Editar categoria de gasto fijo"
+                  />
+                  <div className="flex items-center gap-1 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 px-2 py-1">
+                    <span className="text-[10px] font-bold text-slate-400">RD$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={item.value}
+                      onChange={(e) => handleUpdateFixed(item.id, { value: normalizeMoneyInput(e.target.value) })}
+                      className="w-full bg-transparent text-right text-xs font-mono font-bold text-slate-500 dark:text-slate-400 focus:outline-none"
+                      aria-label={`Editar monto de ${item.label}`}
+                    />
                   </div>
+                  <button
+                    onClick={() => handleDeleteFixed(item.id)}
+                    className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
+                    aria-label={`Eliminar ${item.label}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -527,24 +574,44 @@ export default function PresupuestoAnual() {
                 const isSelectedCut = item.id === selectedCutCategory;
                 const finalVal = isSelectedCut ? item.value * (1 - (cutPercentage / 100)) : item.value;
                 return (
-                  <div key={item.id} className={`flex justify-between items-center p-2.5 rounded-xl border ${isSelectedCut ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-500/30' : 'bg-slate-50 dark:bg-slate-950 border-slate-200/20'}`}>
-                    <div>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-300 block">{item.label}</span>
+                  <div key={item.id} className={`grid grid-cols-[minmax(0,1fr)_124px_28px] items-center gap-2 p-2.5 rounded-xl border ${isSelectedCut ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-500/30' : 'bg-slate-50 dark:bg-slate-950 border-slate-200/20'}`}>
+                    <div className="min-w-0">
+                      <input
+                        type="text"
+                        value={item.label}
+                        onChange={(e) => handleUpdateVariable(item.id, { label: e.target.value })}
+                        className="w-full min-w-0 bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-lg px-1"
+                        aria-label="Editar categoria de gasto variable"
+                      />
                       {isSelectedCut && (
                         <span className="text-[9px] text-amber-500 font-bold font-mono">¡Corte del {cutPercentage}% activo!</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-450">
-                        RD$ {Math.round(finalVal).toLocaleString('en-US')}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteVariable(item.id)}
-                        className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="rounded-lg bg-white/70 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 px-2 py-1">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-slate-400">RD$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.value}
+                          onChange={(e) => handleUpdateVariable(item.id, { value: normalizeMoneyInput(e.target.value) })}
+                          className="w-full bg-transparent text-right text-xs font-mono font-bold text-slate-500 dark:text-slate-450 focus:outline-none"
+                          aria-label={`Editar monto de ${item.label}`}
+                        />
+                      </div>
+                      {isSelectedCut && (
+                        <span className="block text-right text-[9px] font-mono font-bold text-amber-500">
+                          Final {Math.round(finalVal).toLocaleString('en-US')}
+                        </span>
+                      )}
                     </div>
+                    <button
+                      onClick={() => handleDeleteVariable(item.id)}
+                      className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
+                      aria-label={`Eliminar ${item.label}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 );
               })}
