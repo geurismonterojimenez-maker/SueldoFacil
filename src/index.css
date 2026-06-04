@@ -99,12 +99,12 @@
   }
 
   /* Format visual report cards as beautiful flat documents */
-  .bg-white,
-  .dark\:bg-slate-900,
-  .bg-slate-50,
-  .dark\:bg-slate-950,
-  .rounded-2xl,
-  .rounded-3xl {
+  .bg-white:not(#printable-savings-planner *),
+  .dark\:bg-slate-900:not(#printable-savings-planner *),
+  .bg-slate-50:not(#printable-savings-planner *),
+  .dark\:bg-slate-950:not(#printable-savings-planner *),
+  .rounded-2xl:not(#printable-savings-planner *),
+  .rounded-3xl:not(#printable-savings-planner *) {
     background: #ffffff !important;
     background-color: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
