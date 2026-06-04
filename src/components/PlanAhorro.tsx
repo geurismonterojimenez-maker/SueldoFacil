@@ -30,6 +30,7 @@ export default function PlanAhorro() {
   const [printTelefono, setPrintTelefono] = useState<string>('809-555-0199');
   const [printInstagram, setPrintInstagram] = useState<string>('sueldofacil');
   const [printFrase, setPrintFrase] = useState<string>('');
+  const [metaImagen, setMetaImagen] = useState<string>('');
 
   const [markedBlocks, setMarkedBlocks] = useState<Record<number, boolean>>(() => {
     // Default pre-fill some blocks to make dashboard look alive
@@ -45,6 +46,17 @@ export default function PlanAhorro() {
     const start = new Date(fechaInicio);
     start.setMonth(start.getMonth() + Math.max(1, months));
     setFechaObjetivo(start.toISOString().split('T')[0]);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMetaImagen(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // 2. DETAILED GOAL CATEGORIES CONFIGURATION (Quotes & Elegant Line vectors)
@@ -93,7 +105,7 @@ export default function PlanAhorro() {
           icon: <svg className="w-5 h-5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>,
           title: 'Viaje Hermoso',
           quote: 'El mundo no es para contemplarlo, es para vivirlo tras diseñar el viaje de tus sueños.',
-          bg: 'from-sky-200 to-blue-105',
+          bg: 'from-sky-200 to-blue-100',
           gradientHex: '#0ea5e9',
           detailedVector: (
             <svg viewBox="0 0 120 70" className="w-16 h-12 stroke-current opacity-80" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -125,8 +137,8 @@ export default function PlanAhorro() {
         return {
           icon: <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
           title: 'Emprendimiento',
-          quote: 'Comenzar tu propio negocio no es cuestión de suerte, es cuestión de ahorro inteligente y acción.',
-          bg: 'from-amber-200 to-yellow-105',
+          quote: 'Comenzar tu propio negocio no es cuestión de suerte, es cuestión of ahorro inteligente y acción.',
+          bg: 'from-amber-200 to-yellow-100',
           gradientHex: '#d97706',
           detailedVector: (
             <svg viewBox="0 0 120 70" className="w-16 h-12 stroke-current opacity-85" fill="none" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
@@ -309,7 +321,7 @@ export default function PlanAhorro() {
         <AdsenseMock slot="plan-ahorro-top-horizontal" type="banner" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start print:block print:w-full">
         
         {/* LEFT COMPACT SIDEBAR CONFIGURATOR */}
         <div id="savings-sidebar" className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xl space-y-6 print:hidden">
@@ -348,7 +360,7 @@ export default function PlanAhorro() {
               </button>
               <button 
                 onClick={() => setColorTema('personalizado')} 
-                className={`py-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${colorTema === 'personalizado' ? 'bg-slate-250 border-slate-600 text-slate-900' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                className={`py-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${colorTema === 'personalizado' ? 'bg-slate-200 border-slate-600 text-slate-900' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
               >
                 Custom
               </button>
@@ -413,6 +425,37 @@ export default function PlanAhorro() {
                 <option value="emergencia">🛡️ Fondo de Emergencia</option>
                 <option value="otro">❤️ Otro Bienestar Financiero</option>
               </select>
+            </div>
+
+            {/* Foto de la Meta */}
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex justify-between items-center">
+                <span>Foto de la Meta (Opcional)</span>
+                {metaImagen && (
+                  <button 
+                    type="button"
+                    onClick={() => setMetaImagen('')}
+                    className="text-[9px] text-red-500 font-extrabold hover:underline cursor-pointer"
+                  >
+                    Eliminar foto
+                  </button>
+                )}
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="relative group shrink-0 w-11 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center">
+                  {metaImagen ? (
+                    <img src={metaImagen} alt="Mini-meta" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-extrabold">FOTO</span>
+                  )}
+                </div>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="w-full text-[11px] font-bold text-slate-500 file:mr-2.5 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                />
+              </div>
             </div>
 
             {/* Montos block */}
@@ -523,7 +566,7 @@ export default function PlanAhorro() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={resetBoard}
-                className="py-2 bg-slate-100 hover:bg-slate-250 text-slate-600 rounded-xl text-[10px] font-extrabold cursor-pointer transition-colors border border-slate-200"
+                className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[10px] font-extrabold cursor-pointer transition-colors border border-slate-200"
               >
                 Limpiar Tablero
               </button>
@@ -538,7 +581,7 @@ export default function PlanAhorro() {
           </div>
 
           {/* MAIN WEBPAGE PRINT BUTTON */}
-          <div className="pt-4 border-t border-slate-105 dark:border-slate-800">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               onClick={() => window.print()}
               className="w-full py-3 px-4 text-white rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-950/15 uppercase tracking-wider"
@@ -672,24 +715,35 @@ export default function PlanAhorro() {
               </div>
             </div>
 
-            {/* 3. HITO DE MOTIVACIÓN BANNER */}
-            <div className="p-3 bg-slate-50/40 border border-slate-105 rounded-xl flex items-center justify-between gap-4 my-0.5 relative overflow-hidden">
+             {/* 3. HITO DE MOTIVACIÓN BANNER */}
+            <div className="p-3 bg-slate-50/40 border border-slate-200 rounded-xl flex items-center justify-between gap-4 my-0.5 relative overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: colorScheme.hex }}></div>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-white shadow-sm flex items-center justify-center border border-slate-100">
+                <div className="w-9 h-9 rounded-lg bg-white shadow-sm flex items-center justify-center border border-slate-100 shrink-0">
                   {metaIllustrations.icon}
                 </div>
                 <div>
-                  <div className="text-[8px] font-black tracking-widest text-slate-404 uppercase">Hito de Motivación</div>
+                  <div className="text-[8px] font-black tracking-widest text-slate-400 uppercase">Hito de Motivación</div>
                   <blockquote className="text-[11.5px] italic text-slate-700 leading-snug font-serif mt-0.5 max-w-[500px]">
                     "{printFrase || metaIllustrations.quote}"
                   </blockquote>
                 </div>
               </div>
 
-              {/* Goal Illustration Vector Column */}
-              <div className="shrink-0 text-slate-400 flex items-center">
-                {metaIllustrations.detailedVector}
+              {/* Goal Illustration Vector or Uploaded Photo */}
+              <div className="shrink-0 flex items-center">
+                {metaImagen ? (
+                  <img 
+                    src={metaImagen} 
+                    alt="Propósito" 
+                    className="w-16 h-12 object-cover rounded-lg border border-slate-200 shadow-sm"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="shrink-0 text-slate-400 flex items-center">
+                    {metaIllustrations.detailedVector}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -706,14 +760,14 @@ export default function PlanAhorro() {
               >
                 {frecuencia === 'diario' && (
                   <span className="absolute top-1 right-2.5 text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase leading-none" style={{ backgroundColor: colorScheme.hex }}>
-                    Elegido
+                     Elegido
                   </span>
                 )}
                 <div className="p-1.5 rounded-lg bg-orange-50 text-orange-600">
                   <Flame className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-[8.5px] font-black text-slate-404 uppercase tracking-widest">Ahorro Diario</div>
+                  <div className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest">Ahorro Diario</div>
                   <div className="text-base font-black text-slate-900 font-mono tracking-tight mt-0.5">
                     RD$ {dateCalculations.dailyRequired.toLocaleString('en-US')}
                   </div>
@@ -731,14 +785,14 @@ export default function PlanAhorro() {
               >
                 {frecuencia === 'semanal' && (
                   <span className="absolute top-1 right-2.5 text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase leading-none" style={{ backgroundColor: colorScheme.hex }}>
-                    Elegido
+                     Elegido
                   </span>
                 )}
                 <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
                   <CalendarPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-[8.5px] font-black text-slate-404 uppercase tracking-widest">Ahorro Semanal</div>
+                  <div className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest">Ahorro Semanal</div>
                   <div className="text-base font-black text-slate-900 font-mono tracking-tight mt-0.5">
                     RD$ {dateCalculations.weeklyRequired.toLocaleString('en-US')}
                   </div>
@@ -756,14 +810,14 @@ export default function PlanAhorro() {
               >
                 {frecuencia === 'mensual' && (
                   <span className="absolute top-1 right-2.5 text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase leading-none" style={{ backgroundColor: colorScheme.hex }}>
-                    Elegido
+                     Elegido
                   </span>
                 )}
                 <div className="p-1.5 rounded-lg bg-green-50 text-green-600">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-[8.5px] font-black text-slate-404 uppercase tracking-widest">Ahorro Mensual</div>
+                  <div className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest">Ahorro Mensual</div>
                   <div className="text-base font-black text-slate-900 font-mono tracking-tight mt-0.5">
                     RD$ {dateCalculations.monthlyRequired.toLocaleString('en-US')}
                   </div>
@@ -773,11 +827,11 @@ export default function PlanAhorro() {
 
             {/* 5. PROGRESS RATIO BAR */}
             <div className="flex flex-col gap-1.5 py-3 border-b">
-              <div className="flex justify-between items-center text-[9px] uppercase font-bold text-slate-404 tracking-wider">
+              <div className="flex justify-between items-center text-[9px] uppercase font-bold text-slate-400 tracking-wider">
                 <span>Porcentaje del Objetivo Completado</span>
                 <span className="text-xs font-black" style={{ color: colorScheme.hex }}>{interactiveState.calculatedPercentage}%</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-3 border border-slate-205/20 p-0.5 flex">
+              <div className="w-full bg-slate-100 rounded-full h-3 border border-slate-200/20 p-0.5 flex">
                 <div 
                   className="h-full rounded-full transition-all duration-300"
                   style={{ 
@@ -798,15 +852,15 @@ export default function PlanAhorro() {
                   <span className="text-slate-900 font-extrabold truncate block">RD$ {ahorroInicial.toLocaleString('en-US')}</span>
                 </div>
                 <div className="border-r border-slate-200 px-1">
-                  <span className="block text-[7.5px] text-slate-404">AHORRO EN GRID</span>
+                  <span className="block text-[7.5px] text-slate-400">AHORRO EN GRID</span>
                   <span className="text-slate-900 font-extrabold truncate block">RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span>
                 </div>
                 <div className="border-r border-slate-200 px-1">
-                  <span className="block text-[7.5px] text-slate-404">RESTANTE</span>
+                  <span className="block text-[7.5px] text-slate-400">RESTANTE</span>
                   <span className="text-red-700 font-extrabold truncate block">RD$ {interactiveState.realRemaining.toLocaleString('en-US')}</span>
                 </div>
                 <div className="pl-1">
-                  <span className="block text-[7.5px] text-slate-404">META TOTAL</span>
+                  <span className="block text-[7.5px] text-slate-400">META TOTAL</span>
                   <span className="text-slate-900 font-extrabold truncate block">RD$ {metaMonto.toLocaleString('en-US')}</span>
                 </div>
               </div>
@@ -856,7 +910,7 @@ export default function PlanAhorro() {
                           <Check className="w-4 h-4 text-white opacity-80" strokeWidth={3} />
                         </div>
                       )}
-                      <span className={`text-[7px] print:text-[6.5px] font-bold block ${isChecked ? 'text-white/60' : 'text-slate-404'}`}>
+                      <span className={`text-[7px] print:text-[6.5px] font-bold block ${isChecked ? 'text-white/60' : 'text-slate-400'}`}>
                         {num}
                       </span>
                       <span className={`text-[10px] print:text-[9.5px] font-black font-mono tracking-tighter leading-none mt-0.5 block ${isChecked ? 'text-white' : 'text-slate-800'}`}>
@@ -875,7 +929,7 @@ export default function PlanAhorro() {
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {/* 25% Hito */}
-                <div className="p-2 border border-slate-150/60 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
+                <div className="p-2 border border-slate-200 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
                   <div className={`p-1.5 rounded-lg ${interactiveState.calculatedPercentage >= 25 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-300'}`}>
                     <Award className="w-4 h-4" />
                   </div>
@@ -886,7 +940,7 @@ export default function PlanAhorro() {
                 </div>
 
                 {/* 50% Hito */}
-                <div className="p-2 border border-slate-150/60 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
+                <div className="p-2 border border-slate-200 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
                   <div className={`p-1.5 rounded-lg ${interactiveState.calculatedPercentage >= 50 ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-300'}`}>
                     <Sparkles className="w-4 h-4" />
                   </div>
@@ -897,7 +951,7 @@ export default function PlanAhorro() {
                 </div>
 
                 {/* 75% Hito */}
-                <div className="p-2 border border-slate-150/60 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
+                <div className="p-2 border border-slate-200 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
                   <div className={`p-1.5 rounded-lg ${interactiveState.calculatedPercentage >= 75 ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-300'}`}>
                     <Flame className="w-4 h-4" />
                   </div>
@@ -908,7 +962,7 @@ export default function PlanAhorro() {
                 </div>
 
                 {/* 100% Hito */}
-                <div className="p-2 border border-slate-150/60 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
+                <div className="p-2 border border-slate-200 rounded-xl flex items-center gap-2 bg-slate-50/20 min-w-0">
                   <div className={`p-1.5 rounded-lg ${interactiveState.calculatedPercentage >= 100 ? 'bg-yellow-100 text-yellow-600' : 'bg-slate-100 text-slate-300'}`}>
                     <Award className="w-4 h-4" />
                   </div>
@@ -921,22 +975,22 @@ export default function PlanAhorro() {
             </div>
 
             {/* 8. FOOTER METADATA FIRMA */}
-            <div className="flex items-center justify-between border-t border-slate-150/65 pt-2.5 mt-1 text-[9.5px] font-bold text-slate-400 font-sans tracking-wide">
+            <div className="flex items-center justify-between border-t border-slate-200 pt-2.5 mt-1 text-[9.5px] font-bold text-slate-400 font-sans tracking-wide">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" style={{ color: colorScheme.hex }} />
-                <span>INICIO: <span className="text-slate-705">{fechaInicio}</span></span>
+                <span>INICIO: <span className="text-slate-700">{fechaInicio}</span></span>
               </div>
               <div className="flex items-center gap-4">
                 {printTelefono && (
-                  <span className="hidden sm:inline">WhatsApp: <span className="text-slate-705 font-mono font-bold">{printTelefono}</span></span>
+                  <span className="hidden sm:inline">WhatsApp: <span className="text-slate-700 font-mono font-bold">{printTelefono}</span></span>
                 )}
                 {printInstagram && (
-                  <span>Instagram: <span className="text-slate-705">@{printInstagram}</span></span>
+                  <span>Instagram: <span className="text-slate-700 font-mono">@{printInstagram}</span></span>
                 )}
               </div>
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" style={{ color: colorScheme.hex }} />
-                <span>OBJETIVO: <span className="text-slate-705">{fechaObjetivo}</span></span>
+                <span>OBJETIVO: <span className="text-slate-700">{fechaObjetivo}</span></span>
               </div>
             </div>
           </div>
