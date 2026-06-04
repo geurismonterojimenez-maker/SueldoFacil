@@ -37,9 +37,9 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
         /* LISTADO DE ARTÍCULOS */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {BLOG_POSTS.map(post => (
-            <div 
+            <article 
               key={post.slug} 
-              className="bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-md transition-all flex flex-col justify-between"
+              className="feed-post-item bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-md transition-all flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-2.5 text-[11px] text-slate-400 font-mono">
@@ -76,7 +76,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
                   Leer Artículo completo <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       ) : (
