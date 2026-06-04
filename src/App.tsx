@@ -3,7 +3,7 @@ import {
   Search, Calculator, Sparkles, Building, Briefcase, FileText, 
   Bot, HelpCircle, LayoutDashboard, Sun, Moon, Menu, X, 
   Clock, ArrowRight, DollarSign, Calendar, ChevronRight, Share2, Compass, BookOpen,
-  Gift, ShieldAlert, TrendingUp
+  Gift, ShieldAlert, TrendingUp, Target, FileSpreadsheet
 } from 'lucide-react';
 import { TabType, SearchItem } from './types';
 import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS } from './constants';
@@ -25,6 +25,8 @@ import MiDiciembre from './components/MiDiciembre';
 import BibliotecaLaboral from './components/BibliotecaLaboral';
 import AnalizadorRecibos from './components/AnalizadorRecibos';
 import AdsenseMock from './components/AdsenseMock';
+import PlanAhorro from './components/PlanAhorro';
+import PresupuestoAnual from './components/PresupuestoAnual';
 
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
@@ -33,6 +35,13 @@ export default function App() {
   const [filteredSearch, setFilteredSearch] = useState<SearchItem[]>([]);
   const [historyLogs, setHistoryLogs] = useState<any[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [aiInitialMessage, setAiInitialMessage] = useState<string | null>(null);
+
+  const handleAskSavingTips = (netSalary: number) => {
+    const formattedSalary = netSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    setAiInitialMessage(`Hola, acabo de calcular mi salario neto de RD$ ${formattedSalary} en la calculadora de SueldoFácil. ¿Podrías brindarme recomendaciones y tips de ahorro personalizados para República Dominicana basados en este nivel de salario neto mensual? Me gustaría que incluyeras ideas prácticas locales (cooperativas dominicanas, opciones de inversión básicas, presupuesto adaptado 50/30/20 y metas realistas bajo este monto).`);
+    setTab('ai_assistant');
+  };
 
   // Sync dark class with documentElement for Tailwind support
   useEffect(() => {
@@ -196,6 +205,18 @@ export default function App() {
               Nóminas
             </button>
             <button 
+              onClick={() => selectTab('plan_ahorro')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${tab === 'plan_ahorro' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
+            >
+              Plan Ahorro
+            </button>
+            <button 
+              onClick={() => selectTab('presupuesto_anual')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${tab === 'presupuesto_anual' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
+            >
+              Presupuesto
+            </button>
+            <button 
               onClick={() => selectTab('cartas_contratos')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${tab === 'cartas_contratos' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
             >
@@ -267,13 +288,25 @@ export default function App() {
             Salario Neto
           </button>
           <button 
-            onClick={() => selectTab('nominas')}
+            onClick={() => { selectTab('nominas'); setMobileMenuOpen(false); }}
             className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${tab === 'nominas' ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
           >
             Nóminas
           </button>
           <button 
-            onClick={() => selectTab('cartas_contratos')}
+            onClick={() => { selectTab('plan_ahorro'); setMobileMenuOpen(false); }}
+            className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${tab === 'plan_ahorro' ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
+          >
+            Plan de Ahorro
+          </button>
+          <button 
+            onClick={() => { selectTab('presupuesto_anual'); setMobileMenuOpen(false); }}
+            className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${tab === 'presupuesto_anual' ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
+          >
+            Presupuesto Anual
+          </button>
+          <button 
+            onClick={() => { selectTab('cartas_contratos'); setMobileMenuOpen(false); }}
             className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${tab === 'cartas_contratos' ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
           >
             Documentos
@@ -304,8 +337,8 @@ export default function App() {
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
         {/* WIDGET: CONMUTADOR LABORAL (SWITCHES / STICH) */}
-        {['prestaciones', 'salario', 'nominas', 'costos', 'horas_extras', 'comparador', 'salarios_profesiones', 'calculadora_aumento', 'mi_diciembre', 'biblioteca_laboral', 'analizador_recibos'].includes(tab) && (
-          <div className="mb-8">
+        {['prestaciones', 'salario', 'nominas', 'costos', 'horas_extras', 'comparador', 'salarios_profesiones', 'calculadora_aumento', 'mi_diciembre', 'biblioteca_laboral', 'analizador_recibos', 'plan_ahorro', 'presupuesto_anual'].includes(tab) && (
+          <div className="mb-8 font-semibold">
             <div className={`p-1.5 w-full rounded-2xl flex overflow-x-auto md:flex-wrap items-center gap-1 transition-colors scrollbar-none ${darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-slate-100/80 border border-slate-200/50'}`}>
               {[
                 { id: 'prestaciones', name: 'Prestaciones', icon: Briefcase },
@@ -318,7 +351,9 @@ export default function App() {
                 { id: 'calculadora_aumento', name: 'Aumento Neto', icon: TrendingUp },
                 { id: 'mi_diciembre', name: 'Sueldo #13', icon: Gift },
                 { id: 'biblioteca_laboral', name: 'Leyes FAQ', icon: BookOpen },
-                { id: 'analizador_recibos', name: 'Auditor Volante', icon: ShieldAlert }
+                { id: 'analizador_recibos', name: 'Auditor Volante', icon: ShieldAlert },
+                { id: 'plan_ahorro', name: 'Plan Ahorro', icon: Target },
+                { id: 'presupuesto_anual', name: 'Presupuesto Anual', icon: FileSpreadsheet }
               ].map(item => {
                 const isActive = tab === item.id;
                 const IconComp = item.icon;
@@ -551,6 +586,38 @@ export default function App() {
                   </button>
                 </div>
 
+                {/* PLAN DE AHORRO */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-md transition-all flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl w-fit">
+                      <Target className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900">Plan de Ahorro Personalizado</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Establece metas de ahorro en cooperativas o fondos de inversión locales, ajusta el interés compuesto ante la inflación y dimensiona tu fondo de emergencias de 3 a 6 meses.
+                    </p>
+                  </div>
+                  <button onClick={() => selectTab('plan_ahorro')} className="text-xs font-bold text-blue-600 hover:text-blue-750 flex items-center gap-1 pt-4 mt-4 border-t border-slate-100">
+                    Calcular Plan <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* PRESUPUESTO ANUAL */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-md transition-all flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl w-fit">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900">Presupuesto Anual y Salud Financiera</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Desglosa tus ingresos contra gastos fijos y variables bajo la regla 50/30/20. Obtén una puntuación de salud de 0 a 100 y simula incrementos salariales y recortes.
+                    </p>
+                  </div>
+                  <button onClick={() => selectTab('presupuesto_anual')} className="text-xs font-bold text-blue-600 hover:text-blue-750 flex items-center gap-1 pt-4 mt-4 border-t border-slate-100">
+                    Crear Presupuesto <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
               </div>
             </div>
 
@@ -581,7 +648,7 @@ export default function App() {
 
         {/* VIEW: SALARIO NETO */}
         {tab === 'salario' && (
-          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} />
+          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} />
         )}
 
         {/* VIEW: NOMINA */}
@@ -611,7 +678,7 @@ export default function App() {
 
         {/* VIEW: ASISTENTE IA */}
         {tab === 'ai_assistant' && (
-          <AsistenteIA />
+          <AsistenteIA initialMessage={aiInitialMessage} onClearInitialMessage={() => setAiInitialMessage(null)} />
         )}
 
         {/* VIEW: BLOG */}
@@ -651,6 +718,16 @@ export default function App() {
         {/* VIEW: ANALIZADOR RECIBOS */}
         {tab === 'analizador_recibos' && (
           <AnalizadorRecibos />
+        )}
+
+        {/* VIEW: PLAN DE AHORRO */}
+        {tab === 'plan_ahorro' && (
+          <PlanAhorro />
+        )}
+
+        {/* VIEW: PRESUPUESTO ANUAL */}
+        {tab === 'presupuesto_anual' && (
+          <PresupuestoAnual />
         )}
 
       </main>

@@ -16,7 +16,9 @@ export type TabType =
   | 'calculadora_aumento'
   | 'mi_diciembre'
   | 'biblioteca_laboral'
-  | 'analizador_recibos';
+  | 'analizador_recibos'
+  | 'plan_ahorro'
+  | 'presupuesto_anual';
 
 // SEO Schema
 export interface SEOConfig {

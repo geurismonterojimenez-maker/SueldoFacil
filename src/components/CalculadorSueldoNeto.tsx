@@ -7,9 +7,10 @@ import AdsenseMock from './AdsenseMock';
 interface Props {
   onSaveCalculation: (calc: { type: string; label: string; result: number; timestamp: string; details: any }) => void;
   initialState?: any;
+  onAskSavingTips?: (netSalary: number) => void;
 }
 
-export default function CalculadorSueldoNeto({ onSaveCalculation, initialState }: Props) {
+export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, onAskSavingTips }: Props) {
   const [input, setInput] = useState<SalarioInput>({
     salarioBruto: '45000',
     ingresosAdicionales: '0',
@@ -201,6 +202,29 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState }
               <span className="font-semibold text-slate-300 block mb-1">Dato de Interés Fiscal:</span>
               La base gravable para el cobro del ISR mensual de la DGII es tu salario bruto reduciéndole primero el 3.04% de Seguro Familiar de Salud (SFS) y el 2.87% de AFP (Fondo de Pensiones). Los descuentos de SFS y AFP están limitados por los topes de cotización de la TSS de 10 y 20 salarios mínimos regulados.
             </div>
+
+            {/* TIPS DE AHORRO CON IA */}
+            {onAskSavingTips && (
+              <div className="bg-gradient-to-r from-blue-950/40 to-slate-900 border border-blue-900/60 rounded-2xl p-4 mt-2 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative shrink-0">
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full"></span>
+                    <span className="p-1 px-1.5 rounded bg-slate-800 text-xs">🤖</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">¿Quieres consejos para ahorrar?</h4>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-0.5 leading-snug">Obtén recomendaciones financieras y de inversión exclusivas para este nivel de ingresos.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onAskSavingTips(output.salarioNeto)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-center select-none cursor-pointer shadow-md border border-blue-500/20"
+                >
+                  Personalizar Tips de Ahorro con IA <ArrowUpRight className="w-3.5 h-3.5 text-blue-200" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 

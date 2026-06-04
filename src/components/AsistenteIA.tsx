@@ -14,7 +14,12 @@ const PRESET_PROMPTS = [
   "¿Qué es la regalía pascual y cuándo debe pagarse?"
 ];
 
-export default function AsistenteIA() {
+interface AsistenteIAProps {
+  initialMessage?: string | null;
+  onClearInitialMessage?: () => void;
+}
+
+export default function AsistenteIA({ initialMessage, onClearInitialMessage }: AsistenteIAProps = {}) {
   const [activeMode, setActiveMode] = useState<'chat' | 'expert'>('chat');
 
   // Interactive Quiz Wizard State for Liquidation
@@ -31,12 +36,18 @@ export default function AsistenteIA() {
   const [reportCopied, setReportCopied] = useState(false);
 
   // Chat standard state
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'model',
-      text: "¡Hola! Soy SueldoFacil IA, tu asistente experto en legislación laboral dominicana. Puedo ayudarte a aclarar dudas sobre el Código de Trabajo (Ley 16-92), cesantía, preaviso, ISR (DGII), vacaciones, Seguridad Social y más.\n\n¿En qué te puedo asesorar hoy?"
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const base: Message[] = [
+      {
+        role: 'model',
+        text: "¡Hola! Soy SueldoFacil IA, tu asistente experto en legislación laboral dominicana. Puedo ayudarte a aclarar dudas sobre el Código de Trabajo (Ley 16-92), cesantía, preaviso, ISR (DGII), vacaciones, Seguridad Social y más.\n\n¿En qué te puedo asesorar hoy?"
+      }
+    ];
+    if (initialMessage) {
+      base.push({ role: 'user', text: initialMessage });
     }
-  ]);
+    return base;
+  });
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
@@ -49,6 +60,58 @@ export default function AsistenteIA() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (initialMessage) {
+      const runInitialRequest = async () => {
+        setLoading(true);
+        setErrorStatus(null);
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: initialMessage,
+              history: [
+                {
+                  role: 'model',
+                  text: "¡Hola! Soy SueldoFacil IA, tu asistente experto en legislación laboral dominicana. Puedo ayudarte a aclarar dudas sobre el Código de Trabajo (Ley 16-92), cesantía, preaviso, ISR (DGII), vacaciones, Seguridad Social y más.\n\n¿En qué te puedo asesorar hoy?"
+                }
+              ]
+            })
+          });
+
+          let data;
+          try {
+            data = await response.json();
+          } catch (jsonErr) {
+            // failed to parse json
+          }
+
+          if (!response.ok) {
+            throw new Error(data?.error || 'Hubo un error al conectar con el servidor de IA.');
+          }
+
+          if (data && data.error) {
+            throw new Error(data.error);
+          }
+
+          setMessages(prev => [...prev, { role: 'model', text: data.text }]);
+        } catch (err: any) {
+          console.error(err);
+          setErrorStatus(err.message || 'Error de conexión');
+        } finally {
+          setLoading(false);
+          if (onClearInitialMessage) {
+            onClearInitialMessage();
+          }
+        }
+      };
+      runInitialRequest();
+    }
+  }, [initialMessage]);
 
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim() || loading) return;
@@ -73,12 +136,18 @@ export default function AsistenteIA() {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Hubo un error al conectar con el servidor de IA.');
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        // failed to parse json
       }
 
-      const data = await response.json();
-      if (data.error) {
+      if (!response.ok) {
+        throw new Error(data?.error || 'Hubo un error al conectar con el servidor de IA.');
+      }
+
+      if (data && data.error) {
         throw new Error(data.error);
       }
 
@@ -130,12 +199,18 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Servidor inaccesible. Verifique api key.');
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        // failed to parse json
       }
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (!response.ok) {
+        throw new Error(data?.error || 'Servidor inaccesible. Verifique api key.');
+      }
+
+      if (data && data.error) throw new Error(data.error);
 
       setExpertReport(data.text);
       setExpertStep(5); // Show report step

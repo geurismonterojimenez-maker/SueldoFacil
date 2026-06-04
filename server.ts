@@ -6,14 +6,25 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
+let aiClient: GoogleGenAI | null = null;
+
+function getGenAI(): GoogleGenAI {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+    throw new Error("GEMINI_API_KEY_MISSING: La clave GEMINI_API_KEY no está configurada en la sección de secretos de AI Studio o es inválida. Por favor, vaya a la pestaña \"Settings > Secrets\" en el menú superior izquierdo de AI Studio, configure su clave 'GEMINI_API_KEY' y reinicie el servidor de desarrollo.");
   }
-});
+  if (!aiClient) {
+    aiClient = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return aiClient;
+}
 
 async function startServer() {
   const app = express();
@@ -26,6 +37,15 @@ async function startServer() {
       const { message, history } = req.body;
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Initialize AI lazily and check key validity
+      let ai;
+      try {
+        ai = getGenAI();
+      } catch (keyError: any) {
+        console.error("AI Initialization Error:", keyError.message);
+        return res.status(400).json({ error: keyError.message });
       }
 
       const systemInstruction = `

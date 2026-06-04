@@ -153,6 +153,20 @@ export const SEARCH_ITEMS: SearchItem[] = [
     description: 'Verifica si tu empleador descuenta correctamente AFP, SFS e ISR en tus recibos de pago mensuales.',
     category: 'calculadora',
     targetTab: 'analizador_recibos'
+  },
+  {
+    id: 'plan-ahorro',
+    title: 'Plan de Ahorro y Metas de Inversión RD',
+    description: 'Calcula cuánto necesitas ahorrar mensual o quincenalmente para metas financieras, con ajuste por inflación y consejos con IA.',
+    category: 'calculadora',
+    targetTab: 'plan_ahorro'
+  },
+  {
+    id: 'presupuesto-anual',
+    title: 'Presupuesto Anual y Proyección de Finanzas RD',
+    description: 'Gestiona ingresos y gastos fijos y variables bajo la regla de presupuesto 50/30/20 y calcula tu salud financiera.',
+    category: 'calculadora',
+    targetTab: 'presupuesto_anual'
   }
 ];
 
@@ -291,6 +305,20 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     ogTitle: "Auditor de Volantes de Pago RD - SueldoFacil",
     ogDescription: "Detecta rápidamente retenciones ilegales o excesivas en tu sueldo.",
     canonical: "https://sueldofacil.com/analizar-recibos/"
+  },
+  plan_ahorro: {
+    title: "Plan de Ahorro RD | Sueldo Fácil",
+    description: "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana.",
+    ogTitle: "Plan de Ahorro RD | Sueldo Fácil",
+    ogDescription: "Calcula tu plan de ahorro y organiza tu presupuesto anual de forma gratuita para República Dominicana.",
+    canonical: "https://sueldofacil.com/plan-ahorro/"
+  },
+  presupuesto_anual: {
+    title: "Presupuesto Anual RD | Sueldo Fácil",
+    description: "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana.",
+    ogTitle: "Presupuesto Anual RD | Sueldo Fácil",
+    ogDescription: "Calcula tu plan de ahorro y organiza tu presupuesto anual de forma gratuita para República Dominicana.",
+    canonical: "https://sueldofacil.com/presupuesto-anual/"
   }
 };
 
