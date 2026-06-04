@@ -336,7 +336,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                     <span className="text-xs font-medium text-slate-300">Preaviso</span>
                   </div>
                   <span className="text-xs font-mono text-slate-200">
-                    RD$ {output.preaviso.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    RD$ {output.preaviso.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
 
@@ -346,7 +346,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                     <span className="text-xs font-medium text-slate-300">Cesantía</span>
                   </div>
                   <span className="text-xs font-mono text-slate-200">
-                    RD$ {output.cesantia.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    RD$ {output.cesantia.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
 
@@ -356,7 +356,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                     <span className="text-xs font-medium text-slate-300">Vacaciones</span>
                   </div>
                   <span className="text-xs font-mono text-slate-200">
-                    RD$ {output.vacaciones.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    RD$ {output.vacaciones.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
 
@@ -366,7 +366,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                     <span className="text-xs font-medium text-slate-300">Regalía Pascual (Sueldo #13)</span>
                   </div>
                   <span className="text-xs font-mono text-slate-200">
-                    RD$ {output.regalia.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    RD$ {output.regalia.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

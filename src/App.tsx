@@ -251,7 +251,6 @@ export default function App() {
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
               title="Cambiar Modo"
-              aria-label={darkMode ? 'Activar modo claro' : 'Activar modo oscuro'}
             >
               {darkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -260,7 +259,6 @@ export default function App() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
-              aria-label={mobileMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -449,8 +447,6 @@ export default function App() {
             </div>
 
             {/* GRID DE HERRAMIENTAS - MAQUETACIÓN BENTO */}
-            <AdsenseMock slot="home-after-search" type="banner" />
-
             <div className="space-y-4">
               <div className="flex justify-between items-baseline border-b border-slate-200 pb-3">
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -470,7 +466,7 @@ export default function App() {
                     </div>
                     <h4 className="text-sm font-bold text-slate-900">Prestaciones Laborales o Liquidación</h4>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      ¿Sufres un despido o quieres renunciar? Calcula preaviso, cesantía, regalía y vacaciones en pocos pasos de ley.
+                      Sufre un despido o quieres renunciar? Calcula preaviso, cesantía, regalía y vacaciones en pocos pasos de ley.
                     </p>
                   </div>
                   <button onClick={() => selectTab('prestaciones')} className="text-xs font-bold text-blue-600 hover:text-blue-750 flex items-center gap-1 pt-4 mt-4 border-t border-slate-100">
@@ -508,10 +504,6 @@ export default function App() {
                   <button onClick={() => selectTab('horas_extras')} className="text-xs font-bold text-blue-600 hover:text-blue-750 flex items-center gap-1 pt-4 mt-4 border-t border-slate-100">
                     Comenzar Cálculo <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                </div>
-
-                <div className="md:col-span-2 lg:col-span-3">
-                  <AdsenseMock slot="home-tools-infeed" type="infeed" />
                 </div>
 
                 {/* ASISTENTE IA */}
@@ -630,8 +622,6 @@ export default function App() {
             </div>
 
             {/* SECCIÓN FAQS GENERALES PRE-CARGADAS */}
-            <AdsenseMock slot="home-before-faq" type="square" />
-
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 space-y-6">
               <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-blue-600" />
@@ -647,6 +637,7 @@ export default function App() {
               </div>
             </div>
 
+            <AdsenseMock slot="home-footer" type="banner" />
           </div>
         )}
 

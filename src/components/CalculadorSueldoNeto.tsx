@@ -132,7 +132,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                 RD$ {output.salarioNeto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
               <p className="text-xs text-slate-400 font-mono mt-1">
-                Salario Bruto Total: RD$ {(output.salarioBruto + output.ingresosAdicionales).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                Salario Bruto Total: RD$ {(output.salarioBruto + output.ingresosAdicionales).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </div>
 
@@ -146,7 +146,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                   <span className="text-xs text-slate-300">SFS / Salud (3.04%)</span>
                 </div>
                 <span className="text-xs font-mono text-slate-200">
-                  - RD$ {output.sfs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  - RD$ {output.sfs.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
@@ -156,7 +156,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                   <span className="text-xs text-slate-300">AFP / Pensiones (2.87%)</span>
                 </div>
                 <span className="text-xs font-mono text-slate-200">
-                  - RD$ {output.afp.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  - RD$ {output.afp.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
@@ -166,7 +166,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                   <span className="text-xs text-slate-300">Impuesto Sobre la Renta (ISR)</span>
                 </div>
                 <span className="text-xs font-mono text-slate-200">
-                  - RD$ {output.isr.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  - RD$ {output.isr.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
@@ -175,7 +175,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                   <span className="text-xs font-semibold text-slate-400">Total Descontado</span>
                 </div>
                 <span className="text-xs font-bold font-mono text-rose-400">
-                  - RD$ {output.retencionesTotales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  - RD$ {output.retencionesTotales.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>

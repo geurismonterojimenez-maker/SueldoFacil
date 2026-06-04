@@ -1,5 +1,5 @@
 import { PrestacionesInput, PrestacionesOutput, SalarioInput, SalarioOutput, CostoLaboralInput, CostoLaboralOutput } from "../types";
-import { RETENCIONES_CONFIG, ISR_ESCALAS, TSS_COTIZABLE_SALARY_BASE } from "../constants";
+import { RETENCIONES_CONFIG, ISR_ESCALAS } from "../constants";
 
 // Helper to calculate date differences
 export function calcularTiempoServicio(fechaIngresoStr: string, fechaSalidaStr: string) {
@@ -148,9 +148,10 @@ export function calcularSalarioNeto(input: SalarioInput): SalarioOutput {
   // Salario base para seguridad social
   const salarioBaseSS = salarioBruto; // Las comisiones y horas extras cotizan, bonos no.
   
-  // Topes salariales nacionales TSS vigentes desde 2026-02-01.
-  const topeAFP = TSS_COTIZABLE_SALARY_BASE * RETENCIONES_CONFIG.afp.topeSueldosMinimos; // RD$ 464,460
-  const topeSFS = TSS_COTIZABLE_SALARY_BASE * RETENCIONES_CONFIG.sfs.topeSueldosMinimos; // RD$ 232,230
+  // Topes salariales nacionales (Basados en salario mínimo de Grande RD$ 24,150)
+  const salarioMinimoGrande = 24150;
+  const topeAFP = salarioMinimoGrande * RETENCIONES_CONFIG.afp.topeSueldosMinimos; // RD$ 483,000
+  const topeSFS = salarioMinimoGrande * RETENCIONES_CONFIG.sfs.topeSueldosMinimos; // RD$ 241,500
   
   // Descuentos de Seguridad Social (Empleado)
   const afp = Math.min(salarioBaseSS, topeAFP) * RETENCIONES_CONFIG.afp.empleado;
@@ -190,10 +191,11 @@ export function calcularSalarioNeto(input: SalarioInput): SalarioOutput {
 export function calcularCostoLaboral(input: CostoLaboralInput): CostoLaboralOutput {
   const salarioMensual = parseFloat(input.salarioMensual) || 0;
   
-  // Topes salariales nacionales TSS vigentes desde 2026-02-01.
-  const topeAFP = TSS_COTIZABLE_SALARY_BASE * RETENCIONES_CONFIG.afp.topeSueldosMinimos; // RD$ 464,460
-  const topeSFS = TSS_COTIZABLE_SALARY_BASE * RETENCIONES_CONFIG.sfs.topeSueldosMinimos; // RD$ 232,230
-  const topeARL = TSS_COTIZABLE_SALARY_BASE * RETENCIONES_CONFIG.arl.topeSueldosMinimos; // RD$ 92,892
+  // Topes salariales nacionales
+  const salarioMinimoGrande = 24150;
+  const topeAFP = salarioMinimoGrande * RETENCIONES_CONFIG.afp.topeSueldosMinimos; // RD$ 483,000
+  const topeSFS = salarioMinimoGrande * RETENCIONES_CONFIG.sfs.topeSueldosMinimos; // RD$ 241,500
+  const topeARL = salarioMinimoGrande * RETENCIONES_CONFIG.arl.topeSueldosMinimos; // RD$ 96,600
   
   // Aportes Patronales (Empleador)
   const afpPatronal = Math.min(salarioMensual, topeAFP) * RETENCIONES_CONFIG.afp.empleador;

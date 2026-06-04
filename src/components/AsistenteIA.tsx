@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Send, Bot, User, Sparkles, AlertCircle, HelpCircle, CornerDownLeft, Loader2, ClipboardCheck, Play, ChevronRight, FileText, Check, Award, Copy, Download } from 'lucide-react';
 import AdsenseMock from './AdsenseMock';
 
@@ -222,6 +223,169 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
     }
   };
 
+  const preprocessMarkdown = (text: string) => {
+    if (!text) return '';
+    // Format " * " or " • " into a new line with standard markdown list item " * "
+    let formatted = text
+      .replace(/\s\*\s\*\*/g, '\n* **') // normalizes " * **" to "\n* **"
+      .replace(/\s•\s\*\*/g, '\n* **') // normalizes " • **" to "\n* **"
+      .replace(/\s\*\s/g, '\n* ')       // normalizes " * " to "\n* "
+      .replace(/\n{3,}/g, '\n\n');      // limit excessive blank lines
+    return formatted.trim();
+  };
+
+  const renderMarkdownContent = (text: string, isUserMessage: boolean = false) => {
+    if (isUserMessage) {
+      return <div className="whitespace-pre-wrap">{text}</div>;
+    }
+    
+    const preprocessed = preprocessMarkdown(text);
+
+    return (
+      <div className="text-xs md:text-sm leading-relaxed text-slate-800 dark:text-slate-250 font-medium space-y-2">
+        <ReactMarkdown
+          components={{
+            p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+            strong: ({ node, ...props }) => <strong className="font-extrabold text-blue-900 dark:text-blue-200" {...props} />,
+            em: ({ node, ...props }) => <em className="italic text-slate-600 dark:text-slate-400" {...props} />,
+            ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 mt-1 space-y-1.5" {...props} />,
+            ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 mt-1 space-y-1.5" {...props} />,
+            li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+            h1: ({ node, ...props }) => <h1 className="text-sm font-black text-slate-900 dark:text-white mt-4 mb-2 uppercase tracking-wide" {...props} />,
+            h2: ({ node, ...props }) => <h2 className="text-xs font-black text-slate-900 dark:text-white mt-3 mb-1.5 uppercase" {...props} />,
+            h3: ({ node, ...props }) => <h3 className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200 mt-2 mb-1 uppercase" {...props} />,
+            code: ({ node, ...props }) => <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-[11px] text-red-600" {...props} />,
+            blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-blue-500 pl-3 italic text-slate-600 my-2" {...props} />
+          }}
+        >
+          {preprocessed}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
+  const getFriendlyErrorMessage = (errorStr: string | null) => {
+    if (!errorStr) return null;
+
+    let parsedMsg = errorStr;
+    try {
+      let jsonPart = errorStr;
+      if (errorStr.includes('[GoogleGenAI Error]:')) {
+        jsonPart = errorStr.split('[GoogleGenAI Error]:')[1].trim();
+      }
+      if (jsonPart.trim().startsWith('{')) {
+        const parsed = JSON.parse(jsonPart);
+        parsedMsg = parsed?.error?.message || parsedMsg;
+      }
+    } catch (_) {}
+
+    const isQuota = 
+      errorStr.includes("RESOURCE_EXHAUSTED") || 
+      errorStr.includes("prepago") || 
+      errorStr.includes("agotado") || 
+      errorStr.includes("credits") || 
+      errorStr.includes("429");
+
+    const isKeyMissing = 
+      errorStr.includes("GEMINI_API_KEY_MISSING") || 
+      errorStr.includes("api key") || 
+      errorStr.includes("clave");
+
+    return {
+      isQuota,
+      isKeyMissing,
+      message: parsedMsg
+    };
+  };
+
+  const renderErrorBlock = (errorStr: string | null, type: 'chat' | 'expert') => {
+    if (!errorStr) return null;
+    const info = getFriendlyErrorMessage(errorStr);
+
+    if (info?.isQuota) {
+      return (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm space-y-3 text-amber-900 animate-fade-in text-xs font-semibold leading-relaxed">
+          <div className="flex items-start gap-3">
+            <span className="p-1.5 bg-amber-100 text-amber-700 rounded-lg shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </span>
+            <div className="space-y-1">
+              <h4 className="text-sm font-black text-amber-800 uppercase tracking-wide">
+                ¡Créditos o Cuota Agotados en Google AI Studio!
+              </h4>
+              <p className="text-[11px] text-amber-800">
+                Tus créditos de prepago en Google AI Studio se han agotado o has alcanzado el límite de cuota (error <code className="bg-amber-100 px-1 rounded font-mono text-[10px]">429 RESOURCE_EXHAUSTED</code>).
+              </p>
+            </div>
+          </div>
+          
+          <div className="border-t border-amber-200 pt-3 space-y-2">
+            <p className="text-[11px] font-bold text-amber-800">Pasos para solucionar esto:</p>
+            <ol className="list-decimal pl-4 space-y-1 text-[11px] text-slate-700">
+              <li>
+                Inicia sesión en tu cuenta de <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline inline-flex items-center gap-0.5">Google AI Studio <span className="text-[9px]">↗</span></a>.
+              </li>
+              <li>
+                Ve al menú superior y haz clic en tu proyecto para revisar la facturación/créditos de prepago (Billing &amp; Payments).
+              </li>
+              <li>
+                Agrega balance prepagado o conecta un método de pago activo. Si colocas una nueva Key, actualízala desde el menú <strong>&quot;Settings &gt; Secrets&quot;</strong> en la esquina superior izquierda de AI Studio.
+              </li>
+            </ol>
+          </div>
+          
+          <div className="text-[10px] text-amber-600 bg-amber-100/30 p-2 rounded-lg border border-amber-100">
+            <span className="font-extrabold block">Detalles del servidor:</span>
+            <span className="font-mono mt-0.5 block break-all">{info.message}</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (info?.isKeyMissing) {
+      return (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 shadow-sm space-y-3 text-rose-900 animate-fade-in text-xs font-semibold leading-relaxed">
+          <div className="flex items-start gap-3">
+            <span className="p-1.5 bg-rose-100 text-rose-700 rounded-lg shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </span>
+            <div className="space-y-1">
+              <h4 className="text-sm font-black text-rose-800 uppercase tracking-wide">
+                Falta configurar la Clave API de Gemini
+              </h4>
+              <p className="text-[11px] text-rose-800">
+                La variable de entorno <code className="bg-rose-105 px-1 rounded font-mono text-[10px]">GEMINI_API_KEY</code> no se encuentra configurada en AI Studio Secrets.
+              </p>
+            </div>
+          </div>
+          
+          <div className="border-t border-rose-200 pt-3 space-y-2">
+            <p className="text-[11px] font-bold text-rose-800">Cómo solucionarlo:</p>
+            <ol className="list-decimal pl-4 space-y-1 text-[11px] text-slate-700">
+              <li>Haz clic en el ícono de engranaje de configuración en la barra lateral o del menú izquierdo de AI Studio.</li>
+              <li>Ve a la pestaña <strong>&quot;Settings &gt; Secrets&quot;</strong>.</li>
+              <li>Crea el secreto <code className="font-mono font-bold bg-slate-100 px-1 rounded text-[10px]">GEMINI_API_KEY</code> y pega tu clave API de Google AI Studio.</li>
+              <li>La aplicación volverá a cargar e inicializar el asistente automáticamente.</li>
+            </ol>
+          </div>
+        </div>
+      );
+    }
+
+    // Generic error
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-start gap-2.5 text-xs font-bold leading-normal">
+        <AlertCircle className="w-4.5 h-4.5 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <span>Error de conexión: {info?.message}</span>
+          <p className="text-[10px] text-red-500 font-semibold">
+            Por favor, asegúrate de configurar tu API Key correctamente en la pestaña de Secrets.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const handleCopyReport = () => {
     if (!expertReport) return;
     navigator.clipboard.writeText(expertReport);
@@ -355,9 +519,9 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
                   <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
                     m.role === 'user' 
                       ? 'bg-blue-600 text-white rounded-tr-none shadow-sm' 
-                      : 'bg-white text-slate-800 border border-slate-250 rounded-tl-none whitespace-pre-wrap shadow-sm font-semibold'
+                      : 'bg-white text-slate-800 border border-slate-250 rounded-tl-none shadow-sm'
                   }`}>
-                    {m.text}
+                    {renderMarkdownContent(m.text, m.role === 'user')}
                   </div>
                 </div>
               ))}
@@ -374,12 +538,7 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
                 </div>
               )}
 
-              {errorStatus && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2.5 text-xs font-bold">
-                  <AlertCircle className="w-4.5 h-4.5 shrink-0" />
-                  Error: {errorStatus}. Revisa la conexión en secrets.
-                </div>
-              )}
+               {errorStatus && renderErrorBlock(errorStatus, 'chat')}
 
               <div ref={messagesEndRef} />
             </div>
@@ -583,12 +742,7 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
                   </button>
                 </div>
 
-                {expertError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2.5 text-xs font-bold leading-normal">
-                    <AlertCircle className="w-4.5 h-4.5 shrink-0" />
-                    Error: {expertError}. Revisa tu conexión de Gemini.
-                  </div>
-                )}
+                 {expertError && renderErrorBlock(expertError, 'expert')}
               </div>
             )}
 
@@ -632,8 +786,8 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
                   </div>
 
                   {/* REPORT TEXT */}
-                  <div className="whitespace-pre-wrap text-slate-750 leading-relaxed font-semibold text-xs space-y-3 prose">
-                    {expertReport}
+                  <div>
+                    {renderMarkdownContent(expertReport, false)}
                   </div>
                 </div>
 

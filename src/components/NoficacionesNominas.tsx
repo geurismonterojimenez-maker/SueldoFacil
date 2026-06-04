@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, FileDown, Briefcase, Users, DollarSign, Calculator } from 'lucide-react';
 import { calcularSalarioNeto } from '../utils/calculator';
 import AdsenseMock from './AdsenseMock';
-import { TSS_COTIZABLE_SALARY_BASE } from '../constants';
 
 interface EmployeePreset {
   id: string;
@@ -45,9 +44,10 @@ export default function NoficacionesNominas() {
       totalNet += netCalc.salarioNeto;
 
       // Employer calculations
-      const topeAFP = TSS_COTIZABLE_SALARY_BASE * 20; // 464,460
-      const topeSFS = TSS_COTIZABLE_SALARY_BASE * 10; // 232,230
-      const topeARL = TSS_COTIZABLE_SALARY_BASE * 4;  // 92,892
+      const salarioMinimoGrande = 24150;
+      const topeAFP = salarioMinimoGrande * 20; // 483,000
+      const topeSFS = salarioMinimoGrande * 10; // 241,500
+      const topeARL = salarioMinimoGrande * 4;  // 96,600
 
       totalAFP_Employer += Math.min(emp.salarioBruto, topeAFP) * 0.0710;
       totalSFS_Employer += Math.min(emp.salarioBruto, topeSFS) * 0.0709;
