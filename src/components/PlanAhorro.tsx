@@ -30,6 +30,11 @@ export default function PlanAhorro() {
   const [metaFotoUrl, setMetaFotoUrl] = useState<string>(''); // Base64 or external source
   const [openFaq, setOpenFaq] = useState<Record<number, boolean>>({});
   
+  // CUSTOM PRINT ONLY OPTIONS (As requested by user for the beautiful customized sheet)
+  const [printTelefono, setPrintTelefono] = useState('849-258-6864');
+  const [printInstagram, setPrintInstagram] = useState('meli-exclusividades');
+  const [printFrase, setPrintFrase] = useState('Si puedes soñarlo. Puedes lograrlo.');
+  
   // SAVINGS GRID BOARD CONFIGURATION
   // Options: Autocalculated (Default matches to fill exactly 100 sheets) or user manual block denomination
   const [bloquesModo, setBloquesModo] = useState<'cien' | 'doscientos' | 'quinientas' | 'mil' | 'custom'>('cien');
@@ -620,6 +625,51 @@ export default function PlanAhorro() {
             </div>
           </div>
 
+          {/* PERSONALIZACIÓN DE IMPRESIÓN (Teléfono, Instagram, Frase) */}
+          <div className="space-y-3 pt-4 border-t border-slate-150/40 dark:border-slate-850">
+            <span className="block text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <User className="w-4 h-4 text-pink-550" /> 5. Configurar Hoja Impresa
+            </span>
+            <p className="text-[10px] text-slate-450 leading-relaxed font-semibold">
+              Personaliza el teléfono, tu red social y la frase motivacional que se imprimirán en tu planilla de ahorro física.
+            </p>
+
+            <div className="space-y-2.5">
+              <div>
+                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">WhatsApp de Contacto</label>
+                <input 
+                  type="text"
+                  value={printTelefono}
+                  onChange={(e) => setPrintTelefono(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold font-mono text-slate-800 dark:text-white"
+                  placeholder="Ej. 849-258-6864"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Instagram (@usuario)</label>
+                <input 
+                  type="text"
+                  value={printInstagram}
+                  onChange={(e) => setPrintInstagram(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white"
+                  placeholder="Ej. meli-exclusividades"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Frase Inspiracional Corta</label>
+                <input 
+                  type="text"
+                  value={printFrase}
+                  onChange={(e) => setPrintFrase(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-white"
+                  placeholder="Ej. Si puedes soñarlo. Puedes lograrlo."
+                />
+              </div>
+            </div>
+          </div>
+
           {/* MAIN WEBPAGE PRINT BUTTON */}
           <div className="pt-4 border-t border-slate-150/40 dark:border-slate-850">
             <button
@@ -661,239 +711,369 @@ export default function PlanAhorro() {
               borderWidth: '2px'
             }}
           >
-            {/* Header watermarks & branding */}
-            <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 opacity-[0.06] w-56 h-56 rounded-full" style={{ backgroundColor: colorScheme.hex }}></div>
-            <div className="absolute left-0 bottom-0 -translate-x-16 translate-y-16 opacity-[0.04] w-72 h-72 rounded-full" style={{ backgroundColor: colorScheme.hex }}></div>
+            {/* VISTA DIGITAL (PANTALLA): SE PREVENTA AL INTERACTUAR EN LA WEB */}
+            <div className="w-full h-full flex flex-col justify-between flex-1 print:hidden">
+              <div>
+                {/* Header watermarks & branding */}
+                <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 opacity-[0.06] w-56 h-56 rounded-full" style={{ backgroundColor: colorScheme.hex }}></div>
+                <div className="absolute left-0 bottom-0 -translate-x-16 translate-y-16 opacity-[0.04] w-72 h-72 rounded-full" style={{ backgroundColor: colorScheme.hex }}></div>
 
-            {/* DESIGN CONTAINER TOP: MAIN LOGO & HEADING */}
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: `${colorScheme.hex}25` }}>
-                
-                {/* BRAND LOGO CONFORME CON LA INSTRUCCIONES */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md text-sm shrink-0" style={{ backgroundColor: colorScheme.hex }}>
-                    SF
-                  </div>
-                  <div>
-                    <h5 className="font-extrabold tracking-tight text-slate-950 text-sm">SueldoFácil</h5>
-                    <p className="text-[9px] font-mono font-bold tracking-widest uppercase text-slate-400">República Dominicana</p>
-                  </div>
-                </div>
-
-                <div className="sm:text-right space-y-0.5">
-                  <h4 className="text-[11px] font-black tracking-widest uppercase text-slate-400">PLANIFICACIÓN FINANCIERA DE ALTA GAMA</h4>
-                  <p className="text-xl md:text-2xl font-black tracking-tight" style={{ color: colorScheme.hex }}>
-                    PLAN DE AHORRO PERSONALIZADO
-                  </p>
-                </div>
-              </div>
-
-              {/* CLIENT META METRICS SUB-BANNER */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-b" style={{ borderColor: `${colorScheme.hex}15` }}>
-                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
-                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Propietario</span>
-                  <span className="text-xs md:text-sm font-extrabold text-slate-900 truncate block">{nombreCliente}</span>
-                </div>
-                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
-                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Proyecto Financiero</span>
-                  <span className="text-xs md:text-sm font-extrabold text-slate-900 truncate block">{metaNombre}</span>
-                </div>
-                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
-                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Monto Meta Acordado</span>
-                  <span className="text-xs md:text-sm font-black text-slate-950 block">RD$ {metaMonto.toLocaleString('en-US')}</span>
-                </div>
-                <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
-                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Plazo de Ejecución</span>
-                  <span className="text-xs md:text-sm font-bold text-slate-700 block">
-                    {dateCalculations.totalMonths} meses ({fechaInicio} a {fechaObjetivo})
-                  </span>
-                </div>
-              </div>
-
-              {/* TWO COLUMN INSPIRATIONAL & FINANCIAL PROFILE SECTION */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 py-6 items-center">
-                
-                {/* COLUMN LEFT: MOTIVATION TEXTS & ILLUSTRATIONS */}
-                <div className="md:col-span-7 space-y-4">
-                  <div className="p-4 rounded-2xl flex items-center gap-4 border" style={{ backgroundColor: `${colorScheme.hex}08`, borderColor: `${colorScheme.hex}20` }}>
-                    <div className="p-2.5 rounded-xl bg-white shrink-0 shadow-sm border border-slate-100">
-                      {metaIllustrations.icon}
+                {/* DESIGN CONTAINER TOP: MAIN LOGO & HEADING */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: `${colorScheme.hex}25` }}>
+                  
+                  {/* BRAND LOGO CONFORME CON LA INSTRUCCIONES */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md text-sm shrink-0" style={{ backgroundColor: colorScheme.hex }}>
+                      SF
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-[9.5px] font-black uppercase text-slate-450 tracking-wider">Hito de Motivación</span>
-                      <p className="text-[12px] italic font-semibold text-slate-750 font-serif leading-relaxed">
-                        "{metaIllustrations.quote}"
-                      </p>
+                    <div>
+                      <h5 className="font-extrabold tracking-tight text-slate-950 text-sm">SueldoFácil</h5>
+                      <p className="text-[9px] font-mono font-bold tracking-widest uppercase text-slate-400">República Dominicana</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40">
-                      <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Diario</span>
-                      <span className="text-xs font-mono font-black text-slate-800">RD$ {dateCalculations.dailyRequired.toLocaleString('en-US')}</span>
-                    </div>
-                    <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40 font-mono">
-                      <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Semanal</span>
-                      <span className="text-xs font-black text-slate-800">RD$ {dateCalculations.weeklyRequired.toLocaleString('en-US')}</span>
-                    </div>
-                    <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40 font-mono">
-                      <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Mensual</span>
-                      <span className="text-xs font-black text-slate-800">RD$ {dateCalculations.monthlyRequired.toLocaleString('en-US')}</span>
-                    </div>
+                  <div className="sm:text-right space-y-0.5">
+                    <h4 className="text-[11px] font-black tracking-widest uppercase text-slate-400">PLANIFICACIÓN FINANCIERA DE ALTA GAMA</h4>
+                    <p className="text-xl md:text-2xl font-black tracking-tight" style={{ color: colorScheme.hex }}>
+                      PLAN DE AHORRO PERSONALIZADO
+                    </p>
                   </div>
                 </div>
 
-                {/* COLUMN RIGHT: META FOTO O DESCRIPCIÓN VISUAL DE LA META */}
-                <div className="md:col-span-5">
-                  <div className="w-full h-28 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner flex items-center justify-center">
-                    {metaFotoUrl ? (
-                      <img 
-                        src={metaFotoUrl} 
-                        alt="Meta" 
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 to-slate-800 flex flex-col justify-center items-center p-3 text-center">
-                        <span className="text-[9px] uppercase font-bold text-blue-400 tracking-wider mb-1">Visualización Inspiradora</span>
-                        <p className="text-[10px] text-slate-350 leading-snug font-medium">Meta: {metaIllustrations.title}. Puedes subir una fotografía real en la barra de control lateral.</p>
+                {/* CLIENT META METRICS SUB-BANNER */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-b" style={{ borderColor: `${colorScheme.hex}15` }}>
+                  <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Propietario</span>
+                    <span className="text-xs md:text-sm font-extrabold text-slate-900 truncate block">{nombreCliente}</span>
+                  </div>
+                  <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Proyecto Financiero</span>
+                    <span className="text-xs md:text-sm font-extrabold text-slate-900 truncate block">{metaNombre}</span>
+                  </div>
+                  <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Monto Meta Acordado</span>
+                    <span className="text-xs md:text-sm font-black text-slate-950 block">RD$ {metaMonto.toLocaleString('en-US')}</span>
+                  </div>
+                  <div className="space-y-0.5 border-l-2 pl-3" style={{ borderLeftColor: colorScheme.hex }}>
+                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Plazo de Ejecución</span>
+                    <span className="text-xs md:text-sm font-bold text-slate-700 block">
+                      {dateCalculations.totalMonths} meses ({fechaInicio} a {fechaObjetivo})
+                    </span>
+                  </div>
+                </div>
+
+                {/* TWO COLUMN INSPIRATIONAL & FINANCIAL PROFILE SECTION */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 py-6 items-center">
+                  
+                  {/* COLUMN LEFT: MOTIVATION TEXTS & ILLUSTRATIONS */}
+                  <div className="md:col-span-7 space-y-4">
+                    <div className="p-4 rounded-2xl flex items-center gap-4 border" style={{ backgroundColor: `${colorScheme.hex}08`, borderColor: `${colorScheme.hex}20` }}>
+                      <div className="p-2.5 rounded-xl bg-white shrink-0 shadow-sm border border-slate-100">
+                        {metaIllustrations.icon}
                       </div>
-                    )}
+                      <div className="space-y-1">
+                        <span className="text-[9.5px] font-black uppercase text-slate-450 tracking-wider">Hito de Motivación</span>
+                        <p className="text-[12px] italic font-semibold text-slate-750 font-serif leading-relaxed">
+                          "{metaIllustrations.quote}"
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40">
+                        <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Diario</span>
+                        <span className="text-xs font-mono font-black text-slate-800">RD$ {dateCalculations.dailyRequired.toLocaleString('en-US')}</span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40 font-mono">
+                        <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Semanal</span>
+                        <span className="text-xs font-black text-slate-800">RD$ {dateCalculations.weeklyRequired.toLocaleString('en-US')}</span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-150/40 font-mono">
+                        <span className="text-[8px] font-black uppercase text-slate-400 block tracking-widest">Ahorro Mensual</span>
+                        <span className="text-xs font-black text-slate-800">RD$ {dateCalculations.monthlyRequired.toLocaleString('en-US')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* COLUMN RIGHT: META FOTO O DESCRIPCIÓN VISUAL DE LA META */}
+                  <div className="md:col-span-5">
+                    <div className="w-full h-28 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner flex items-center justify-center">
+                      {metaFotoUrl ? (
+                        <img 
+                          src={metaFotoUrl} 
+                          alt="Meta" 
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 to-slate-800 flex flex-col justify-center items-center p-3 text-center">
+                          <span className="text-[9px] uppercase font-bold text-blue-400 tracking-wider mb-1">Visualización Inspiradora</span>
+                          <p className="text-[10px] text-slate-350 leading-snug font-medium">Meta: {metaIllustrations.title}. Puedes subir una fotografía real en la barra de control lateral.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* DYNAMIC PROGRESS BAR SHEET DESIGN */}
+                <div className="pb-6">
+                  <div className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500 tracking-wider pb-1.5">
+                    <span>Porcentaje del Objetivo Completado</span>
+                    <span className="font-extrabold text-xs" style={{ color: colorScheme.hex }}>
+                      {interactiveState.calculatedPercentage}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden p-0.5 border border-slate-200/50 flex">
+                    <div 
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${Math.min(100, interactiveState.calculatedPercentage)}%`,
+                        backgroundColor: colorScheme.hex
+                      }}
+                    ></div>
+                  </div>
+                  
+                  {/* Financial distribution index details */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 text-[10px] font-bold text-slate-500 font-mono">
+                    <div>• Meta Acumulada: <span className="text-slate-900">RD$ {metaMonto.toLocaleString('en-US')}</span></div>
+                    <div>• Inicial: <span className="text-slate-900">RD$ {ahorroInicial.toLocaleString('en-US')}</span></div>
+                    <div>• Ahorro Grid: <span className="text-slate-900">RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span></div>
+                    <div>• Restante: <span className="text-slate-950 font-black">RD$ {interactiveState.realRemaining.toLocaleString('en-US')}</span></div>
                   </div>
                 </div>
 
-              </div>
+                {/* DETAILED SAVING TILES GRID SECTION */}
+                <div className="space-y-3 pt-4 border-t" style={{ borderColor: `${colorScheme.hex}15` }}>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black uppercase text-slate-500 tracking-widest">
+                      TABLERO DE PROGRESO DE AHORRO • {gridSystem.blockCount} CASILLAS DE RD$ {gridSystem.blockValue.toLocaleString('en-US')}
+                    </h4>
+                    <p className="text-[9px] text-slate-400 font-bold tracking-wider print:hidden select-none">
+                      *Haz clic sobre las casillas acumuladas para colorearlas
+                    </p>
+                  </div>
 
-              {/* DYNAMIC PROGRESS BAR SHEET DESIGN */}
-              <div className="pb-6">
-                <div className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500 tracking-wider pb-1.5">
-                  <span>Porcentaje del Objetivo Completado</span>
-                  <span className="font-extrabold text-xs" style={{ color: colorScheme.hex }}>
-                    {interactiveState.calculatedPercentage}%
-                  </span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden p-0.5 border border-slate-200/50 flex">
-                  <div 
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, interactiveState.calculatedPercentage)}%`,
-                      backgroundColor: colorScheme.hex
-                    }}
-                  ></div>
-                </div>
-                
-                {/* Financial distribution index details */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 text-[10px] font-bold text-slate-500 font-mono">
-                  <div>• Meta Acumulada: <span className="text-slate-900">RD$ {metaMonto.toLocaleString('en-US')}</span></div>
-                  <div>• Inicial: <span className="text-slate-900">RD$ {ahorroInicial.toLocaleString('en-US')}</span></div>
-                  <div>• Ahorro Grid: <span className="text-slate-900">RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span></div>
-                  <div>• Restante: <span className="text-slate-950 font-black">RD$ {interactiveState.realRemaining.toLocaleString('en-US')}</span></div>
-                </div>
-              </div>
+                  {/* THE SAVINGS GRID BOARD: EXTREMELY VISUAL AND PROFESSIONAL BULLET JOURNAL TILES */}
+                  <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 overflow-y-auto max-h-[340px] pr-1.5 py-1">
+                    {Array.from({ length: gridSystem.blockCount }).map((_, idx) => {
+                      const isChecked = !!markedBlocks[idx];
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleBlockClick(idx)}
+                          className={`aspect-video rounded-lg border text-[10px] font-extrabold flex flex-col justify-center items-center relative transition-all cursor-pointer ${isChecked ? 'text-white border-transparent' : 'bg-slate-50/70 hover:bg-slate-50 hover:border-slate-400 border-slate-200 text-slate-500'}`}
+                          style={{
+                            backgroundColor: isChecked ? colorScheme.hex : undefined
+                          }}
+                        >
+                          <span className="text-[8px] font-bold block opacity-40">#{idx + 1}</span>
+                          <span className="font-mono block tracking-tighter">
+                            {gridSystem.blockValue >= 1000 
+                              ? `${(gridSystem.blockValue / 1000).toFixed(0)}k` 
+                              : gridSystem.blockValue}
+                          </span>
+                          {isChecked && (
+                            <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
+                              <Check className="w-2 h-2" style={{ color: colorScheme.hex }} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-              {/* DETAILED SAVING TILES GRID SECTION */}
-              <div className="space-y-3 pt-4 border-t" style={{ borderColor: `${colorScheme.hex}15` }}>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-black uppercase text-slate-500 tracking-widest">
-                    TABLERO DE PROGRESO DE AHORRO • {gridSystem.blockCount} CASILLAS DE RD$ {gridSystem.blockValue.toLocaleString('en-US')}
-                  </h4>
-                  <p className="text-[9px] text-slate-400 font-bold tracking-wider print:hidden select-none">
-                    *Haz clic sobre las casillas acumuladas para colorearlas
+                  {/* Summary counters of active blocks */}
+                  <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 pt-1">
+                    <span>CASILLAS ALCANZADAS: {interactiveState.checkedCount} / {gridSystem.blockCount}</span>
+                    <span>AHORRADO EN GRID: RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span>
+                  </div>
+                </div>
+
+                {/* DYNAMIC PROGRESS MILESTONES (HITOS DE AHORRO) */}
+                <div className="py-6 border-b border-t mt-4" style={{ borderColor: `${colorScheme.hex}15` }}>
+                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block mb-2">HITOS DE SEGUIMIENTO GENERAL</span>
+                  <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold tracking-tight">
+                    <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 25 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                      <span className="block font-black text-xs">25%</span>
+                      <span>Inicio Firme</span>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 50 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                      <span className="block font-black text-xs">50%</span>
+                      <span>Mitad de Camino</span>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 75 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                      <span className="block font-black text-xs">75%</span>
+                      <span>Meta muy Cerca</span>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-800 animate-pulse' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
+                      <span className="block font-black text-xs">100%</span>
+                      <span>¡Meta Lograda!</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-semibold text-slate-500 text-center mt-3 font-serif italic">
+                    {getProgressMilestoneString()}
                   </p>
                 </div>
 
-                {/* THE SAVINGS GRID BOARD: EXTREMELY VISUAL AND PROFESSIONAL BULLET JOURNAL TILES */}
-                <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 overflow-y-auto max-h-[340px] pr-1.5 py-1">
-                  {Array.from({ length: gridSystem.blockCount }).map((_, idx) => {
-                    const isChecked = !!markedBlocks[idx];
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleBlockClick(idx)}
-                        className={`aspect-video rounded-lg border text-[10px] font-extrabold flex flex-col justify-center items-center relative transition-all cursor-pointer ${isChecked ? 'text-white border-transparent' : 'bg-slate-50/70 hover:bg-slate-50 hover:border-slate-400 border-slate-200 text-slate-500'}`}
-                        style={{
-                          backgroundColor: isChecked ? colorScheme.hex : undefined
-                        }}
-                      >
-                        <span className="text-[8px] font-bold block opacity-40">#{idx + 1}</span>
-                        <span className="font-mono block tracking-tighter">
-                          {gridSystem.blockValue >= 1000 
-                            ? `${(gridSystem.blockValue / 1000).toFixed(0)}k` 
-                            : gridSystem.blockValue}
-                        </span>
-                        {isChecked && (
-                          <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
-                            <Check className="w-2 h-2" style={{ color: colorScheme.hex }} />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+              </div>
+
+              {/* DESIGN CONTAINER FOOTER: STAMP & SIGNATURE */}
+              <div>
+                <div className="flex items-end justify-between border-t pt-5 mt-4" style={{ borderColor: `${colorScheme.hex}25` }}>
+                  
+                  {/* INCENTIVES AD */}
+                  <div className="max-w-[420px] text-left">
+                    <p className="text-[10px] font-bold text-slate-800">Compromiso Financiero Diario</p>
+                    <p className="text-[8px] text-slate-400 leading-relaxed font-semibold">
+                      Este plan ha sido auditado por el motor optimizado de Sueldo Fácil Dominicano. Pega este planner en un espacio visible en tu casa u oficina y registra tu constancia periódica.
+                    </p>
+                  </div>
+
+                  {/* SIGNATURE STAMP BLOCK FOR Bullet Journal aesthetic */}
+                  <div className="flex flex-col items-center justify-center text-center space-y-1 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
+                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Sello de Compromiso</span>
+                    <div className="w-12 h-6 border-b border-dashed border-slate-400"></div>
+                    <span className="text-[8px] font-bold text-slate-650">Firma del Propietario</span>
+                  </div>
                 </div>
 
-                {/* Summary counters of active blocks */}
-                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 pt-1">
-                  <span>CASILLAS ALCANZADAS: {interactiveState.checkedCount} / {gridSystem.blockCount}</span>
-                  <span>AHORRADO EN GRID: RD$ {interactiveState.accumulatedFromGrid.toLocaleString('en-US')}</span>
+                {/* SYSTEM INFORMATION STRIP */}
+                <div className="flex justify-between items-center text-[8px] font-mono font-bold text-slate-350 select-none border-t border-slate-100 pt-2.5 mt-4">
+                  <span>SUELDO FÁCIL DOMINICANA • RECURSOS LIBRES DE COBRO</span>
+                  <span>FECHA DE IMPRESIÓN: {new Date().toLocaleDateString('es-DO')}</span>
+                  <span>VERSIÓN: FSC-PLANNER-2026</span>
+                </div>
+              </div>
+            </div>
+
+            {/* VISTA IMPRESA SEGÚN ARCHIVO ADJUNTO (PRINT ONLY): 1 PÁGINA LIMPIA Y PERFECTA */}
+            <div className="hidden print:flex flex-col justify-between w-full h-[255mm] bg-white text-slate-950 p-2 font-sans box-border">
+              
+              {/* CABECERA CON BANCO DE DINERO Y DUO FECHAS */}
+              <div className="flex items-center justify-between border-b-2 pb-5" style={{ borderColor: colorScheme.hex }}>
+                <div className="flex flex-col">
+                  {/* Custom scripty styled title */}
+                  <h1 className="text-4xl font-extrabold tracking-widest text-slate-950 uppercase leading-none" style={{ color: colorScheme.hex, fontFamily: '"Space Grotesk", sans-serif' }}>
+                    PLAN DE AHORRO
+                  </h1>
+                  {/* Dynamic customizable dates line */}
+                  <div className="flex gap-16 mt-5 text-[13px] font-bold text-slate-700">
+                    <div>Inicio: <span className="underline decoration-dotted decoration-2 underline-offset-4 pl-2 pr-16">{fechaInicio}</span></div>
+                    <div>Final: <span className="underline decoration-dotted decoration-2 underline-offset-4 pl-2 pr-16">{fechaObjetivo}</span></div>
+                  </div>
+                </div>
+                
+                {/* ADORABLE PINK PIGGY BANK with Gold Coins as requested in first user image */}
+                <div className="flex items-center gap-1 bg-rose-50 p-2.5 rounded-2xl border border-rose-100 shrink-0">
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Falling gold coins */}
+                    <circle cx="32" cy="11" r="3" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
+                    <circle cx="38" cy="17" r="3" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
+                    <circle cx="27" cy="16" r="2.5" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
+                    
+                    {/* Pink piggy bank main body */}
+                    <ellipse cx="32" cy="40" rx="18" ry="14" fill="#FBCFE8" stroke="#DB2777" strokeWidth="2.5" />
+                    {/* Snout */}
+                    <rect x="49" y="36" width="6" height="8" rx="2.5" fill="#F472B6" stroke="#DB2777" strokeWidth="2" />
+                    <circle cx="52" cy="39" r="0.8" fill="#111827" />
+                    <circle cx="52" cy="41" r="0.8" fill="#111827" />
+                    {/* Ear */}
+                    <polygon points="22,28 28,19 32,26" fill="#FBCFE8" stroke="#DB2777" strokeWidth="2.5" />
+                    {/* Eye */}
+                    <circle cx="42" cy="34" r="1.5" fill="#111827" />
+                    {/* Legs */}
+                    <rect x="22" y="52" width="5" height="6" rx="1.5" fill="#F472B6" stroke="#DB2777" strokeWidth="2" />
+                    <rect x="36" y="52" width="5" height="6" rx="1.5" fill="#F472B6" stroke="#DB2777" strokeWidth="2" />
+                    {/* curly tail */}
+                    <path d="M14 40 Q8 37, 11 31 T9 27" stroke="#DB2777" strokeWidth="2" fill="none" strokeLinecap="round" />
+                  </svg>
                 </div>
               </div>
 
-              {/* DYNAMIC PROGRESS MILESTONES (HITOS DE AHORRO) */}
-              <div className="py-6 border-b border-t mt-4" style={{ borderColor: `${colorScheme.hex}15` }}>
-                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest block mb-2">HITOS DE SEGUIMIENTO GENERAL</span>
-                <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold tracking-tight">
-                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 25 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
-                    <span className="block font-black text-xs">25%</span>
-                    <span>Inicio Firme</span>
-                  </div>
-                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 50 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
-                    <span className="block font-black text-xs">50%</span>
-                    <span>Mitad de Camino</span>
-                  </div>
-                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 75 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
-                    <span className="block font-black text-xs">75%</span>
-                    <span>Meta muy Cerca</span>
-                  </div>
-                  <div className={`p-2 rounded-xl border ${interactiveState.calculatedPercentage >= 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-800 animate-pulse' : 'bg-slate-50 border-slate-200/60 text-slate-400 opacity-60'}`}>
-                    <span className="block font-black text-xs">100%</span>
-                    <span>¡Meta Lograda!</span>
-                  </div>
-                </div>
-                <p className="text-[10px] font-semibold text-slate-500 text-center mt-3 font-serif italic">
-                  {getProgressMilestoneString()}
+              {/* MOTIVATIONAL QUOTE IN SCRIPT SERIF ITALIC STYLING */}
+              <div className="text-center py-4 my-2">
+                <p className="text-2xl font-serif italic font-semibold text-slate-800 tracking-wide text-center">
+                  {printFrase || 'Si puedes soñarlo. Puedes lograrlo.'}
                 </p>
               </div>
 
-            </div>
+              {/* SAVINGS GRID COMPACT BOARD - COMPRESSES TO FIT EXACTLY ONE PRINTED PAGE GIVEN SELECTED BLOCKS */}
+              <div 
+                className="grid gap-x-2 gap-y-2 my-auto py-2 pr-1 grid-flow-row"
+                style={{ 
+                  gridTemplateColumns: `repeat(${gridSystem.blockCount <= 100 ? 10 : (gridSystem.blockCount <= 200 ? 10 : 16)}, minmax(0, 1fr))` 
+                }}
+              >
+                {Array.from({ length: gridSystem.blockCount }).map((_, idx) => {
+                  const isChecked = !!markedBlocks[idx];
+                  
+                  // Compute dynamic text size and cell height depending on number of blocks to guarantee 1-page perfect fit
+                  let cellHeight = '14.5mm';
+                  let fontSizeClass = 'text-xs md:text-sm';
+                  if (gridSystem.blockCount > 100) { cellHeight = '8.5mm'; fontSizeClass = 'text-[10px]'; }
+                  if (gridSystem.blockCount > 200) { cellHeight = '6.2mm'; fontSizeClass = 'text-[8.5px]'; }
+                  if (gridSystem.blockCount > 500) { cellHeight = '4.5mm'; fontSizeClass = 'text-[7px]'; }
 
-            {/* DESIGN CONTAINER FOOTER: STAMP & SIGNATURE */}
-            <div>
-              <div className="flex items-end justify-between border-t pt-5 mt-4" style={{ borderColor: `${colorScheme.hex}25` }}>
+                  return (
+                    <div
+                      key={idx}
+                      className="border border-slate-900 font-extrabold flex flex-col justify-center items-center relative rounded-md box-border transition-all duration-75"
+                      style={{
+                        height: cellHeight,
+                        backgroundColor: isChecked ? colorScheme.hex : 'transparent',
+                        color: isChecked ? '#ffffff' : '#000000',
+                        borderColor: '#000000'
+                      }}
+                    >
+                      <span className={`${fontSizeClass} font-bold font-mono block`}>
+                        {gridSystem.blockValue >= 1000 
+                          ? `${(gridSystem.blockValue / 1000).toFixed(0)}k` 
+                          : gridSystem.blockValue}
+                      </span>
+                      {isChecked && (
+                        <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full border border-slate-900 shadow-sm flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-slate-950 font-black" style={{ color: colorScheme.hex }} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* FOOTER SECTION CONFORMING TO CONTACT PLATFORMS & HIGHLIGHT COMPROMISO */}
+              <div className="flex items-center justify-between border-t-2 pt-5 mt-auto" style={{ borderColor: colorScheme.hex }}>
                 
-                {/* INCENTIVES AD */}
-                <div className="max-w-[420px] text-left">
-                  <p className="text-[10px] font-bold text-slate-800">Compromiso Financiero Diario</p>
-                  <p className="text-[8px] text-slate-400 leading-relaxed font-semibold">
-                    Este plan ha sido auditado por el motor optimizado de Sueldo Fácil Dominicano. Pega este planner en un espacio visible en tu casa u oficina y registra tu constancia periódica.
-                  </p>
+                {/* Contact and handle details with beautiful official vector emblems */}
+                <div className="flex items-center gap-7 text-sm font-bold text-slate-900">
+                  {printTelefono && (
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-emerald-600 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.1 1.45 4.8 1.45 5.5 0 10-4.5 10-10C21.447 5.1 17 1.5 12 1.5 6.5 1.5 2 6 2 11.5c0 1.9.5 3.7 1.5 5.3l-1 3.6 3.6-.9-.053-.046zM17.47 15.2c-.3-.15-1.74-.86-2-1-.28-.1-.48-.15-.68.15t-.79 1c-.2.24-.38.27-.68.12-1.93-.97-3.2-1.87-4.2-3.6-.2-.33-.02-.5.13-.65l.45-.53c.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53l-.68-1.6c-.3-.72-.6-1.1-.8-.1l-.45-.4c-.16-.14-.38-.2-.6-.2-.48 0-1.2.53-1.2 1.6s.8 2.05.9 2.2c.12.15 2.1 3.2 5.1 4.5.7.3 1.28.5 1.72.64.7.2 1.34.19 1.85.11.57-.08 1.74-.71 2-1.4.25-.66.25-1.22.17-1.4-.08-.15-.3-.24-.6-.4z" />
+                      </svg>
+                      <span className="font-mono tracking-tight text-[11px]">{printTelefono}</span>
+                    </div>
+                  )}
+
+                  {printInstagram && (
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-pink-600 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                      </svg>
+                      <span className="font-sans text-[11px]">@{printInstagram}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* SIGNATURE STAMP BLOCK FOR Bullet Journal aesthetic */}
-                <div className="flex flex-col items-center justify-center text-center space-y-1 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
-                  <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Sello de Compromiso</span>
-                  <div className="w-12 h-6 border-b border-dashed border-slate-400"></div>
-                  <span className="text-[8px] font-bold text-slate-650">Firma del Propietario</span>
+                {/* Yellow accented goals indicator */}
+                <div className="bg-yellow-300 border-2 border-slate-950 px-4 py-2 text-sm font-black text-slate-950 font-mono tracking-tight text-right shadow flex items-center gap-1.5 uppercase leading-none rounded-lg">
+                  <span>Mi meta</span>
+                  <span className="text-base font-black text-slate-950">RD$ {metaMonto.toLocaleString('en-US')}</span>
                 </div>
+
               </div>
 
-              {/* SYSTEM INFORMATION STRIP */}
-              <div className="flex justify-between items-center text-[8px] font-mono font-bold text-slate-350 select-none border-t border-slate-100 pt-2.5 mt-4">
-                <span>SUELDO FÁCIL DOMINICANA • RECURSOS LIBRES DE COBRO</span>
-                <span>FECHA DE IMPRESIÓN: {new Date().toLocaleDateString('es-DO')}</span>
-                <span>VERSIÓN: FSC-PLANNER-2026</span>
-              </div>
             </div>
-
           </div>
 
         </div>

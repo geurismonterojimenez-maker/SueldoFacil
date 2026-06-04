@@ -338,7 +338,7 @@ export default function App() {
         
         {/* WIDGET: CONMUTADOR LABORAL (SWITCHES / STICH) */}
         {['prestaciones', 'salario', 'nominas', 'costos', 'horas_extras', 'comparador', 'salarios_profesiones', 'calculadora_aumento', 'mi_diciembre', 'biblioteca_laboral', 'analizador_recibos', 'plan_ahorro', 'presupuesto_anual'].includes(tab) && (
-          <div className="mb-8 font-semibold">
+          <div className="mb-8 font-semibold print:hidden">
             <div className={`p-1.5 w-full rounded-2xl flex overflow-x-auto md:flex-wrap items-center gap-1 transition-colors scrollbar-none ${darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-slate-100/80 border border-slate-200/50'}`}>
               {[
                 { id: 'prestaciones', name: 'Prestaciones', icon: Briefcase },
