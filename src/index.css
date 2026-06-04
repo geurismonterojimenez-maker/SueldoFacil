@@ -50,14 +50,13 @@
     background-color: #ffffff !important;
     color: #0d1527 !important;
     font-size: 11pt !important;
-    line-height: 1.5 !important;
+    line-height: 1.4 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
     box-shadow: none !important;
-    display: block !important;
   }
 
   /* Force light backgrounds & hide borders/shadows that look messy on paper */
@@ -65,10 +64,8 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
-    color: #0d1527 !important;
     box-shadow: none !important;
     text-shadow: none !important;
-    border-color: #e2e8f0 !important;
   }
 
   /* Prevent elements from being awkwardly cut off across pages */
@@ -83,41 +80,22 @@
     page-break-inside: avoid !important;
   }
 
-  /* Make grid containers full width instead of columns to avoid squishing side outcomes */
+  /* Preserve standard CSS Grid / Flex layout capabilities on printing */
   .grid {
-    display: block !important;
-    width: 100% !important;
+    display: grid !important;
+  }
+  .flex {
+    display: flex !important;
   }
 
-  .grid-cols-1,
-  .grid-cols-2,
-  .grid-cols-3,
-  .grid-cols-4,
-  .grid-cols-12,
-  .lg\:grid-cols-12 {
-    display: block !important;
-    width: 100% !important;
-  }
-
-  /* Override specific grid span widths to fill the sheet */
-  .lg\:col-span-5,
-  .lg\:col-span-6,
-  .lg\:col-span-7,
+  /* Ensure parent containers span full available print width */
   .lg\:col-span-8,
-  .lg\:col-span-12,
-  .col-span-1,
-  .col-span-2,
-  .col-span-3,
-  .col-span-4,
-  .col-span-5,
-  .col-span-6,
-  .col-span-7,
-  .col-span-8 {
+  .lg\:col-span-6,
+  .col-span-12 {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
     display: block !important;
-    margin-bottom: 20px !important;
   }
 
   /* Format visual report cards as beautiful flat documents */
@@ -129,11 +107,11 @@
   .rounded-3xl {
     background: #ffffff !important;
     background-color: #ffffff !important;
-    border: 1.5px solid #cbd5e1 !important;
+    border: 1px solid #cbd5e1 !important;
     border-radius: 12px !important;
+    box-shadow: none !important;
     padding: 24px !important;
     margin-bottom: 20px !important;
-    box-shadow: none !important;
   }
 
   /* Tables clean styling for printable audit trails / lists */
@@ -152,8 +130,8 @@
   }
 
   th, td {
-    border-bottom: 1.5px solid #cbd5e1 !important;
-    padding: 10px 14px !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding: 8px 12px !important;
     font-size: 10pt !important;
     text-align: left !important;
     color: #0f172a !important;
@@ -195,8 +173,53 @@
   /* Keep custom charts inside prints responsive and flat */
   .recharts-responsive-container {
     width: 100% !important;
-    height: 300px !important;
+    height: 250px !important;
     page-break-inside: avoid !important;
+  }
+
+  /* PRECISE SPECIFIC TUNING FOR THE PREMIUM PERSONALIZED SAVINGS PLANNER CARTA SHEET */
+  @page {
+    size: letter portrait;
+    margin: 8mm;
+  }
+
+  #printable-savings-planner {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 260mm !important; /* height tuned to standard US Letter page to avoid overflowing across pages */
+    min-height: auto !important;
+    padding: 24px !important;
+    margin: 0 auto !important;
+    border-width: 2px !important;
+    border-style: solid !important;
+    border-color: inherit !important; /* let inline colorScheme.hex shine through */
+    border-radius: 16px !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    background: #ffffff !important;
+  }
+
+  #printable-savings-planner .aspect-video {
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  #printable-savings-planner .overflow-y-auto {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #printable-savings-planner .grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  #printable-savings-planner .sm\:grid-cols-10 {
+    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
   }
 }
 
