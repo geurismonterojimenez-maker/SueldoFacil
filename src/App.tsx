@@ -624,12 +624,14 @@ export default function App() {
                   </button>
                 </div>
 
+                <div className="flex items-center justify-center">
+                  <AdsenseMock slot="home-before-faq" type="square" />
+                </div>
+
               </div>
             </div>
 
             {/* SECCIÓN FAQS GENERALES PRE-CARGADAS */}
-            <AdsenseMock slot="home-before-faq" type="square" />
-
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 space-y-6">
               <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-blue-600" />
