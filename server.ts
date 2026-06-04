@@ -18,7 +18,7 @@ const ai = new GoogleGenAI({
 async function startServer() {
   const app = express();
   app.use(express.json());
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // AI chat API
   app.post("/api/chat", async (req, res) => {
