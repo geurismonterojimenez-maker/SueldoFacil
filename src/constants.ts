@@ -1,5 +1,7 @@
 import { SearchItem, BlogPost, FAQItem, SEOConfig } from "./types";
 
+export const TSS_COTIZABLE_SALARY_BASE = 23223;
+
 export const MINIMUM_WAGE_CATEGORIES = [
   { id: 'grande', label: 'Empresas Grandes (>150 empleados / RD$ 150M+ ventas)', wage: 24150 },
   { id: 'mediana', label: 'Empresas Medianas (51-150 empleados / RD$ 150M ventas)', wage: 22138 },
@@ -66,7 +68,7 @@ export const SEARCH_ITEMS: SearchItem[] = [
   {
     id: 'calc-salario',
     title: 'Calculadora de Salario Neto',
-    description: 'Calcula tus deducciones de AFP, SFS e ISR a partir de tu salario bruto ordinal.',
+    description: 'Calcula tus deducciones de AFP, SFS e ISR a partir de tu salario bruto ordinario.',
     category: 'calculadora',
     targetTab: 'salario'
   },
@@ -288,7 +290,7 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
   mi_diciembre: {
     title: "Calculadora Sueldo #13 - Doble Sueldo y Bonificación RD",
     description: "Estima tus ingresos integrales de fin de año en República Dominicana: segunda quincena, regalía pascual exenta de impuestos y bonificación.",
-    ogTitle: "Calculadora Sueldo #13 - Doble Sueldo y Regalias",
+    ogTitle: "Calculadora Sueldo #13 - Doble Sueldo y Regalías",
     ogDescription: "Audita tus ingresos de fin de año exentos de AFP e ISR.",
     canonical: "https://sueldofacil.com/mi-diciembre/"
   },
