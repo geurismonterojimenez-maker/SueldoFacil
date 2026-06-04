@@ -142,13 +142,30 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* LOGO */}
-          <button onClick={() => selectTab('home')} className="flex items-center gap-2 cursor-pointer select-none text-left">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-extrabold text-white text-lg shadow-sm">
-              S
+          <button onClick={() => selectTab('home')} className="flex items-center gap-2.5 cursor-pointer select-none text-left group">
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-slate-100 to-red-600 flex items-center justify-center shadow-sm p-0.5 border border-slate-200/40 dark:border-slate-800">
+              <div className="w-full h-full rounded-lg bg-slate-900/90 dark:bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
+                {/* Bandera dominicana estilizada de fondo o acentos */}
+                <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-blue-600/20"></div>
+                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-red-600/20"></div>
+                <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-rose-400 text-sm tracking-tight z-10 font-sans">
+                  SF
+                </span>
+                {/* Pequeña cruz central blanca de la bandera o estrella */}
+                <span className="absolute bottom-0 text-[7px] text-amber-500 font-extrabold">★</span>
+              </div>
             </div>
             <div>
-              <span className="font-extrabold tracking-tight text-base block leading-none">SueldoFacil</span>
-              <span className="text-[9px] font-bold text-slate-400 font-mono tracking-wider">REPUBLICA DOMINICANA</span>
+              <span className="font-extrabold tracking-tight text-base block leading-none">
+                <span className="text-blue-600 dark:text-blue-400">Sueldo</span>Fácil
+              </span>
+              <div className="flex items-center gap-1 mt-1">
+                {/* Bandera dominicana miniatura estilizada */}
+                <span className="inline-block w-2.5 h-1.5 bg-blue-600 rounded-[1px]"></span>
+                <span className="inline-block w-2.5 h-1.5 bg-white border border-slate-200/50 rounded-[1px]"></span>
+                <span className="inline-block w-2.5 h-1.5 bg-red-600 rounded-[1px]"></span>
+                <span className="text-[8px] font-extrabold text-slate-400 dark:text-slate-500 font-mono tracking-wider">REP. DOMINICANA</span>
+              </div>
             </div>
           </button>
 
