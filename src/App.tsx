@@ -6,7 +6,68 @@ import {
   Gift, ShieldAlert, TrendingUp, Target, FileSpreadsheet
 } from 'lucide-react';
 import { TabType, SearchItem } from './types';
-import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS } from './constants';
+import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS, BLOG_POSTS } from './constants';
+
+const pathnameToTabMap: Record<string, TabType> = {
+  '/': 'home',
+  '/prestaciones': 'prestaciones',
+  '/prestaciones/': 'prestaciones',
+  '/salario': 'salario',
+  '/salario/': 'salario',
+  '/nominas': 'nominas',
+  '/nominas/': 'nominas',
+  '/costos': 'costos',
+  '/costos/': 'costos',
+  '/horas-extras': 'horas_extras',
+  '/horas-extras/': 'horas_extras',
+  '/comparador': 'comparador',
+  '/comparador/': 'comparador',
+  '/documentos': 'cartas_contratos',
+  '/documentos/': 'cartas_contratos',
+  '/asistente-ia': 'ai_assistant',
+  '/asistente-ia/': 'ai_assistant',
+  '/blog': 'blog',
+  '/blog/': 'blog',
+  '/panel': 'dashboard',
+  '/panel/': 'dashboard',
+  '/salarios-profesion': 'salarios_profesiones',
+  '/salarios-profesion/': 'salarios_profesiones',
+  '/calcular-aumento': 'calculadora_aumento',
+  '/calcular-aumento/': 'calculadora_aumento',
+  '/mi-diciembre': 'mi_diciembre',
+  '/mi-diciembre/': 'mi_diciembre',
+  '/biblioteca': 'biblioteca_laboral',
+  '/biblioteca/': 'biblioteca_laboral',
+  '/analizar-recibos': 'analizador_recibos',
+  '/analizar-recibos/': 'analizador_recibos',
+  '/plan-ahorro': 'plan_ahorro',
+  '/plan-ahorro/': 'plan_ahorro',
+  '/presupuesto-anual': 'presupuesto_anual',
+  '/presupuesto-anual/': 'presupuesto_anual',
+};
+
+function getTabFromPathname(pathname: string): { tab: TabType; blogSlug: string | null } {
+  if (pathname.startsWith('/blog/')) {
+    const slug = pathname.substring(6).replace(/\/$/, '');
+    if (slug) {
+      return { tab: 'blog', blogSlug: slug };
+    }
+  }
+  const cleanPath = pathname.replace(/\/$/, '') || '/';
+  const matchedTab = pathnameToTabMap[cleanPath];
+  if (matchedTab) {
+    return { tab: matchedTab, blogSlug: null };
+  }
+  return { tab: 'home', blogSlug: null };
+}
+
+function getPathnameFromTab(tab: TabType, blogSlug: string | null = null): string {
+  if (tab === 'blog' && blogSlug) {
+    return `/blog/${blogSlug}`;
+  }
+  const entry = Object.entries(pathnameToTabMap).find(([path, t]) => t === tab && !path.endsWith('/'));
+  return entry ? entry[0] : '/';
+}
 
 // Component imports
 import CalculadorPrestaciones from './components/CalculadorPrestaciones';
@@ -29,7 +90,17 @@ import PlanAhorro from './components/PlanAhorro';
 import PresupuestoAnual from './components/PresupuestoAnual';
 
 export default function App() {
-  const [tab, setTab] = useState<TabType>('home');
+  const [route, setRoute] = useState<{ tab: TabType; blogSlug: string | null }>(() => {
+    if (typeof window !== 'undefined') {
+      return getTabFromPathname(window.location.pathname);
+    }
+    return { tab: 'home', blogSlug: null };
+  });
+  const tab = route.tab;
+  const blogSlug = route.blogSlug;
+
+  const [prestacionesInitialState, setPrestacionesInitialState] = useState<any>(null);
+  const [salarioInitialState, setSalarioInitialState] = useState<any>(null);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredSearch, setFilteredSearch] = useState<SearchItem[]>([]);
@@ -40,7 +111,7 @@ export default function App() {
   const handleAskSavingTips = (netSalary: number) => {
     const formattedSalary = netSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     setAiInitialMessage(`Hola, acabo de calcular mi salario neto de RD$ ${formattedSalary} en la calculadora de SueldoFácil. ¿Podrías brindarme recomendaciones y tips de ahorro personalizados para República Dominicana basados en este nivel de salario neto mensual? Me gustaría que incluyeras ideas prácticas locales (cooperativas dominicanas, opciones de inversión básicas, presupuesto adaptado 50/30/20 y metas realistas bajo este monto).`);
-    setTab('ai_assistant');
+    selectTab('ai_assistant');
   };
 
   // Sync dark class with documentElement for Tailwind support
@@ -63,44 +134,148 @@ export default function App() {
       console.error(e);
     }
 
-    // Check shared URL hash states to support shared link calculations!
-    const hash = window.location.hash;
-    if (hash && hash.includes('state=')) {
-      try {
-        const urlParams = new URLSearchParams(hash.substring(1));
-        const stateBase64 = urlParams.get('state');
-        if (stateBase64) {
+    // Check shared URL states (search query parameter or hash fallback)
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      let stateBase64 = searchParams.get('state');
+      const path = window.location.pathname;
+
+      const hash = window.location.hash;
+      if (!stateBase64 && hash && hash.includes('state=')) {
+        const hashParams = new URLSearchParams(hash.substring(hash.indexOf('?')));
+        stateBase64 = hashParams.get('state');
+      }
+
+      if (stateBase64) {
+        try {
           const decoded = JSON.parse(atob(stateBase64));
-          // If we decode successfully, set appropriate tab & preset state
-          if (hash.startsWith('#prestaciones')) {
-            setTab('prestaciones');
-          } else if (hash.startsWith('#salario')) {
-            setTab('salario');
+          if (path.includes('prestaciones') || hash.startsWith('#prestaciones')) {
+            setPrestacionesInitialState(decoded);
+          } else if (path.includes('salario') || hash.startsWith('#salario')) {
+            setSalarioInitialState(decoded);
           }
+        } catch (e) {
+          console.error("Failed to parse base64 share link state", e);
         }
-      } catch (e) {
-        console.error("Failed to parse base64 share link state", e);
       }
     }
   }, []);
 
+  // Sync browser back/forward buttons (Popstate routing)
+  useEffect(() => {
+    const handlePopState = () => {
+      setRoute(getTabFromPathname(window.location.pathname));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Update SEO Head metrics conforming to SEO specialist & CRO rules
   useEffect(() => {
-    const seo = SEO_TAB_CONFIGS[tab] || {
-      title: "SueldoFacil - Herramientas Laborales República Dominicana",
-      description: "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana."
-    };
-    document.title = seo.title;
+    let title = "SueldoFacil - Herramientas Laborales República Dominicana";
+    let description = "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.";
+    let canonical = "https://sueldofacil.com" + (typeof window !== 'undefined' ? window.location.pathname : '');
+
+    if (tab === 'blog' && blogSlug) {
+      const post = BLOG_POSTS.find(p => p.slug === blogSlug);
+      if (post) {
+        title = `${post.title} | SueldoFácil`;
+        description = post.excerpt;
+        canonical = `https://sueldofacil.com/blog/${blogSlug}`;
+      }
+    } else {
+      const seo = SEO_TAB_CONFIGS[tab];
+      if (seo) {
+        title = seo.title;
+        description = seo.description;
+        canonical = seo.canonical || canonical;
+      }
+    }
+
+    document.title = title;
     
-    // Update meta description
+    // Update description meta tag
     let metaDesc = document.querySelector('meta[name="description"]');
     if (!metaDesc) {
       metaDesc = document.createElement('meta');
       metaDesc.setAttribute('name', 'description');
       document.head.appendChild(metaDesc);
     }
-    metaDesc.setAttribute('content', seo.description);
-  }, [tab]);
+    metaDesc.setAttribute('content', description);
+
+    // Update canonical link tag
+    let linkCanonical = document.querySelector('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', canonical);
+
+    // Helper functions for OpenGraph & Twitter tags
+    const setMetaProperty = (property: string, content: string) => {
+      let element = document.querySelector(`meta[property="${property}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute('property', property);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    };
+
+    const setMetaName = (name: string, content: string) => {
+      let element = document.querySelector(`meta[name="${name}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute('name', name);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    };
+
+    setMetaProperty('og:title', title);
+    setMetaProperty('og:description', description);
+    setMetaProperty('og:url', canonical);
+    setMetaProperty('og:type', tab === 'blog' && blogSlug ? 'article' : 'website');
+
+    setMetaName('twitter:title', title);
+    setMetaName('twitter:description', description);
+
+    // Manage structured schema (JSON-LD) for Search Console rich snippets
+    let schemaScript = document.getElementById('calculator-schema');
+    if (tab === 'prestaciones' || tab === 'salario') {
+      if (!schemaScript) {
+        schemaScript = document.createElement('script');
+        schemaScript.setAttribute('id', 'calculator-schema');
+        schemaScript.setAttribute('type', 'application/ld+json');
+        document.head.appendChild(schemaScript);
+      }
+      
+      const schemaData = tab === 'prestaciones' ? {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Calculadora de Prestaciones Laborales República Dominicana",
+        "url": "https://sueldofacil.com/prestaciones",
+        "description": "Calcula tu liquidación completa paso a paso: preaviso, cesantía, regalía y vacaciones acumuladas bajo el Código de Trabajo dominicano.",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "All"
+      } : {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Calculadora de Salario Neto República Dominicana",
+        "url": "https://sueldofacil.com/salario",
+        "description": "Ingresa tu salario bruto mensual y conoce el desglose real restando AFP, Seguro Familiar de Salud (SFS) e Impuesto Sobre la Renta (ISR).",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "All"
+      };
+      
+      schemaScript.innerHTML = JSON.stringify(schemaData);
+    } else {
+      if (schemaScript) {
+        schemaScript.remove();
+      }
+    }
+  }, [tab, blogSlug]);
 
   // Handle Search Input real-time filtering (Like Google Instant search)
   useEffect(() => {
@@ -133,14 +308,20 @@ export default function App() {
 
   const handleSelectHistoryItem = (log: any) => {
     // Navigate straight to the saved calculation category
-    setTab(log.type as TabType);
+    selectTab(log.type as TabType);
   };
 
-  const selectTab = (t: TabType) => {
-    setTab(t);
+  const selectTab = (t: TabType, slug: string | null = null) => {
+    setRoute({ tab: t, blogSlug: slug });
     setSearchQuery('');
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      const newPath = getPathnameFromTab(t, slug);
+      if (window.location.pathname !== newPath) {
+        window.history.pushState(null, '', newPath);
+      }
+    }
   };
 
   return (
@@ -652,12 +833,12 @@ export default function App() {
 
         {/* VIEW: PRESTACIONES */}
         {tab === 'prestaciones' && (
-          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} />
+          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} initialState={prestacionesInitialState} />
         )}
 
         {/* VIEW: SALARIO NETO */}
         {tab === 'salario' && (
-          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} />
+          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} initialState={salarioInitialState} />
         )}
 
         {/* VIEW: NOMINA */}
@@ -692,7 +873,11 @@ export default function App() {
 
         {/* VIEW: BLOG */}
         {tab === 'blog' && (
-          <BlogVirtual onSelectorClick={selectTab} />
+          <BlogVirtual 
+            onSelectorClick={selectTab} 
+            activePostSlug={blogSlug}
+            onPostSelect={(slug) => selectTab('blog', slug)}
+          />
         )}
 
         {/* VIEW: DASHBOARD */}

@@ -11,19 +11,31 @@ interface Props {
 
 export default function CalculadorPrestaciones({ onSaveCalculation, initialState }: Props) {
   const [step, setStep] = useState(1);
-  const [input, setInput] = useState<PrestacionesInput>({
-    fechaIngreso: '2023-01-01',
-    fechaSalida: '2026-06-01',
-    salarioMensual: '35000',
-    tipoSalida: 'desahucio_patronal',
-    incluyePreaviso: true,
-    incluyeCesantia: true,
-    diasVacacionesPendientes: 0,
-    incluyeRegalia: true,
+  const [input, setInput] = useState<PrestacionesInput>(() => {
+    if (initialState) {
+      return { ...initialState };
+    }
+    return {
+      fechaIngreso: '2023-01-01',
+      fechaSalida: '2026-06-01',
+      salarioMensual: '35000',
+      tipoSalida: 'desahucio_patronal',
+      incluyePreaviso: true,
+      incluyeCesantia: true,
+      diasVacacionesPendientes: 0,
+      incluyeRegalia: true,
+    };
   });
 
   const [output, setOutput] = useState<PrestacionesOutput | null>(null);
   const [showShareTooltip, setShowShareTooltip] = useState(false);
+
+  // Sync with dynamic initialState updates
+  useEffect(() => {
+    if (initialState) {
+      setInput(initialState);
+    }
+  }, [initialState]);
 
   // Recalculate on any input change
   useEffect(() => {
@@ -69,17 +81,50 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
   };
 
   const handleShare = () => {
-    const shareUrl = `${window.location.origin}/#prestaciones?state=${btoa(JSON.stringify(input))}`;
+    const shareUrl = `${window.location.origin}/prestaciones?state=${btoa(JSON.stringify(input))}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       setShowShareTooltip(true);
       setTimeout(() => setShowShareTooltip(false), 3000);
     });
   };
 
+  const handleExportCSV = () => {
+    if (!output) return;
+    const csvRows = [
+      ['Reporte de Prestaciones Laborales - SueldoFacil.com'],
+      ['Fecha de calculo', new Date().toLocaleDateString('es-DO')],
+      [],
+      ['Datos de Entrada'],
+      ['Fecha de Ingreso', input.fechaIngreso],
+      ['Fecha de Salida', input.fechaSalida],
+      ['Salario Mensual Bruto', `RD$ ${parseFloat(input.salarioMensual).toFixed(2)}`],
+      ['Tipo de Salida', input.tipoSalida],
+      [],
+      ['Resultados del Calculo'],
+      ['Antiguedad', `${output.tiempoServicio.anos} anos, ${output.tiempoServicio.meses} meses, ${output.tiempoServicio.dias} dias`],
+      ['Salario Diario Promedio', `RD$ ${output.salarioDiario.toFixed(2)}`],
+      ['Preaviso', `RD$ ${output.preaviso.toFixed(2)}`],
+      ['Cesantia', `RD$ ${output.cesantia.toFixed(2)}`],
+      ['Vacaciones', `RD$ ${output.vacaciones.toFixed(2)}`],
+      ['Regalia Pascual (Sueldo 13)', `RD$ ${output.regalia.toFixed(2)}`],
+      ['Total Liquidacion', `RD$ ${output.total.toFixed(2)}`],
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
+      + csvRows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Prestaciones_Laborales_${input.fechaSalida}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* CARD IZQUIERDA: FORMULARIO PASO A PASO */}
-      <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+      <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm print:hidden">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
             <span className="w-2 h-5 bg-blue-600 rounded-full inline-block"></span>
@@ -302,9 +347,16 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
       </div>
 
       {/* CARD DERECHA: RESULTADOS EN TIEMPO REAL */}
-      <div className="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white shadow-xl flex flex-col justify-between self-stretch min-h-[500px]">
+      <div className="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white shadow-xl flex flex-col justify-between self-stretch min-h-[500px] print:bg-white print:text-slate-900 print:border-slate-200 print:shadow-none print:p-0">
         <div>
-          <div className="flex justify-between items-center mb-6">
+          {/* Cabecera exclusiva de impresion */}
+          <div className="hidden print:block border-b border-slate-200 pb-4 mb-6">
+            <h1 className="text-xl font-bold text-slate-900">SueldoFácil.com</h1>
+            <p className="text-xs text-slate-500">Reporte Detallado de Prestaciones Laborales</p>
+            <p className="text-[10px] text-slate-400">Fecha de calculo: {new Date().toLocaleDateString('es-DO')}</p>
+          </div>
+
+          <div className="flex justify-between items-center mb-6 print:hidden">
             <span className="text-xs font-semibold tracking-widest text-slate-400 uppercase">
               Resultado en tiempo real
             </span>
@@ -316,26 +368,26 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           {output && (
             <div className="space-y-6">
               <div>
-                <p className="text-slate-400 text-xs font-medium">Monto Total Estimado</p>
-                <h3 className="text-4xl font-bold text-white tracking-tight mt-1">
+                <p className="text-slate-400 print:text-slate-500 text-xs font-medium">Monto Total Estimado</p>
+                <h3 className="text-4xl font-bold text-white print:text-slate-900 tracking-tight mt-1">
                   RD$ {output.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h3>
-                <p className="text-xs text-slate-400 mt-2 font-mono">
+                <p className="text-xs text-slate-400 print:text-slate-500 mt-2 font-mono">
                   Antigüedad laboral: {output.tiempoServicio.anos} años, {output.tiempoServicio.meses} meses, y {output.tiempoServicio.dias} días
                 </p>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-slate-400 print:text-slate-500 font-mono">
                   Sueldo promedio diario establecido: RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Sueldo / 23.83)
                 </p>
               </div>
 
               {/* LISTA COMPONENTES */}
-              <div className="space-y-3.5 border-t border-slate-800 pt-5">
+              <div className="space-y-3.5 border-t border-slate-800 print:border-slate-200 pt-5">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    <span className="text-xs font-medium text-slate-300">Preaviso</span>
+                    <span className="text-xs font-medium text-slate-300 print:text-slate-700">Preaviso</span>
                   </div>
-                  <span className="text-xs font-mono text-slate-200">
+                  <span className="text-xs font-mono text-slate-200 print:text-slate-950">
                     RD$ {output.preaviso.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -343,9 +395,9 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span className="text-xs font-medium text-slate-300">Cesantía</span>
+                    <span className="text-xs font-medium text-slate-300 print:text-slate-700">Cesantía</span>
                   </div>
-                  <span className="text-xs font-mono text-slate-200">
+                  <span className="text-xs font-mono text-slate-200 print:text-slate-950">
                     RD$ {output.cesantia.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -353,9 +405,9 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                    <span className="text-xs font-medium text-slate-300">Vacaciones</span>
+                    <span className="text-xs font-medium text-slate-300 print:text-slate-700">Vacaciones</span>
                   </div>
-                  <span className="text-xs font-mono text-slate-200">
+                  <span className="text-xs font-mono text-slate-200 print:text-slate-950">
                     RD$ {output.vacaciones.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -363,18 +415,18 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    <span className="text-xs font-medium text-slate-300">Regalía Pascual (Sueldo #13)</span>
+                    <span className="text-xs font-medium text-slate-300 print:text-slate-700">Regalía Pascual (Sueldo #13)</span>
                   </div>
-                  <span className="text-xs font-mono text-slate-200">
+                  <span className="text-xs font-mono text-slate-200 print:text-slate-950">
                     RD$ {output.regalia.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
 
               {/* GRAFICO BARRA SIMPLE */}
-              <div className="bg-slate-950 p-4 border border-slate-800/80 rounded-xl space-y-2 mt-2">
-                <p className="text-[10px] text-slate-450 font-semibold uppercase tracking-wider">Breakdown Proporcional</p>
-                <div className="h-2.5 w-full bg-slate-800 rounded-full flex overflow-hidden">
+              <div className="bg-slate-950 print:bg-slate-50 p-4 border border-slate-800/80 print:border-slate-200 rounded-xl space-y-2 mt-2">
+                <p className="text-[10px] text-slate-450 print:text-slate-500 font-semibold uppercase tracking-wider">Breakdown Proporcional</p>
+                <div className="h-2.5 w-full bg-slate-800 print:bg-slate-200 rounded-full flex overflow-hidden">
                   {output.total > 0 ? (
                     <>
                       <div className="bg-blue-500 h-full transition-all" style={{ width: `${(output.preaviso / output.total) * 100}%` }} title="Preaviso" />
@@ -386,7 +438,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                     <div className="bg-slate-700 w-full h-full" />
                   )}
                 </div>
-                <div className="flex gap-3 text-[9px] text-slate-400 justify-between items-center pt-1 font-mono">
+                <div className="flex gap-3 text-[9px] text-slate-400 print:text-slate-600 justify-between items-center pt-1 font-mono">
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-blue-500"></span> Preaviso</span>
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-emerald-500"></span> Cesantía</span>
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-indigo-500"></span> Vacaciones</span>
@@ -395,22 +447,35 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
               </div>
 
               {/* DETALLE LEGAL */}
-              <div className="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800 pt-4">
-                <span className="font-semibold text-slate-300 block mb-1">Fundamento Legal (Art. 76 al 86 Ley 16-92):</span>
+              <div className="text-[11px] text-slate-400 print:text-slate-600 leading-relaxed border-t border-slate-800 print:border-slate-200 pt-4">
+                <span className="font-semibold text-slate-300 print:text-slate-800 block mb-1">Fundamento Legal (Art. 76 al 86 Ley 16-92):</span>
                 El preaviso y la cesantía se calculan en base a tu salario cotizable diario (Salario Bruto / 23.83). La regalía pascual está libre del impuesto ISR y de seguridad social por mandato expreso constitucional y laboral. El empleador cuenta con un máximo de 10 días laborables para realizar el desembolso total de la liquidación antes de generar el cobro por mora laboral diaria.
+              </div>
+
+              {/* BLOQUE ADSENSE OPTIMIZADO PARA INGRESOS */}
+              <div className="border-t border-slate-800 pt-4 mt-4 print:hidden">
+                <AdsenseMock slot="prestaciones-resultados" type="banner" />
               </div>
             </div>
           )}
         </div>
 
         {/* CONTROLES DE RESULTADOS */}
-        <div className="flex gap-2.5 mt-6 border-t border-slate-800 pt-5">
+        <div className="flex gap-2.5 mt-6 border-t border-slate-800 pt-5 print:hidden">
           <button
             onClick={handlePrint}
             className="flex-1 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700"
           >
             <Printer className="w-4 h-4" />
             Imprimir
+          </button>
+          
+          <button
+            onClick={handleExportCSV}
+            className="flex-1 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Exportar CSV
           </button>
           
           <button

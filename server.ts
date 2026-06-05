@@ -1,8 +1,10 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { SEO_TAB_CONFIGS, BLOG_POSTS } from "./src/constants";
 
 dotenv.config();
 
@@ -26,10 +28,28 @@ function getGenAI(): GoogleGenAI {
   return aiClient;
 }
 
+let cachedIndexHtml: string | null = null;
+
 async function startServer() {
   const app = express();
   app.use(express.json());
   const PORT = Number(process.env.PORT) || 3000;
+
+  // Gemini API Key validation warning at startup
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+    console.warn("⚠️ [ADVERTENCIA] La variable GEMINI_API_KEY no está configurada o es inválida en el entorno. El Asistente de IA (chat) estará inhabilitado.");
+  }
+
+  // Redirect trailing slash URLs to non-trailing slash URLs for SEO (301 redirect)
+  app.use((req, res, next) => {
+    if (req.path.length > 1 && req.path.endsWith('/')) {
+      const query = req.url.slice(req.path.length);
+      const safePath = req.path.slice(0, -1) + query;
+      return res.redirect(301, safePath);
+    }
+    next();
+  });
 
   // AI chat API
   app.post("/api/chat", async (req, res) => {
@@ -148,8 +168,75 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
+    
+    // SEO Dynamic Meta Injection
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      try {
+        const indexPath = path.join(distPath, 'index.html');
+        if (!cachedIndexHtml) {
+          if (!fs.existsSync(indexPath)) {
+            return res.status(404).send('Not Found');
+          }
+          cachedIndexHtml = fs.readFileSync(indexPath, 'utf8');
+        }
+        let html = cachedIndexHtml;
+
+        // Extract path and find matching SEO
+        const reqPath = req.path;
+        let title = "SueldoFacil - Herramientas Laborales República Dominicana";
+        let description = "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.";
+        let canonical = `https://sueldofacil.com${reqPath}`;
+
+        if (reqPath.startsWith('/blog/')) {
+          const slug = reqPath.substring(6).replace(/\/$/, '');
+          const post = BLOG_POSTS.find(p => p.slug === slug);
+          if (post) {
+            title = `${post.title} | SueldoFácil`;
+            description = post.excerpt;
+            canonical = `https://sueldofacil.com/blog/${slug}`;
+          }
+        } else {
+          // Map pathname to tab name
+          const cleanPath = reqPath.replace(/\/$/, '') || '/';
+          // Find matching tab in SEO_TAB_CONFIGS
+          const tabEntry = Object.entries(SEO_TAB_CONFIGS).find(([t, seo]) => {
+            const tabCanonicalPath = new URL(seo.canonical || 'https://sueldofacil.com/').pathname;
+            return tabCanonicalPath.replace(/\/$/, '') === cleanPath.replace(/\/$/, '');
+          });
+          
+          if (tabEntry) {
+            const seo = tabEntry[1];
+            title = seo.title;
+            description = seo.description;
+            canonical = seo.canonical || canonical;
+          }
+        }
+
+        // Replace original title tag
+        html = html.replace(
+          /<title>[^<]*<\/title>/,
+          `<title>${title}</title>`
+        );
+
+        // Inject description, canonical, open graph, and twitter card tags before </head>
+        const seoTags = `
+    <meta name="description" content="${description}" />
+    <link rel="canonical" href="${canonical}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:url" content="${canonical}" />
+    <meta property="og:type" content="${reqPath.startsWith('/blog/') ? 'article' : 'website'}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+`;
+        html = html.replace('</head>', `${seoTags}\n</head>`);
+
+        res.status(200).send(html);
+      } catch (err) {
+        console.error("SEO Injection Error:", err);
+        res.sendFile(path.join(distPath, 'index.html'));
+      }
     });
   }
 

@@ -6,10 +6,32 @@ import AdsenseMock from './AdsenseMock';
 
 interface Props {
   onSelectorClick: (tab: TabType) => void;
+  activePostSlug?: string | null;
+  onPostSelect?: (slug: string | null) => void;
 }
 
-export default function BlogVirtual({ onSelectorClick }: Props) {
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+export default function BlogVirtual({ onSelectorClick, activePostSlug = null, onPostSelect }: Props) {
+  const [selectedPost, setSelectedPost] = React.useState<BlogPost | null>(null);
+
+  React.useEffect(() => {
+    if (activePostSlug) {
+      const found = BLOG_POSTS.find(post => post.slug === activePostSlug);
+      if (found) {
+        setSelectedPost(found);
+      } else {
+        setSelectedPost(null);
+      }
+    } else {
+      setSelectedPost(null);
+    }
+  }, [activePostSlug]);
+
+  const handleSelectPost = (post: BlogPost | null) => {
+    setSelectedPost(post);
+    if (onPostSelect) {
+      onPostSelect(post ? post.slug : null);
+    }
+  };
 
   const getTargetTab = (category: string): TabType => {
     if (category === 'prestaciones') return 'prestaciones';
@@ -54,7 +76,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-900 leading-snug hover:text-blue-600 cursor-pointer" onClick={() => setSelectedPost(post)}>
+                <h3 className="text-lg font-bold text-slate-900 leading-snug hover:text-blue-600 cursor-pointer" onClick={() => handleSelectPost(post)}>
                   {post.title}
                 </h3>
                 
@@ -70,7 +92,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
                 </span>
 
                 <button 
-                  onClick={() => setSelectedPost(post)}
+                  onClick={() => handleSelectPost(post)}
                   className="text-xs font-semibold text-slate-900 hover:text-blue-600 flex items-center gap-1 hover:gap-1.5 transition-all text-[11px]"
                 >
                   Leer Artículo completo <ArrowRight className="w-4 h-4" />
@@ -115,7 +137,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
           {/* CONTENIDO PRINCIPAL (IZQUIERDA) */}
           <div className="lg:col-span-8 bg-white border border-slate-200/85 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
             <button 
-              onClick={() => setSelectedPost(null)}
+              onClick={() => handleSelectPost(null)}
               className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1"
             >
               ← Volver al Listado de Artículos
