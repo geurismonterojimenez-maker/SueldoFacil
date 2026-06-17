@@ -83,7 +83,9 @@ export function calcularPrestacionesLaborales(input: PrestacionesInput): Prestac
   // 3. Vacaciones
   // El usuario puede ingresar manualmente los días de vacaciones pendientes, o se puede estimar
   let diasVacaciones = input.diasVacacionesPendientes;
-  if (diasVacaciones === 0) {
+  if (input.vacacionesTomadas) {
+    diasVacaciones = 0;
+  } else if (diasVacaciones === 0) {
     // Si no especifica días pendientes, estimamos proporcionalidad del último año incompleto
     const mesesPeriodoActual = totalMeses % 12;
     if (mesesPeriodoActual >= 5) {
@@ -107,15 +109,17 @@ export function calcularPrestacionesLaborales(input: PrestacionesInput): Prestac
   // 4. Regalía Pascual (Sueldo 13 proporcional)
   let regalia = 0;
   if (input.incluyeRegalia) {
+    const ing = new Date(input.fechaIngreso);
     const sal = new Date(input.fechaSalida);
-    // Calcular meses trabajados en el año actual (de Enero a fecha de salida)
-    // El sueldo 13 se computa del salario devengado entre el 1 de enero y la fecha de salida.
-    const mesSalida = sal.getMonth() + 1; // 1 to 12
-    const diaSalida = sal.getDate();
-    const fraccionMes = Math.min(1, diaSalida / 30);
-    const mesesAnioActual = (mesSalida - 1) + fraccionMes;
+    const inicioAnio = new Date(sal.getFullYear(), 0, 1);
+    const fechaInicioEfectiva = ing > inicioAnio ? ing : inicioAnio;
     
-    regalia = (salario / 12) * mesesAnioActual;
+    const tsRegalia = calcularTiempoServicio(
+      fechaInicioEfectiva.toISOString().split('T')[0],
+      input.fechaSalida
+    );
+    const mesesAnioActual = (tsRegalia.anos * 12) + tsRegalia.meses + (tsRegalia.dias / 30);
+    regalia = (salario / 12) * Math.min(12, mesesAnioActual);
   }
   
   // 5. Bonificación estimada
@@ -142,8 +146,8 @@ export function calcularPrestacionesLaborales(input: PrestacionesInput): Prestac
 }
 
 export function calcularSalarioNeto(input: SalarioInput): SalarioOutput {
-  const salarioBruto = parseFloat(input.salarioBruto) || 0;
-  const ingresosAdicionales = parseFloat(input.ingresosAdicionales || "0") || 0;
+  const salarioBruto = Math.max(0, parseFloat(input.salarioBruto) || 0);
+  const ingresosAdicionales = Math.max(0, parseFloat(input.ingresosAdicionales || "0") || 0);
   
   // Salario base para seguridad social
   const salarioBaseSS = salarioBruto; // Las comisiones y horas extras cotizan, bonos no.
@@ -172,8 +176,9 @@ export function calcularSalarioNeto(input: SalarioInput): SalarioOutput {
   }
   
   const retencionesTotales = afp + sfs + isr;
-  const salarioNeto = (salarioBruto + ingresosAdicionales) - retencionesTotales;
-  const porcentajeNeto = salarioBruto > 0 ? (salarioNeto / (salarioBruto + ingresosAdicionales)) * 100 : 0;
+  const totalIngresos = salarioBruto + ingresosAdicionales;
+  const salarioNeto = totalIngresos - retencionesTotales;
+  const porcentajeNeto = totalIngresos > 0 ? (salarioNeto / totalIngresos) * 100 : 0;
   
   return {
     salarioBruto,

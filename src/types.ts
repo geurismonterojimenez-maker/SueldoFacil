@@ -18,7 +18,10 @@ export type TabType =
   | 'biblioteca_laboral'
   | 'analizador_recibos'
   | 'plan_ahorro'
-  | 'presupuesto_anual';
+  | 'presupuesto_anual'
+  | 'editorial'
+  | 'sobre_nosotros'
+  | 'contacto';
 
 // SEO Schema
 export interface SEOConfig {
@@ -49,6 +52,7 @@ export interface PrestacionesInput {
   incluyeCesantia: boolean;
   diasVacacionesPendientes: number;
   incluyeRegalia: boolean;
+  vacacionesTomadas?: boolean;
 }
 
 export interface PrestacionesOutput {

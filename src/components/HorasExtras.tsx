@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Clock, HelpCircle, Check, Info } from 'lucide-react';
 import AdsenseMock from './AdsenseMock';
+import { LEGAL_CONFIG } from '../data/legalConfig';
 
 interface HorasExtrasInput {
   salarioMensual: string;
@@ -41,7 +42,7 @@ export default function HorasExtras() {
     // Calcular sueldo diario promedio y luego por hora ordinaria
     // Se asume semana de 44 horas y mes laboral estándar.
     // En RD, la jornada es de 8 horas diarias. El valor por hora estándar es:
-    const sueldoDiario = salario / 23.83;
+    const sueldoDiario = salario / LEGAL_CONFIG.prestaciones.divisorSalarial;
     const sueldoPorHora = sueldoDiario / 8;
 
     // Calculos con recargos oficiales en República Dominicana (Código Laboral Art. 203)

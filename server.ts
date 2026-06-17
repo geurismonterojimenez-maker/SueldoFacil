@@ -4,9 +4,100 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import { SEO_TAB_CONFIGS, BLOG_POSTS } from "./src/constants";
 
 dotenv.config();
+
+interface SEOMetadata {
+  title: string;
+  description: string;
+  canonical: string;
+}
+
+const SEO_MAP: Record<string, SEOMetadata> = {
+  "/": {
+    title: "SueldoFácil - Calculadoras Laborales y Financieras Dominicana",
+    description: "Calculadora de prestaciones laborales, sueldo neto mensual, horas extras y retenciones de ley (AFP, SFS, ISR) en República Dominicana conforme a la Ley 16-92 y normativas de la DGII.",
+    canonical: "https://sueldofacil.com/"
+  },
+  "/prestaciones": {
+    title: "Calculadora de Prestaciones Laborales y Liquidación RD - SueldoFácil",
+    description: "Calcula tus prestaciones de ley RD (cesantía, preaviso, regalía y vacaciones) conforme al Código de Trabajo (Ley 16-92) dominicano.",
+    canonical: "https://sueldofacil.com/prestaciones/"
+  },
+  "/salario": {
+    title: "Calculadora de Salario Neto Dominicano y Retenciones 2026 - SueldoFácil",
+    description: "Desglosa tus deducciones mensuales TSS (AFP 2.87%, SFS 3.04%) e Impuesto Sobre la Renta (ISR) de la DGII según tu nivel salarial en RD.",
+    canonical: "https://sueldofacil.com/salario/"
+  },
+  "/panel": {
+    title: "Mi Panel de Banca Laboral y Bitácora del Trabajador RD - SueldoFácil",
+    description: "Historial acumulativo de tus cotizaciones laborales dominicanas, planificador de fondo de ahorro y simulación de incremento salarial técnico.",
+    canonical: "https://sueldofacil.com/panel/"
+  },
+  "/sobre-nosotros": {
+    title: "Sobre Nosotros y Equipo de Expertos | Sueldo Fácil",
+    description: "Conozca el equipo de economistas, ingenieros de sistemas y consultores laborales calificados que hacen posible Sueldo Fácil en República Dominicana.",
+    canonical: "https://sueldofacil.com/sobre-nosotros/"
+  },
+  "/politica-editorial": {
+    title: "Política Editorial de Transparencia Matemática | Sueldo Fácil",
+    description: "Metodologías de verificación, fuentes primarias del Ministerio de Trabajo y principios YMYL que avalan la precisión de nuestras calculadoras de nómina en RD.",
+    canonical: "https://sueldofacil.com/politica-editorial/"
+  },
+  "/contacto": {
+    title: "Contacto y Soporte Institucional | Sueldo Fácil",
+    description: "Contacte al departamento de redacción y soporte analítico de Sueldo Fácil para sugerencias, aclaraciones legislativas o asesorías.",
+    canonical: "https://sueldofacil.com/contacto/"
+  },
+  "/mi-diciembre": {
+    title: "Calculadora Sueldo #13 (Doble Sueldo Pascual y Regalía) RD - SueldoFácil",
+    description: "Estima de forma gratuita tu Regalía Pascual de fin de año en República Dominicana, completamente exenta de AFP, SFS e ISR.",
+    canonical: "https://sueldofacil.com/mi-diciembre/"
+  }
+};
+
+function getSEOMetadata(urlPath: string): SEOMetadata {
+  const cleanPath = urlPath.split('?')[0].replace(/\/$/, "");
+  return SEO_MAP[cleanPath] || SEO_MAP["/"];
+}
+
+function injectSEOMetadata(html: string, urlPath: string): string {
+  const seo = getSEOMetadata(urlPath);
+  const metaTags = `
+    <title>${seo.title}</title>
+    <meta name="description" content="${seo.description}" />
+    <link rel="canonical" href="${seo.canonical}" />
+    
+    <!-- Open Graph (Facebook / WhatsApp / Digital Cards) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="${seo.title}" />
+    <meta property="og:description" content="${seo.description}" />
+    <meta property="og:url" content="${seo.canonical}" />
+    <meta property="og:site_name" content="SueldoFácil" />
+    <meta property="og:image" content="https://sueldofacil.com/apple-touch-icon.png" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${seo.title}" />
+    <meta name="twitter:description" content="${seo.description}" />
+    
+    <!-- JSON-LD Structured Data de Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "${seo.title}",
+      "description": "${seo.description}",
+      "url": "${seo.canonical}",
+      "inLanguage": "es"
+    }
+    </script>
+  `;
+
+  // Remove original simple generic title tag to safeguard from duplication
+  let cleanHtml = html.replace(/<title>.*?<\/title>/gi, "");
+  return cleanHtml.replace("</head>", `${metaTags}\n  </head>`);
+}
 
 let aiClient: GoogleGenAI | null = null;
 
@@ -28,28 +119,10 @@ function getGenAI(): GoogleGenAI {
   return aiClient;
 }
 
-let cachedIndexHtml: string | null = null;
-
 async function startServer() {
   const app = express();
   app.use(express.json());
   const PORT = Number(process.env.PORT) || 3000;
-
-  // Gemini API Key validation warning at startup
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
-    console.warn("⚠️ [ADVERTENCIA] La variable GEMINI_API_KEY no está configurada o es inválida en el entorno. El Asistente de IA (chat) estará inhabilitado.");
-  }
-
-  // Redirect trailing slash URLs to non-trailing slash URLs for SEO (301 redirect)
-  app.use((req, res, next) => {
-    if (req.path.length > 1 && req.path.endsWith('/')) {
-      const query = req.url.slice(req.path.length);
-      const safePath = req.path.slice(0, -1) + query;
-      return res.redirect(301, safePath);
-    }
-    next();
-  });
 
   // AI chat API
   app.post("/api/chat", async (req, res) => {
@@ -168,75 +241,18 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    
-    // SEO Dynamic Meta Injection
     app.get('*', (req, res) => {
       try {
-        const indexPath = path.join(distPath, 'index.html');
-        if (!cachedIndexHtml) {
-          if (!fs.existsSync(indexPath)) {
-            return res.status(404).send('Not Found');
-          }
-          cachedIndexHtml = fs.readFileSync(indexPath, 'utf8');
+        const filePath = path.join(distPath, 'index.html');
+        if (fs.existsSync(filePath)) {
+          const rawHtml = fs.readFileSync(filePath, 'utf-8');
+          const enrichedHtml = injectSEOMetadata(rawHtml, req.path);
+          return res.status(200).type('text/html').send(enrichedHtml);
         }
-        let html = cachedIndexHtml;
-
-        // Extract path and find matching SEO
-        const reqPath = req.path;
-        let title = "SueldoFacil - Herramientas Laborales República Dominicana";
-        let description = "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.";
-        let canonical = `https://sueldofacil.com${reqPath}`;
-
-        if (reqPath.startsWith('/blog/')) {
-          const slug = reqPath.substring(6).replace(/\/$/, '');
-          const post = BLOG_POSTS.find(p => p.slug === slug);
-          if (post) {
-            title = `${post.title} | SueldoFácil`;
-            description = post.excerpt;
-            canonical = `https://sueldofacil.com/blog/${slug}`;
-          }
-        } else {
-          // Map pathname to tab name
-          const cleanPath = reqPath.replace(/\/$/, '') || '/';
-          // Find matching tab in SEO_TAB_CONFIGS
-          const tabEntry = Object.entries(SEO_TAB_CONFIGS).find(([t, seo]) => {
-            const tabCanonicalPath = new URL(seo.canonical || 'https://sueldofacil.com/').pathname;
-            return tabCanonicalPath.replace(/\/$/, '') === cleanPath.replace(/\/$/, '');
-          });
-          
-          if (tabEntry) {
-            const seo = tabEntry[1];
-            title = seo.title;
-            description = seo.description;
-            canonical = seo.canonical || canonical;
-          }
-        }
-
-        // Replace original title tag
-        html = html.replace(
-          /<title>[^<]*<\/title>/,
-          `<title>${title}</title>`
-        );
-
-        // Inject description, canonical, open graph, and twitter card tags before </head>
-        const seoTags = `
-    <meta name="description" content="${description}" />
-    <link rel="canonical" href="${canonical}" />
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description}" />
-    <meta property="og:url" content="${canonical}" />
-    <meta property="og:type" content="${reqPath.startsWith('/blog/') ? 'article' : 'website'}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
-`;
-        html = html.replace('</head>', `${seoTags}\n</head>`);
-
-        res.status(200).send(html);
       } catch (err) {
-        console.error("SEO Injection Error:", err);
-        res.sendFile(path.join(distPath, 'index.html'));
+        console.error("SEO Prerender Error in Production routing:", err);
       }
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 

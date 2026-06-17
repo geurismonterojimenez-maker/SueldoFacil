@@ -225,12 +225,25 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
 
   const preprocessMarkdown = (text: string) => {
     if (!text) return '';
-    // Format " * " or " • " into a new line with standard markdown list item " * "
-    let formatted = text
-      .replace(/\s\*\s\*\*/g, '\n* **') // normalizes " * **" to "\n* **"
-      .replace(/\s•\s\*\*/g, '\n* **') // normalizes " • **" to "\n* **"
-      .replace(/\s\*\s/g, '\n* ')       // normalizes " * " to "\n* "
-      .replace(/\n{3,}/g, '\n\n');      // limit excessive blank lines
+    
+    // 1. Normalize triple asterisks ***text*** into double asterisks **text**
+    let formatted = text.replace(/\*\*\*([^*]+)\*\*\*/g, '**$1**');
+
+    // 2. Insert newlines before inline bullets to render them as proper lists
+    // This targets characters like "*" or "•" followed by "**" or plain text, when they aren't already at the start of a line
+    formatted = formatted
+      .replace(/([^\n])\s*\*\s+\*\*/g, '$1\n* **')
+      .replace(/([^\n])\s*•\s+\*\*/g, '$1\n* **')
+      .replace(/([^\n])\s*•\s+/g, '$1\n* ')
+      .replace(/([^\n])\s*-\s+([^*])/g, '$1\n* $2');
+
+    // 3. Keep existing normalizations
+    formatted = formatted
+      .replace(/\s\*\s\*\*/g, '\n* **')
+      .replace(/\s•\s\*\*/g, '\n* **')
+      .replace(/\s\*\s/g, '\n* ')
+      .replace(/\n{3,}/g, '\n\n');
+
     return formatted.trim();
   };
 

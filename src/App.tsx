@@ -5,69 +5,8 @@ import {
   Clock, ArrowRight, DollarSign, Calendar, ChevronRight, Share2, Compass, BookOpen,
   Gift, ShieldAlert, TrendingUp, Target, FileSpreadsheet
 } from 'lucide-react';
-import { TabType, SearchItem } from './types';
-import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS, BLOG_POSTS } from './constants';
-
-const pathnameToTabMap: Record<string, TabType> = {
-  '/': 'home',
-  '/prestaciones': 'prestaciones',
-  '/prestaciones/': 'prestaciones',
-  '/salario': 'salario',
-  '/salario/': 'salario',
-  '/nominas': 'nominas',
-  '/nominas/': 'nominas',
-  '/costos': 'costos',
-  '/costos/': 'costos',
-  '/horas-extras': 'horas_extras',
-  '/horas-extras/': 'horas_extras',
-  '/comparador': 'comparador',
-  '/comparador/': 'comparador',
-  '/documentos': 'cartas_contratos',
-  '/documentos/': 'cartas_contratos',
-  '/asistente-ia': 'ai_assistant',
-  '/asistente-ia/': 'ai_assistant',
-  '/blog': 'blog',
-  '/blog/': 'blog',
-  '/panel': 'dashboard',
-  '/panel/': 'dashboard',
-  '/salarios-profesion': 'salarios_profesiones',
-  '/salarios-profesion/': 'salarios_profesiones',
-  '/calcular-aumento': 'calculadora_aumento',
-  '/calcular-aumento/': 'calculadora_aumento',
-  '/mi-diciembre': 'mi_diciembre',
-  '/mi-diciembre/': 'mi_diciembre',
-  '/biblioteca': 'biblioteca_laboral',
-  '/biblioteca/': 'biblioteca_laboral',
-  '/analizar-recibos': 'analizador_recibos',
-  '/analizar-recibos/': 'analizador_recibos',
-  '/plan-ahorro': 'plan_ahorro',
-  '/plan-ahorro/': 'plan_ahorro',
-  '/presupuesto-anual': 'presupuesto_anual',
-  '/presupuesto-anual/': 'presupuesto_anual',
-};
-
-function getTabFromPathname(pathname: string): { tab: TabType; blogSlug: string | null } {
-  if (pathname.startsWith('/blog/')) {
-    const slug = pathname.substring(6).replace(/\/$/, '');
-    if (slug) {
-      return { tab: 'blog', blogSlug: slug };
-    }
-  }
-  const cleanPath = pathname.replace(/\/$/, '') || '/';
-  const matchedTab = pathnameToTabMap[cleanPath];
-  if (matchedTab) {
-    return { tab: matchedTab, blogSlug: null };
-  }
-  return { tab: 'home', blogSlug: null };
-}
-
-function getPathnameFromTab(tab: TabType, blogSlug: string | null = null): string {
-  if (tab === 'blog' && blogSlug) {
-    return `/blog/${blogSlug}`;
-  }
-  const entry = Object.entries(pathnameToTabMap).find(([path, t]) => t === tab && !path.endsWith('/'));
-  return entry ? entry[0] : '/';
-}
+import { TabType, SearchItem, SEOConfig } from './types';
+import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS } from './constants';
 
 // Component imports
 import CalculadorPrestaciones from './components/CalculadorPrestaciones';
@@ -88,19 +27,13 @@ import AnalizadorRecibos from './components/AnalizadorRecibos';
 import AdsenseMock from './components/AdsenseMock';
 import PlanAhorro from './components/PlanAhorro';
 import PresupuestoAnual from './components/PresupuestoAnual';
+import PoliticaEditorial from './components/PoliticaEditorial';
+import SobreNosotros from './components/SobreNosotros';
+import Contacto from './components/Contacto';
+import YmylDisclaimer from './components/YmylDisclaimer';
 
 export default function App() {
-  const [route, setRoute] = useState<{ tab: TabType; blogSlug: string | null }>(() => {
-    if (typeof window !== 'undefined') {
-      return getTabFromPathname(window.location.pathname);
-    }
-    return { tab: 'home', blogSlug: null };
-  });
-  const tab = route.tab;
-  const blogSlug = route.blogSlug;
-
-  const [prestacionesInitialState, setPrestacionesInitialState] = useState<any>(null);
-  const [salarioInitialState, setSalarioInitialState] = useState<any>(null);
+  const [tab, setTab] = useState<TabType>('home');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredSearch, setFilteredSearch] = useState<SearchItem[]>([]);
@@ -111,7 +44,7 @@ export default function App() {
   const handleAskSavingTips = (netSalary: number) => {
     const formattedSalary = netSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     setAiInitialMessage(`Hola, acabo de calcular mi salario neto de RD$ ${formattedSalary} en la calculadora de SueldoFácil. ¿Podrías brindarme recomendaciones y tips de ahorro personalizados para República Dominicana basados en este nivel de salario neto mensual? Me gustaría que incluyeras ideas prácticas locales (cooperativas dominicanas, opciones de inversión básicas, presupuesto adaptado 50/30/20 y metas realistas bajo este monto).`);
-    selectTab('ai_assistant');
+    setTab('ai_assistant');
   };
 
   // Sync dark class with documentElement for Tailwind support
@@ -134,148 +67,211 @@ export default function App() {
       console.error(e);
     }
 
-    // Check shared URL states (search query parameter or hash fallback)
-    if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search);
-      let stateBase64 = searchParams.get('state');
-      const path = window.location.pathname;
-
-      const hash = window.location.hash;
-      if (!stateBase64 && hash && hash.includes('state=')) {
-        const hashParams = new URLSearchParams(hash.substring(hash.indexOf('?')));
-        stateBase64 = hashParams.get('state');
-      }
-
-      if (stateBase64) {
-        try {
+    // Check shared URL hash states to support shared link calculations!
+    const hash = window.location.hash;
+    if (hash && hash.includes('state=')) {
+      try {
+        const urlParams = new URLSearchParams(hash.substring(1));
+        const stateBase64 = urlParams.get('state');
+        if (stateBase64) {
           const decoded = JSON.parse(atob(stateBase64));
-          if (path.includes('prestaciones') || hash.startsWith('#prestaciones')) {
-            setPrestacionesInitialState(decoded);
-          } else if (path.includes('salario') || hash.startsWith('#salario')) {
-            setSalarioInitialState(decoded);
+          // If we decode successfully, set appropriate tab & preset state
+          if (hash.startsWith('#prestaciones')) {
+            setTab('prestaciones');
+          } else if (hash.startsWith('#salario')) {
+            setTab('salario');
           }
-        } catch (e) {
-          console.error("Failed to parse base64 share link state", e);
         }
+      } catch (e) {
+        console.error("Failed to parse base64 share link state", e);
       }
     }
-  }, []);
-
-  // Sync browser back/forward buttons (Popstate routing)
-  useEffect(() => {
-    const handlePopState = () => {
-      setRoute(getTabFromPathname(window.location.pathname));
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Update SEO Head metrics conforming to SEO specialist & CRO rules
   useEffect(() => {
-    let title = "SueldoFacil - Herramientas Laborales República Dominicana";
-    let description = "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.";
-    let canonical = "https://sueldofacil.com" + (typeof window !== 'undefined' ? window.location.pathname : '');
-
-    if (tab === 'blog' && blogSlug) {
-      const post = BLOG_POSTS.find(p => p.slug === blogSlug);
-      if (post) {
-        title = `${post.title} | SueldoFácil`;
-        description = post.excerpt;
-        canonical = `https://sueldofacil.com/blog/${blogSlug}`;
-      }
-    } else {
-      const seo = SEO_TAB_CONFIGS[tab];
-      if (seo) {
-        title = seo.title;
-        description = seo.description;
-        canonical = seo.canonical || canonical;
-      }
-    }
-
-    document.title = title;
+    const seo: SEOConfig = (SEO_TAB_CONFIGS[tab] as SEOConfig) || {
+      title: "SueldoFacil - Herramientas Laborales República Dominicana",
+      description: "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.",
+      ogTitle: "SueldoFacil - Herramientas Laborales República Dominicana",
+      ogDescription: "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.",
+      canonical: `https://sueldofacil.com/${tab}/`
+    };
+    document.title = seo.title;
     
-    // Update description meta tag
+    // Update meta description
     let metaDesc = document.querySelector('meta[name="description"]');
     if (!metaDesc) {
       metaDesc = document.createElement('meta');
       metaDesc.setAttribute('name', 'description');
       document.head.appendChild(metaDesc);
     }
-    metaDesc.setAttribute('content', description);
+    metaDesc.setAttribute('content', seo.description);
 
-    // Update canonical link tag
-    let linkCanonical = document.querySelector('link[rel="canonical"]');
-    if (!linkCanonical) {
-      linkCanonical = document.createElement('link');
-      linkCanonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(linkCanonical);
-    }
-    linkCanonical.setAttribute('href', canonical);
-
-    // Helper functions for OpenGraph & Twitter tags
-    const setMetaProperty = (property: string, content: string) => {
-      let element = document.querySelector(`meta[property="${property}"]`);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute('property', property);
-        document.head.appendChild(element);
+    // Update Open Graph & Twitter meta tags
+    const updateOrCreateMeta = (propertyType: 'property' | 'name', attrVal: string, content: string) => {
+      let el = document.querySelector(`meta[${propertyType}="${attrVal}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(propertyType, attrVal);
+        document.head.appendChild(el);
       }
-      element.setAttribute('content', content);
+      el.setAttribute('content', content);
     };
 
-    const setMetaName = (name: string, content: string) => {
-      let element = document.querySelector(`meta[name="${name}"]`);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute('name', name);
-        document.head.appendChild(element);
-      }
-      element.setAttribute('content', content);
-    };
+    updateOrCreateMeta('property', 'og:title', seo.ogTitle || seo.title);
+    updateOrCreateMeta('property', 'og:description', seo.ogDescription || seo.description);
+    updateOrCreateMeta('property', 'og:url', seo.canonical || `https://sueldofacil.com/${tab}/`);
+    updateOrCreateMeta('property', 'og:type', 'website');
+    updateOrCreateMeta('name', 'twitter:card', 'summary_large_image');
+    updateOrCreateMeta('name', 'twitter:title', seo.ogTitle || seo.title);
+    updateOrCreateMeta('name', 'twitter:description', seo.ogDescription || seo.description);
 
-    setMetaProperty('og:title', title);
-    setMetaProperty('og:description', description);
-    setMetaProperty('og:url', canonical);
-    setMetaProperty('og:type', tab === 'blog' && blogSlug ? 'article' : 'website');
-
-    setMetaName('twitter:title', title);
-    setMetaName('twitter:description', description);
-
-    // Manage structured schema (JSON-LD) for Search Console rich snippets
-    let schemaScript = document.getElementById('calculator-schema');
-    if (tab === 'prestaciones' || tab === 'salario') {
-      if (!schemaScript) {
-        schemaScript = document.createElement('script');
-        schemaScript.setAttribute('id', 'calculator-schema');
-        schemaScript.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(schemaScript);
-      }
-      
-      const schemaData = tab === 'prestaciones' ? {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Calculadora de Prestaciones Laborales República Dominicana",
-        "url": "https://sueldofacil.com/prestaciones",
-        "description": "Calcula tu liquidación completa paso a paso: preaviso, cesantía, regalía y vacaciones acumuladas bajo el Código de Trabajo dominicano.",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "All"
-      } : {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Calculadora de Salario Neto República Dominicana",
-        "url": "https://sueldofacil.com/salario",
-        "description": "Ingresa tu salario bruto mensual y conoce el desglose real restando AFP, Seguro Familiar de Salud (SFS) e Impuesto Sobre la Renta (ISR).",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "All"
-      };
-      
-      schemaScript.innerHTML = JSON.stringify(schemaData);
-    } else {
-      if (schemaScript) {
-        schemaScript.remove();
-      }
+    // Update canonical link element
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
     }
-  }, [tab, blogSlug]);
+    canonical.setAttribute('href', seo.canonical || `https://sueldofacil.com/${tab}/`);
+
+    // Update Schema.org dynamic JSON-LD injection for Google Crawler
+    let schemaScript = document.getElementById('sueldofacil-schema-ld');
+    if (!schemaScript) {
+      schemaScript = document.createElement('script');
+      schemaScript.setAttribute('id', 'sueldofacil-schema-ld');
+      schemaScript.setAttribute('type', 'application/ld+json');
+      document.head.appendChild(schemaScript);
+    }
+
+    const graph: any[] = [
+      {
+        "@type": "Organization",
+        "@id": "https://sueldofacil.com/#organization",
+        "name": "Sueldo Fácil",
+        "url": "https://sueldofacil.com",
+        "logo": "https://sueldofacil.com/logo.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "contacto@sueldofacil.com",
+          "contactType": "customer support"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://sueldofacil.com/#website",
+        "url": "https://sueldofacil.com",
+        "name": "Sueldo Fácil",
+        "publisher": { "@id": "https://sueldofacil.com/#organization" }
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${seo.canonical || `https://sueldofacil.com/${tab}/`}#webpage`,
+        "url": seo.canonical || `https://sueldofacil.com/${tab}/`,
+        "name": seo.title,
+        "description": seo.description,
+        "isPartOf": { "@id": "https://sueldofacil.com/#website" }
+      }
+    ];
+
+    // Add BreadcrumbList schema
+    const breadcrumbItems = [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Inicio",
+        "item": "https://sueldofacil.com/"
+      }
+    ];
+
+    if (tab !== 'home') {
+      const pageTitle = seo.title.split('-')[0].trim();
+      breadcrumbItems.push({
+        "@type": "ListItem",
+        "position": 2,
+        "name": pageTitle,
+        "item": seo.canonical || `https://sueldofacil.com/${tab}/`
+      });
+    }
+
+    graph.push({
+      "@type": "BreadcrumbList",
+      "@id": `${seo.canonical || `https://sueldofacil.com/${tab}/`}#breadcrumb`,
+      "itemListElement": breadcrumbItems
+    });
+
+    // Add financial app and software app schema for active calculators
+    if (['prestaciones', 'salario', 'isr', 'afp_sfs', 'costos', 'horas_extras', 'calculadora_aumento', 'mi_diciembre'].includes(tab)) {
+      graph.push({
+        "@context": "https://schema.org",
+        "@type": "FinancialApplication",
+        "name": seo.title,
+        "operatingSystem": "All",
+        "applicationCategory": "BusinessApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "DOP"
+        }
+      });
+      graph.push({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": seo.title,
+        "operatingSystem": "All",
+        "applicationCategory": "BusinessApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "DOP"
+        }
+      });
+    }
+
+    // Add FAQPage schema
+    const faqsForTab = FAQ_ITEMS.filter(f => {
+      if (tab === 'prestaciones' && f.category === 'prestaciones') return true;
+      if (tab === 'mi_diciembre' && f.category === 'regalia') return true;
+      if (tab === 'salario' && f.category === 'seguridad_social') return true;
+      return false;
+    });
+
+    if (faqsForTab.length > 0) {
+      graph.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqsForTab.map(f => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.a
+          }
+        }))
+      });
+    }
+
+    // Add Article schema
+    if (tab === 'blog' || tab === 'biblioteca_laboral') {
+      graph.push({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "@id": `${seo.canonical || `https://sueldofacil.com/${tab}/`}#article`,
+        "headline": seo.title,
+        "description": seo.description,
+        "inLanguage": "es",
+        "publisher": { "@id": "https://sueldofacil.com/#organization" },
+        "author": { "@id": "https://sueldofacil.com/#organization" }
+      });
+    }
+
+    schemaScript.innerHTML = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": graph
+    });
+
+  }, [tab]);
 
   // Handle Search Input real-time filtering (Like Google Instant search)
   useEffect(() => {
@@ -308,20 +304,14 @@ export default function App() {
 
   const handleSelectHistoryItem = (log: any) => {
     // Navigate straight to the saved calculation category
-    selectTab(log.type as TabType);
+    setTab(log.type as TabType);
   };
 
-  const selectTab = (t: TabType, slug: string | null = null) => {
-    setRoute({ tab: t, blogSlug: slug });
+  const selectTab = (t: TabType) => {
+    setTab(t);
     setSearchQuery('');
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (typeof window !== 'undefined') {
-      const newPath = getPathnameFromTab(t, slug);
-      if (window.location.pathname !== newPath) {
-        window.history.pushState(null, '', newPath);
-      }
-    }
   };
 
   return (
@@ -628,8 +618,6 @@ export default function App() {
             </div>
 
             {/* GRID DE HERRAMIENTAS - MAQUETACIÓN BENTO */}
-            <AdsenseMock slot="home-after-search" type="banner" />
-
             <div className="space-y-4">
               <div className="flex justify-between items-baseline border-b border-slate-200 pb-3">
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -687,10 +675,6 @@ export default function App() {
                   <button onClick={() => selectTab('horas_extras')} className="text-xs font-bold text-blue-600 hover:text-blue-750 flex items-center gap-1 pt-4 mt-4 border-t border-slate-100">
                     Comenzar Cálculo <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                </div>
-
-                <div className="md:col-span-2 lg:col-span-3">
-                  <AdsenseMock slot="home-tools-infeed" type="infeed" />
                 </div>
 
                 {/* ASISTENTE IA */}
@@ -805,10 +789,6 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-center">
-                  <AdsenseMock slot="home-before-faq" type="square" />
-                </div>
-
               </div>
             </div>
 
@@ -828,17 +808,18 @@ export default function App() {
               </div>
             </div>
 
+            <AdsenseMock slot="home-footer" type="banner" />
           </div>
         )}
 
         {/* VIEW: PRESTACIONES */}
         {tab === 'prestaciones' && (
-          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} initialState={prestacionesInitialState} />
+          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} />
         )}
 
         {/* VIEW: SALARIO NETO */}
         {tab === 'salario' && (
-          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} initialState={salarioInitialState} />
+          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} />
         )}
 
         {/* VIEW: NOMINA */}
@@ -873,11 +854,7 @@ export default function App() {
 
         {/* VIEW: BLOG */}
         {tab === 'blog' && (
-          <BlogVirtual 
-            onSelectorClick={selectTab} 
-            activePostSlug={blogSlug}
-            onPostSelect={(slug) => selectTab('blog', slug)}
-          />
+          <BlogVirtual onSelectorClick={selectTab} />
         )}
 
         {/* VIEW: DASHBOARD */}
@@ -924,6 +901,21 @@ export default function App() {
           <PresupuestoAnual />
         )}
 
+        {/* VIEW: EDITORIAL */}
+        {tab === 'editorial' && (
+          <PoliticaEditorial />
+        )}
+
+        {/* VIEW: SOBRE NOSOTROS */}
+        {tab === 'sobre_nosotros' && (
+          <SobreNosotros />
+        )}
+
+        {/* VIEW: CONTACTO */}
+        {tab === 'contacto' && (
+          <Contacto />
+        )}
+
       </main>
 
       {/* FOOTER */}
@@ -940,7 +932,7 @@ export default function App() {
             La plataforma líder de República Dominicana para la simulación y cálculo educativo de derechos laborales e impositivos. Diseñado de forma gratuita en estricto apego a las directrices de la TSS, Código Laboral (Ley 16-92) e Impuestos Internos.
           </p>
 
-          <div className="flex justify-center gap-4 text-[10px] font-mono tracking-wider pt-2">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] font-mono tracking-wider pt-2">
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('home')}>INICIO</span>
             <span>•</span>
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('prestaciones')}>PRESTACIONES</span>
@@ -948,9 +940,24 @@ export default function App() {
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('salario')}>SALARIO NETO</span>
             <span>•</span>
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('blog')}>BLOG</span>
+            <span>•</span>
+            <span className="hover:text-white cursor-pointer text-blue-400 font-extrabold" onClick={() => selectTab('editorial')}>POLÍTICA EDITORIAL</span>
+            <span>•</span>
+            <span className="hover:text-white cursor-pointer text-blue-400 font-extrabold" onClick={() => selectTab('sobre_nosotros')}>SOBRE NOSOTROS</span>
+            <span>•</span>
+            <span className="hover:text-white cursor-pointer text-blue-400 font-extrabold" onClick={() => selectTab('contacto')}>CONTACTO</span>
           </div>
 
-          <p className="text-[10px] text-slate-500 font-mono">
+          <div className="max-w-2xl mx-auto p-4.5 bg-slate-950/40 dark:bg-slate-900/20 border border-slate-800/40 rounded-xl text-left space-y-1.5 pt-3">
+            <span className="text-[9px] font-extrabold text-amber-500 uppercase tracking-widest block font-mono">
+              Descargo de Responsabilidad Profesional (YMYL)
+            </span>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
+              Los simuladores y artículos de SueldoFácil.com se publican únicamente con fines de educación financiera y orientación general. Ningún cálculo equivale a una opinión legal vinculante, liquidación de la TSS o dictamen de la DGII. Excluimos responsabilidades por discrepancias operativas en interpretaciones particulares de la Ley 16-92 o resoluciones de impuestos.
+            </p>
+          </div>
+
+          <p className="text-[10px] text-slate-550 dark:text-slate-550 font-mono">
             © {new Date().getFullYear()} SueldoFacil. No afiliada al Ministerio de Trabajo dominicano.
           </p>
         </div>

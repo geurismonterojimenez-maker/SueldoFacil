@@ -35,6 +35,22 @@ export default function DashboardVirtual({ historyLogs, onClearHistory, onSelect
   const [incrementResult, setIncrementResult] = useState<any>(null);
   const [targetSavingsPercent, setTargetSavingsPercent] = useState('10');
 
+  // "Mi Perfil Laboral" Persistent Store States
+  const [profileSalario, setProfileSalario] = useState(() => localStorage.getItem('sueldofacil_prof_salario') || '35000');
+  const [profileFrecuencia, setProfileFrecuencia] = useState(() => localStorage.getItem('sueldofacil_prof_frecuencia') || 'mensual');
+  const [profileFechaIngreso, setProfileFechaIngreso] = useState(() => localStorage.getItem('sueldofacil_prof_fecha_ingreso') || '2024-01-01');
+  const [profileEmpresa, setProfileEmpresa] = useState(() => localStorage.getItem('sueldofacil_prof_empresa') || 'grande');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSaveProfile = () => {
+    localStorage.setItem('sueldofacil_prof_salario', profileSalario);
+    localStorage.setItem('sueldofacil_prof_frecuencia', profileFrecuencia);
+    localStorage.setItem('sueldofacil_prof_fecha_ingreso', profileFechaIngreso);
+    localStorage.setItem('sueldofacil_prof_empresa', profileEmpresa);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
   useEffect(() => {
     const original = parseFloat(baseSalary) || 0;
     const factor = (parseFloat(percentIncrement) || 0) / 100;
@@ -121,6 +137,90 @@ export default function DashboardVirtual({ historyLogs, onClearHistory, onSelect
         
         {/* LEFT COMPACTS: INTERACTIVE METRIC WIDGETS */}
         <div className="lg:col-span-7 space-y-8">
+
+          {/* MI PERFIL LABORAL PANEL */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-5">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="space-y-0.5">
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <User className="w-4.5 h-4.5 text-blue-600" />
+                  Mi Perfil Laboral (Autocompletar Activo)
+                </h3>
+                <p className="text-[11px] text-slate-450">Guarda tus datos ordinarios para pre-completar todas las calculadoras automáticamente al abrirlas.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Salario Bruto (RD$)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10.5px] font-bold text-slate-400">RD$</span>
+                  <input
+                    type="number"
+                    value={profileSalario}
+                    onChange={(e) => setProfileSalario(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-3 text-xs font-bold font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-550/20 focus:bg-white"
+                    placeholder="35000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Fecha de Ingreso</label>
+                <input
+                  type="date"
+                  value={profileFechaIngreso}
+                  onChange={(e) => setProfileFechaIngreso(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-550/20 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Sector o Clasificación de Empresa</label>
+                <select
+                  value={profileEmpresa}
+                  onChange={(e) => setProfileEmpresa(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-550/20 focus:bg-white z-20"
+                >
+                  <option value="grande">Sector Grande (TSS Base RD$ 24,150)</option>
+                  <option value="mediana">Sector Mediano (TSS Base RD$ 22,138)</option>
+                  <option value="pequena">Sector Pequeño (TSS Base RD$ 14,835)</option>
+                  <option value="micro">Microempresa (TSS Base RD$ 13,685)</option>
+                  <option value="zona_franca">Zonas Francas (RD$ 16,700)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Frecuencia de Recibo de Nómina</label>
+                <select
+                  value={profileFrecuencia}
+                  onChange={(e) => setProfileFrecuencia(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-550/20 focus:bg-white z-20"
+                >
+                  <option value="mensual">Mensual (Un cobro fijo)</option>
+                  <option value="quincenal">Quincenal (Dos cobros fijos)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
+              <span className="text-[10px] text-slate-400 font-medium italic">
+                * Custodiado localmente conforme a la política de datos YMYL de AdSense.
+              </span>
+              <button
+                onClick={handleSaveProfile}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-6 rounded-xl cursor-pointer transition-all shadow-sm flex items-center justify-center gap-1.5"
+              >
+                {saveSuccess ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" /> Guardado Correctamente
+                  </>
+                ) : (
+                  "Guardar en este Navegador"
+                )}
+              </button>
+            </div>
+          </div>
           
           {/* DIGITAL BANK ACCOUNT WIDGET FOR HISTORIC LOGS */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">

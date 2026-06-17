@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Gift, Calendar, DollarSign, PartyPopper, Scale, ShieldCheck, Share2, Check, Info } from 'lucide-react';
+import { Gift, Calendar, DollarSign, PartyPopper, Scale, ShieldCheck, Share2, Check, Info, ChevronDown, ChevronRight, BookOpen, HelpCircle } from 'lucide-react';
 import { calcularSalarioNeto } from '../utils/calculator';
 import AdsenseMock from './AdsenseMock';
+import YmylDisclaimer from './YmylDisclaimer';
+import EditorialAuthBox from './EditorialAuthBox';
 
 export default function MiDiciembre() {
   const [salarioMensual, setSalarioMensual] = useState('45000');
@@ -11,6 +13,7 @@ export default function MiDiciembre() {
   const [sueldosBono, setSueldosBono] = useState('1'); // Cantidad de sueldos en bonos (Código: 45 o 60 días)
   const [copiador, setCopiador] = useState(false);
   const [resultados, setResultados] = useState<any>(null);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   useEffect(() => {
     const salario = parseFloat(salarioMensual) || 0;
@@ -295,6 +298,166 @@ export default function MiDiciembre() {
           <p className="text-xs text-slate-400 font-semibold text-center py-10">Cargando resultados...</p>
         )}
         <AdsenseMock slot="midiciembre-ads" type="banner" />
+        
+        {/* COMPONENT ENRICHMENT: SECCIÓN DE DETALLE LEGAL DE REGALÍA Y BONO (EEAT) */}
+        <div className="lg:col-span-12 mt-12 space-y-10 border-t border-slate-205 dark:border-slate-800/80 pt-10 text-slate-850 dark:text-slate-200">
+          
+          {/* BANNER AVISO YMYL */}
+          <YmylDisclaimer type="finanzas" />
+
+          {/* ARTÍCULO PRINCIPAL */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start text-left">
+            
+            <div className="md:col-span-8 space-y-6">
+              
+              {/* QUÉ ES Y CÓMO FUNCIONA */}
+              <section className="space-y-3.5">
+                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                  <BookOpen className="w-5.5 h-5.5 text-blue-600 shrink-0" />
+                  Guía de Regalía Pascual (Salario 13) y Participación de Utilidades
+                </h2>
+                <p className="text-xs text-slate-550 dark:text-slate-305 leading-relaxed">
+                  En la República Dominicana, el mes de diciembre representa una temporada de alta relevancia financiera tanto para los trabajadores formales como para las áreas de nómina corporativa. La ley consagra beneficios adicionales diseñados para dinamizar el poder adquisitivo de fuerza laboral en las festividades navideñas. Las regulaciones clave son el <strong>Salario de Navidad (Regalía Pascual)</strong> y la <strong>Participación en las Utilidades (Bonos)</strong>, respaldados por la Ley 16-92 del Código de Trabajo.
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-900 space-y-1">
+                    <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-450 uppercase tracking-widest block font-mono">Regalía Pascual (Art. 219)</span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                      Equivale a la duodécima parte del salario ordinario devengado por el trabajador durante el año calendario. Es un derecho inalienable que no se pierde bajo ninguna modalidad de despido, despido formal o desahucio patronal.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-900 space-y-1">
+                    <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-455 uppercase tracking-widest block font-mono font-bold">Inembargabilidad (Art. 222)</span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                      El Salario de Navidad goza de inmunidad total: exento de retenciones del Impuesto sobre la Renta (ISR) de la DGII, libre de cotizaciones de la Tesorería de la Seguridad Social (TSS) y totalmente inmune a embargos ordinarios.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              {/* CASOS PRÁCTICOS DE CÁLCULO */}
+              <section className="space-y-3.5">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Casos de Uso Prácticos de Ingresos Navideños</h3>
+                
+                <div className="space-y-3 text-slate-700 dark:text-slate-350">
+                  <div className="p-4 bg-blue-50/30 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/50 rounded-2xl">
+                    <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-blue-600 block mb-1">Escenario A: Trabajo Incompleto (Menos de un Año)</span>
+                    <p className="text-xs leading-relaxed font-medium">
+                      Si un colaborador ingresó a la compañía el <strong>1 de Julio</strong> con un sueldo ordinario mensual de <strong>RD$ 36,000.00</strong>, acumulará exactamente 6 meses trabajados en el año calendario. La fórmula calculará la suma de salarios ordinarios del año (RD$ 36,000 x 6 = RD$ 216,000) dividiendo directamente sobre 12. La regalía resultante que percibirá libre de cualquier deducción legal asciende a un total neto de <strong>RD$ 18,000.00</strong>.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-emerald-50/30 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl">
+                    <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-emerald-600 block mb-1">Escenario B: Bonificación de Utilidades e Impuesto Sobre la Renta</span>
+                    <p className="text-xs leading-relaxed font-medium">
+                      A diferencia de la regalía pascual, las bonificaciones otorgadas de conformidad con el Artículo 223 no sufren retenciones de la Seguridad Social (AFP y SFS), pero sí se consideran un ingreso gravable del impuesto sobre la renta ordinario. Al sumarse al ingreso anual del trabajador, la bonificación empuja la base tributaria hacia tramos superiores, calculándose de forma progresiva según las directrices que impone la DGII.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              {/* DERECHOS SENSICIBLES */}
+              <section className="space-y-2.5">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Reglas Críticas al Evaluar el Salario 13</h3>
+                <ul className="space-y-2 text-xs text-slate-650 dark:text-slate-350">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                    <span><strong>Límite De Pago Formal:</strong> El empleador está obligado legalmente a realizar el depósito íntegro del salario de Navidad a más tardar el <strong>20 de diciembre</strong> del año en curso. Su retraso habilita quejas jurídicas.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                    <span><strong>Sueldo Base Exclusivo:</strong> Solo computan las sumas por salario ordinario mensual. Se excluyen del cobro del doble sueldo las horas extras extraordinarias, propinas, comisiones no permanentes, viáticos de transporte y asignaciones informales.</span>
+                  </li>
+                </ul>
+              </section>
+
+            </div>
+
+            {/* COLUMNA ADYACENTE / ACCORDION FAQ */}
+            <div className="md:col-span-4 space-y-6 text-left">
+              
+              <div className="bg-slate-50 dark:bg-slate-950/30 p-5 border border-slate-200/60 dark:border-slate-850 rounded-2xl">
+                <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 font-mono mb-4 flex items-center gap-1.5">
+                  <HelpCircle className="w-4 h-4 text-blue-500" />
+                  Dudas de Diciembre
+                </h3>
+
+                <div className="space-y-3">
+                  {[
+                    {
+                      q: "¿Qué ocurre con las suspensiones de empleo?",
+                      a: "Los días en los que el contrato de trabajo se mantuvo formalmente suspendido no generan cotizaciones al salario base mensual de navidad, por lo que el monto final de la regalía se reajusta proporcionalmente en el cómputo anual."
+                    },
+                    {
+                      q: "¿La regalía pascual paga impuestos de la DGII?",
+                      a: "No. El Artículo 222 del código es explícito: el salario decimotercero se encuentra constitucionalmente eximido del pago de ISR, seguridad social (AFP, SFS) y de embargos judiciales."
+                    },
+                    {
+                      q: "¿Cómo calculo los bonos o utilidades?",
+                      a: "Las empresas con beneficios comerciales deben repartir utilidades dentro de los 120 días del cierre de su año fiscal. Corresponden de 45 a 60 días de sueldo ordinario según la antigüedad (mayor o menor a 3 años)."
+                    },
+                    {
+                      q: "¿Qué sucede si no me pagan antes del 20 de diciembre?",
+                      a: "El incumplimiento patronal en el plazo perentorio constituye una infracción laboral de carácter muy grave que puede ser notificada al órgano del Ministerio del Trabajo."
+                    }
+                  ].map((item, idx) => {
+                    const isOpen = activeFaq === idx;
+                    return (
+                      <div key={idx} className="border-b border-slate-200/50 dark:border-slate-800 pb-2.5 last:border-b-0">
+                        <button
+                          type="button"
+                          onClick={() => setActiveFaq(isOpen ? null : idx)}
+                          className="w-full text-left flex items-start justify-between gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 transition-colors py-1 cursor-pointer"
+                        >
+                          <span>{item.q}</span>
+                          {isOpen ? (
+                            <ChevronDown className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                          )}
+                        </button>
+                        
+                        {isOpen && (
+                          <p className="text-[11px] text-slate-550 dark:text-slate-400 mt-1.5 leading-relaxed font-semibold">
+                            {item.a}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* FUENTES */}
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/10 border border-slate-100 dark:border-slate-900 rounded-2xl font-mono text-[9.5px]">
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2 font-sans">Bases Impositivas</span>
+                <ul className="space-y-1 text-slate-500 leading-tight">
+                  <li>• Código de Trabajo de la República Dominicana (Art. 219 al 225)</li>
+                  <li>• Ley Orgánica de la Seguridad Social (87-01)</li>
+                  <li>• Circulares vigentes Dirección General de Impuestos Internos (DGII 2026)</li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* COMPONENTE EEAT AUTORÍA */}
+          <EditorialAuthBox
+            author="Equipo Editorial SueldoFácil"
+            role="Revisado utilizando fuentes oficiales laborables dominicanas"
+            reviewDate="Junio 2026"
+            updateDate="16 de Junio, 2026"
+            sources={[
+              "Código de Trabajo dominicano (Regulación Laboral 16-92, Artículos 219, 222 y 223)",
+              "Reglamento General de la Tesorería de la Seguridad Social para Exenciones de Nómina",
+              "Directrices de Escalas Mensuales del Impuesto Sobre la Renta (ISR) de la DGII"
+            ]}
+          />
+
+        </div>
       </div>
 
     </div>

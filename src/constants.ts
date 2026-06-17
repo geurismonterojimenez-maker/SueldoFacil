@@ -1,7 +1,8 @@
 import { SearchItem, BlogPost, FAQItem, SEOConfig } from "./types";
+import { LEGAL_CONFIG } from "./data/legalConfig";
 
 export const MINIMUM_WAGE_CATEGORIES = [
-  { id: 'grande', label: 'Empresas Grandes (>150 empleados / RD$ 150M+ ventas)', wage: 24150 },
+  { id: 'grande', label: 'Empresas Grandes (>150 empleados / RD$ 150M+ ventas)', wage: LEGAL_CONFIG.salarioMinimoTSS },
   { id: 'mediana', label: 'Empresas Medianas (51-150 empleados / RD$ 150M ventas)', wage: 22138 },
   { id: 'pequena', label: 'Empresas Pequeñas (11-50 empleados / RD$ 50M ventas)', wage: 14835 },
   { id: 'micro', label: 'Microempresas (<10 empleados / RD$ 8M ventas)', wage: 13685 },
@@ -12,48 +13,28 @@ export const MINIMUM_WAGE_CATEGORIES = [
 
 export const RETENCIONES_CONFIG = {
   afp: {
-    empleado: 0.0287,  // 2.87%
-    empleador: 0.071,  // 7.10%
-    topeSueldosMinimos: 20 // 20 Salarios Mínimos (Grande RD$ 24,150)
+    empleado: LEGAL_CONFIG.tss.afp.empleado,
+    empleador: LEGAL_CONFIG.tss.afp.empleador,
+    topeSueldosMinimos: LEGAL_CONFIG.tss.afp.topeSalariosMinimos
   },
   sfs: {
-    empleado: 0.0304,  // 3.04%
-    empleador: 0.0709, // 7.09%
-    topeSueldosMinimos: 10 // 10 Salarios Mínimos (Grande RD$ 24,150)
+    empleado: LEGAL_CONFIG.tss.sfs.empleado,
+    empleador: LEGAL_CONFIG.tss.sfs.empleador,
+    topeSueldosMinimos: LEGAL_CONFIG.tss.sfs.topeSalariosMinimos
   },
   arl: {
-    empleadorRate: 0.012, // 1.20% promedio
-    topeSueldosMinimos: 4 // Capped
+    empleadorRate: LEGAL_CONFIG.tss.arl.empleador,
+    topeSueldosMinimos: LEGAL_CONFIG.tss.arl.topeSalariosMinimos
   }
 };
 
 // ISR 2026 Escalas Mensuales de la DGII
-export const ISR_ESCALAS = [
-  {
-    limiteInferior: 0,
-    limiteSuperior: 34685.00,
-    tasa: 0,
-    montoFijo: 0
-  },
-  {
-    limiteInferior: 34685.01,
-    limiteSuperior: 52027.42,
-    tasa: 0.15,
-    montoFijo: 0
-  },
-  {
-    limiteInferior: 52027.43,
-    limiteSuperior: 72260.25,
-    tasa: 0.20,
-    montoFijo: 2601.36
-  },
-  {
-    limiteInferior: 72260.26,
-    limiteSuperior: Infinity,
-    tasa: 0.25,
-    montoFijo: 6647.92
-  }
-];
+export const ISR_ESCALAS = LEGAL_CONFIG.dgii.tramosISR.map(t => ({
+  limiteInferior: t.limiteInferior,
+  limiteSuperior: t.limiteSuperior,
+  tasa: t.tasa,
+  montoFijo: t.montoFijo
+}));
 
 export const SEARCH_ITEMS: SearchItem[] = [
   {
@@ -319,6 +300,27 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     ogTitle: "Presupuesto Anual RD | Sueldo Fácil",
     ogDescription: "Calcula tu plan de ahorro y organiza tu presupuesto anual de forma gratuita para República Dominicana.",
     canonical: "https://sueldofacil.com/presupuesto-anual/"
+  },
+  editorial: {
+    title: "Política Editorial y Transparencia | Sueldo Fácil",
+    description: "Nuestra política editorial: pautas, metodologías y criterios de investigación para garantizar la exactitud de nuestras calculadoras laborales en RD.",
+    ogTitle: "Política Editorial | Sueldo Fácil",
+    ogDescription: "Conozca cómo revisamos, verificamos y actualizamos nuestras herramientas de cálculo laboral en RD.",
+    canonical: "https://sueldofacil.com/politica-editorial/"
+  },
+  sobre_nosotros: {
+    title: "Sobre Nosotros y Nuestro Equipo | Sueldo Fácil",
+    description: "Conozca al equipo multidisciplinario detrás de Sueldo Fácil: economistas, programadores y expertos legales dedicados a democratizar el derecho laboral en RD.",
+    ogTitle: "Sobre Nosotros | Sueldo Fácil",
+    ogDescription: "Nuestra misión, visión y los profesionales que hacen posible Sueldo Fácil.",
+    canonical: "https://sueldofacil.com/sobre-nosotros/"
+  },
+  contacto: {
+    title: "Contacto e Información Institucional | Sueldo Fácil",
+    description: "Póngase en contacto con el equipo editorial y de soporte de Sueldo Fácil. Formulario de contacto, correo institucional y horarios de servicio.",
+    ogTitle: "Contacto | Sueldo Fácil",
+    ogDescription: "Escríbanos o consulte nuestros horarios de atención institucional en República Dominicana.",
+    canonical: "https://sueldofacil.com/contacto/"
   }
 };
 
