@@ -37,9 +37,13 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
   const [pdfType, setPdfType] = useState<'ejecutivo' | 'educativo'>('ejecutivo');
   const [reportSerial] = useState(() => {
     const today = new Date();
-    const yyyymmdd = today.toISOString().split('T')[0].replace(/-/g, '');
-    const rands = Math.floor(100000 + Math.random() * 900000);
-    return `SF-${yyyymmdd}-${rands}`;
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const hh = String(today.getHours()).padStart(2, '0');
+    const min = String(today.getMinutes()).padStart(2, '0');
+    const ss = String(today.getSeconds()).padStart(2, '0');
+    return `SF-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
   });
 
   // Recalculate on any input change
@@ -92,7 +96,18 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
 
   const handlePrint = () => {
     analytics.logPdfDescargado('prestaciones', 'Prestaciones Laborales');
-    window.print();
+    try {
+      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
+        input,
+        output,
+        reportSerial,
+        pdfType
+      }));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&token=${token}`, '_blank');
+    } catch (e) {
+      console.error("Error setting print calculations", e);
+    }
   };
 
   const handleShare = () => {
@@ -664,8 +679,8 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
       </div>
     </div>
 
-      {/* THE OFFICIAL PRINT REPORT TEMPLATE (VISIBLE ONLY DURING PRINT/PDF) */}
-      {output && (
+      {/* THE OFFICIAL PRINT REPORT TEMPLATE (FULLY DECOUPLED COMPONENT RENDERS AT ?print_report=true) */}
+      {false && output && (
         <div className="hidden print:block bg-white text-slate-900 font-sans p-2 text-xs leading-relaxed max-w-[8.5in] mx-auto print:bg-white print:text-black">
           {/* CUSTOM STATIC CSS TO INJECT FOR EXTRA COMPATIBILITY & BEAUTIFUL MULTIPAGE RENDERING */}
           <style dangerouslySetInnerHTML={{ __html: `

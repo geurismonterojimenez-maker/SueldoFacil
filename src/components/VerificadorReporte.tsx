@@ -26,18 +26,19 @@ export default function VerificadorReporte({ onBackToHome, urlCode }: Verificado
       return;
     }
 
-    // RegEx to check SF-YYYYMMDD-Rands where Rands is 6 digits
-    const regex = /^SF-(\d{8})-(\d{6})$/;
+    // RegEx to check SF-YYYYMMDD-HHMMSS optionally followed by -V2026 or similar
+    const regex = /^SF-(\d{8})-(\d{6})(?:-V(\d{4}))?$/;
     const match = cleanCode.match(regex);
 
     if (!match) {
-      setErrorMsg('El formato del código no es válido. Debe coincidir con el formato estándar (Ejemplo: SF-20260616-123456).');
+      setErrorMsg('El formato del código no es válido. Debe coincidir con el formato estándar (Ejemplo: SF-20260616-001245-V2026 o SF-20260616-123456).');
       setReporteInfo(null);
       return;
     }
 
     const fechaStr = match[1]; // YYYYMMDD
     const randsStr = match[2];
+    const versionMatch = match[3] ? `V${match[3]}` : 'V2026';
 
     const year = parseInt(fechaStr.substring(0, 4));
     const month = parseInt(fechaStr.substring(4, 6)) - 1; // 0-indexed
@@ -70,7 +71,7 @@ export default function VerificadorReporte({ onBackToHome, urlCode }: Verificado
     setReporteInfo({
       codigo: cleanCode,
       fechaEmision: formattedDate,
-      version: '2026.06',
+      version: versionMatch,
       hash: `SF-SHA256-${hashHex}`,
       valido: true
     });

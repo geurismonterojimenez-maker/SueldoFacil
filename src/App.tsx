@@ -32,6 +32,7 @@ import SobreNosotros from './components/SobreNosotros';
 import Contacto from './components/Contacto';
 import YmylDisclaimer from './components/YmylDisclaimer';
 import VerificadorReporte from './components/VerificadorReporte';
+import { PrestacionesPrintReport } from './components/PrestacionesPrintReport';
 
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
@@ -69,9 +70,16 @@ export default function App() {
       console.error(e);
     }
 
-    // Check query parameters for verification code
+    // Check path or query parameters for verification code
+    const pathname = window.location.pathname;
+    const pathMatch = pathname.match(/^\/verificar\/(SF-\d{8}-\d{6}(?:-V\d{4})?)$/i);
+    let codeFromPath = null;
+    if (pathMatch) {
+      codeFromPath = pathMatch[1].toUpperCase();
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
-    const queryCode = urlParams.get('codigo') || urlParams.get('code');
+    const queryCode = urlParams.get('codigo') || urlParams.get('code') || codeFromPath;
     if (queryCode) {
       setUrlCode(queryCode);
       setTab('verificar');
@@ -323,6 +331,12 @@ export default function App() {
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const isPrintMode = new URLSearchParams(window.location.search).get('print_report') === 'true';
+
+  if (isPrintMode) {
+    return <PrestacionesPrintReport />;
+  }
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
