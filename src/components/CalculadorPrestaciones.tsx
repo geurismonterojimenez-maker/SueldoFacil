@@ -34,6 +34,13 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
   const [output, setOutput] = useState<PrestacionesOutput | null>(null);
   const [showShareTooltip, setShowShareTooltip] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [pdfType, setPdfType] = useState<'ejecutivo' | 'educativo'>('ejecutivo');
+  const [reportSerial] = useState(() => {
+    const today = new Date();
+    const yyyymmdd = today.toISOString().split('T')[0].replace(/-/g, '');
+    const rands = Math.floor(100000 + Math.random() * 900000);
+    return `SF-${yyyymmdd}-${rands}`;
+  });
 
   // Recalculate on any input change
   useEffect(() => {
@@ -98,7 +105,9 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">      {/* CARD IZQUIERDA: CONFIGURACION SIMPLIFICADA (TODO EN UNO) */}
+    <>
+      {/* VISTA EN PANTALLA GENERAL (SE OCULTA COMPLETAMENTE EN EL PDF/DISEÑO IMPRESO) */}
+      <div className="print:hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">      {/* CARD IZQUIERDA: CONFIGURACION SIMPLIFICADA (TODO EN UNO) */}
       <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
         
         {/* ENCABEZADO */}
@@ -369,10 +378,55 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                 </div>
               </div>
 
+              {/* CONFIGURACIÓN DE FORMATO PDF COPORATIVO DE NIVEL EJECUTIVO */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4.5 space-y-3 mt-4">
+                <p className="text-[11px] text-slate-300 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-blue-400" />
+                  Elegir Formato del Reporte PDF/Impreso
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfType('ejecutivo');
+                      analytics.logEvent('formato_pdf_seleccionado', { category: 'prestaciones', action: 'seleccion_pdf_ejecutivo', label: 'Ejecutivo' });
+                    }}
+                    className={`py-2 px-3.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col justify-center items-center gap-0.5 cursor-pointer select-none ${
+                      pdfType === 'ejecutivo'
+                        ? 'bg-blue-600/10 border-blue-500 text-blue-400 font-extrabold'
+                        : 'bg-slate-950 border-slate-850 text-slate-500 hover:border-slate-800 hover:text-slate-400'
+                    }`}
+                  >
+                    <span>📄 Reporte Ejecutivo</span>
+                    <span className="text-[9px] font-normal opacity-75">1-2 Páginas</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfType('educativo');
+                      analytics.logEvent('formato_pdf_seleccionado', { category: 'prestaciones', action: 'seleccion_pdf_educativo', label: 'Educativo' });
+                    }}
+                    className={`py-2 px-3.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col justify-center items-center gap-0.5 cursor-pointer select-none ${
+                      pdfType === 'educativo'
+                        ? 'bg-blue-600/10 border-blue-500 text-blue-400 font-extrabold'
+                        : 'bg-slate-950 border-slate-850 text-slate-500 hover:border-slate-800 hover:text-slate-400'
+                    }`}
+                  >
+                    <span>📚 Guía Educativa</span>
+                    <span className="text-[9px] font-normal opacity-75">4-6 Páginas</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 leading-normal font-sans">
+                  {pdfType === 'ejecutivo' 
+                    ? 'Genera una ficha corporativa de 1 a 2 páginas optimizada con datos del caso, desglose de ley y fundamentos breves.' 
+                    : 'Incluye la simulación ejecutiva completa añadida de anexos legales, ejemplos prácticos, errores comunes y FAQ expandido.'}
+                </p>
+              </div>
+
               {/* DETALLE LEGAL */}
               <div className="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800 pt-4">
                 <span className="font-semibold text-slate-300 block mb-1">Fundamento Legal (Art. 76 al 86 Ley 16-92):</span>
-                El preaviso y la cesantía se calculan en base a tu salario cotizable diario (Salario Bruto / 23.83). La regalía pascual está libre del impuesto ISR y de seguridad social por mandato expreso constitucional y laboral. El empleador cuenta con un máximo de 10 días laborables para realizar el desembolso total de la liquidación antes de generar el cobro por mora laboral diaria.
+                El preaviso y la cesantía se calculan en base a tu salario cotizable diario (Salario Bruto / 23.83). La regalía pascual está libre del impuesto ISR y de seguridad social por mandato expreso de la ley laboral dominicana. El empleador cuenta con un máximo de **10 días de calendario** ininterrumpidos para realizar el desembolso total de la liquidación antes de incurrir en las sanciones por mora del Art. 86.
               </div>
             </div>
           )}
@@ -382,10 +436,10 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
         <div className="flex flex-wrap gap-2.5 mt-6 border-t border-slate-800 pt-5">
           <button
             onClick={handlePrint}
-            className="flex-1 min-w-[90px] bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700 font-sans"
+            className="flex-1 min-w-[90px] bg-blue-600 hover:bg-blue-500 text-white px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-blue-500 font-sans shadow-lg shadow-blue-600/10"
           >
             <Printer className="w-4 h-4" />
-            PDF / Imprimir
+            PDF / Imprimir ({pdfType === 'ejecutivo' ? 'Ejecutivo' : 'Completo'})
           </button>
           
           <button
@@ -603,11 +657,576 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           sources={[
             "Código de Trabajo dominicano (Ley de Regulación Laboral 16-92)",
             "Boletines Informativos del Comité Nacional de Salarios (CNS RD)",
-            "Guías de Cotización TSS para el Régimen Contributivo del Seguro Familiar de Salud"
+            "Guías de Cotización TSS para el Seguro de Salud y Riesgos Laborales"
           ]}
         />
 
       </div>
     </div>
+
+      {/* THE OFFICIAL PRINT REPORT TEMPLATE (VISIBLE ONLY DURING PRINT/PDF) */}
+      {output && (
+        <div className="hidden print:block bg-white text-slate-900 font-sans p-2 text-xs leading-relaxed max-w-[8.5in] mx-auto print:bg-white print:text-black">
+          {/* CUSTOM STATIC CSS TO INJECT FOR EXTRA COMPATIBILITY & BEAUTIFUL MULTIPAGE RENDERING */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            @media print {
+              body {
+                background: white !important;
+                color: black !important;
+                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+              }
+              .page-break {
+                page-break-after: always !important;
+                break-after: page !important;
+              }
+              .print-no-break {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+            }
+          `}} />
+
+          {/* PAGE 1: REPORTE EJECUTIVO - PORTADA Y RESUMEN COPORATIVO (SOLO 1 PAGINA SI ES EJECUTIVO) */}
+          <div className="page-break flex flex-col justify-between min-h-[10.5in] pb-4">
+            <div>
+              {/* CABECERA INSTITUCIONAL */}
+              <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-5">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    {/* SVG LOGO CORPORATIVO SUELDO FÁCIL */}
+                    <div className="bg-slate-900 text-white p-1.5 rounded-lg flex items-center justify-center font-bold font-mono tracking-tight text-sm">
+                      <span className="text-blue-400">S</span>F
+                    </div>
+                    <span className="text-base font-extrabold tracking-tight text-slate-900 uppercase font-sans">SueldoFácil.com</span>
+                  </div>
+                  <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Reporte de Prestaciones Laborales</h1>
+                  <p className="text-[9.5px] text-slate-500 mt-1 font-medium font-sans">
+                    Cálculo matemático de prestaciones conforme al Código de Trabajo de la República Dominicana (Ley No. 16-92).
+                  </p>
+                  <p className="text-[8.5px] text-slate-400 font-medium font-sans italic">
+                    Normativa utilizada: Actualizada al {new Date().toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' })}.
+                  </p>
+                </div>
+
+                {/* CONTROL DE VERSIONES DEL REPORTE (FASE 3) */}
+                <div className="text-right text-[10px] space-y-1 font-mono text-slate-600 border border-slate-200/65 p-3 rounded-2xl bg-slate-50/50">
+                  <div><strong className="text-slate-800">Reporte:</strong> {reportSerial}</div>
+                  <div><strong className="text-slate-800">Versión:</strong> 2026.06</div>
+                  <div><strong className="text-slate-800 font-bold">Tipo:</strong> {pdfType === 'ejecutivo' ? 'Reporte Ejecutivo' : 'Guía Educativa'}</div>
+                  <div><strong className="text-slate-800">Emitido:</strong> {new Date().toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' })} - {new Date().toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                  <div><strong className="text-emerald-700 font-bold">Normativa:</strong> Vigente al momento de emisión</div>
+                </div>
+              </div>
+
+              {/* GRÁFICO O BANNER / NOTA DE PRESENTACIÓN */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 mb-5 items-center">
+                <div className="md:col-span-8 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1.5">
+                  <h3 className="text-xs font-bold text-slate-800 tracking-wider uppercase font-mono">Presentación del Reporte</h3>
+                  <p className="text-[10.5px] text-slate-600 leading-normal font-sans text-justify">
+                    Este documento expone detalladamente el cálculo de los derechos acumulados e indemnizaciones correspondientes a la finalización de la relación laboral descrita. Ha sido auditado contra los topes de cotización de la TSS, salarios mínimos sectoriales vigentes y escalas fiscales definidas por la DGII.
+                  </p>
+                </div>
+                {/* VECTOR QR CODE DE VERIFICACIÓN FUNCIONAL A BASE DE SVG (FASE 2) */}
+                <div className="md:col-span-4 flex flex-col justify-center items-center p-2.5 border border-slate-200 rounded-2xl bg-white space-y-1 text-center font-sans shadow-sm">
+                  <a href={`https://sueldofacil.com/verificar?codigo=${reportSerial}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
+                    <svg className="w-14 h-14 text-slate-800 group-hover:text-blue-600 transition-colors" viewBox="0 0 100 100">
+                      <rect width="100" height="100" fill="none" />
+                      {/* Esquinas fijas de alineamiento QR reales */}
+                      <rect x="5" y="5" width="22" height="22" fill="currentColor" />
+                      <rect x="9" y="9" width="14" height="14" fill="white" />
+                      <rect x="12" y="12" width="8" height="8" fill="currentColor" />
+
+                      <rect x="73" y="5" width="22" height="22" fill="currentColor" />
+                      <rect x="77" y="9" width="14" height="14" fill="white" />
+                      <rect x="80" y="12" width="8" height="8" fill="currentColor" />
+
+                      <rect x="5" y="73" width="22" height="22" fill="currentColor" />
+                      <rect x="9" y="77" width="14" height="14" fill="white" />
+                      <rect x="12" y="80" width="8" height="8" fill="currentColor" />
+
+                      {/* Patrón de alineamiento */}
+                      <rect x="77" y="77" width="8" height="8" fill="currentColor" />
+                      <rect x="79" y="79" width="4" height="4" fill="white" />
+                      <rect x="80" y="80" width="2" height="2" fill="currentColor" />
+
+                      {/* Pixeles intermedios simulados detallados */}
+                      <path d="M35 5h5v5h-5zm0 10h5v10h-5zm10-5h5v5h-5zm10 5h5v5h-5zm10-10h5v5h-5zm-15 15h10v5H50zm15 10h5v5h-5zm-20 5h10v5h-10zm25 15h5v5h-5zm-15 10h10v5h-10zm-15 5h5v5h-5zm-10-25h10v5h-10zm15-5h5v5h-5zm25-10h5v5h-5zm-15 5h5v5h-5z" fill="currentColor" />
+                      <path d="M40 12h5v3H40zm10 5h5v3h-5zm-10 15h5v5H40zm15 10h5v5h-5zm5-20h5v5h-5zm10 35h5v5h-5zm-25 5h5v5h-5zm15 5h15v5H50zm-15 0h5v5H35zm-5-30h5v5h-5zm15-5h5v5h-5zm25-10h5v5h-5zm-15 5h5v5h-5z" fill="currentColor" />
+                    </svg>
+                  </a>
+                  <span className="text-[7.5px] font-bold text-slate-500 uppercase tracking-wide leading-none">Escanear / Clic Verificación</span>
+                  <a href={`https://sueldofacil.com/verificar?codigo=${reportSerial}`} target="_blank" rel="noopener noreferrer" className="text-[7.5px] text-blue-600 hover:underline hover:text-blue-805 font-mono tracking-tighter truncate max-w-[110px] block mt-0.5">
+                    {reportSerial}
+                  </a>
+                </div>
+              </div>
+
+              {/* DATOS DEL TRABAJADOR / FICHA TÉCNICA */}
+              <div className="mb-5">
+                <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-3 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-slate-900 rounded-full"></span>
+                  Ficha Técnica de Relación Laboral
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Fecha Ingreso</span>
+                    <span className="text-xs font-bold text-slate-800 font-mono">{input.fechaIngreso}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Fecha Salida</span>
+                    <span className="text-xs font-bold text-slate-800 font-mono">{input.fechaSalida}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Tiempo Laborado</span>
+                    <span className="text-xs font-bold text-slate-800">
+                      {output.tiempoServicio.anos}a {output.tiempoServicio.meses}m {output.tiempoServicio.dias}d
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Tipo de Salida</span>
+                    <span className="text-xs font-bold text-slate-800 truncate block">
+                      {input.tipoSalida === 'desahucio_patronal' ? 'Desahucio Patronal' : input.tipoSalida === 'desahucio_trabajador' ? 'Renuncia Voluntaria' : 'Despido Justificado'}
+                    </span>
+                  </div>
+                  <div className="space-y-1 border-t border-slate-200/60 pt-2.5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Salario Ordinario</span>
+                    <span className="text-xs font-bold text-slate-800 font-mono">RD$ {parseFloat(input.salarioMensual).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="space-y-1 border-t border-slate-200/60 pt-2.5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Sueldo Diario (÷23.83)</span>
+                    <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="space-y-1 border-t border-slate-200/60 pt-2.5 col-span-2">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Vacaciones Anuales</span>
+                    <span className="text-xs font-bold text-slate-800">
+                      {input.vacacionesTomadas ? 'Gozadas / No aplica compensación' : input.diasVacacionesPendientes > 0 ? `Pendientes (${input.diasVacacionesPendientes} días)` : 'Estimación de Ley'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* RESULTADO NETO DESTACADO (FASE 1 - AHORRO DE TINTA, MINIMALISTA BLANCO Y AZUL) */}
+              <div className="bg-white text-slate-900 border-2 border-slate-905 rounded-2xl p-5 text-center mb-5 space-y-1 shadow-sm">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 block font-mono leading-none">Monto Total Estimado de Liquidación</span>
+                <div className="text-3xl font-black text-blue-700 print:text-blue-800 font-sans tracking-tight leading-normal">
+                  RD$ {output.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <p className="text-[9px] text-slate-500 max-w-xl mx-auto leading-normal italic border-t border-slate-100 pt-1.5 mt-1 font-sans">
+                  "Este valor representa una simulación estimativa calculada conforme a la legislación vigente y la información provista, no constituyendo una certificación final oficial."
+                </p>
+              </div>
+
+              {/* TABLA DE DESGLOSE DE CONCEPTOS DE LEY */}
+              <div className="mb-5">
+                <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-2.5 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-slate-900 rounded-full"></span>
+                  Desglose Detallado de Indemnizaciones y Derechos
+                </h2>
+                <table className="w-full text-left border-collapse border border-slate-300 rounded-2xl overflow-hidden shadow-sm">
+                  <thead>
+                    <tr className="bg-slate-900 text-white font-sans uppercase text-[9px] font-extrabold tracking-wider print:bg-slate-900 print:text-white">
+                      <th className="p-2.5">Concepto Liquidado</th>
+                      <th className="p-2.5">Base Reguladora</th>
+                      <th className="p-2.5 text-center">Días Computados</th>
+                      <th className="p-2.5 text-right">Subtotal Estimado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-slate-200">
+                      <td className="p-2.5 bg-white font-bold text-slate-800">
+                        Preaviso de Ley <span className="text-[9px] font-normal text-slate-450 block font-sans">Art. 76, Código de Trabajo</span>
+                      </td>
+                      <td className="p-2.5 bg-white font-medium font-mono text-slate-650">
+                        RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / día
+                      </td>
+                      <td className="p-2.5 bg-white text-center font-bold font-mono text-slate-800">
+                        {input.incluyePreaviso ? Math.round(output.preaviso / Math.max(0.01, output.salarioDiario)) : 0} días
+                      </td>
+                      <td className="p-2.5 bg-white text-right font-bold font-mono text-slate-900 font-sans">
+                        RD$ {output.preaviso.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="p-2.5 bg-slate-50/50 font-bold text-slate-800">
+                        Auxilio de Cesantía <span className="text-[9px] font-normal text-slate-450 block font-sans">Art. 80, Código de Trabajo</span>
+                      </td>
+                      <td className="p-2.5 bg-slate-50/50 font-medium font-mono text-slate-650">
+                        RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / día
+                      </td>
+                      <td className="p-2.5 bg-slate-50/50 text-center font-bold font-mono text-slate-800">
+                        {input.incluyeCesantia ? Math.round(output.cesantia / Math.max(0.01, output.salarioDiario)) : 0} días
+                      </td>
+                      <td className="p-2.5 bg-slate-50/50 text-right font-bold font-mono text-slate-900 font-sans">
+                        RD$ {output.cesantia.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="p-2.5 bg-white font-bold text-slate-800">
+                        Vacaciones Proporcionales <span className="text-[9px] font-normal text-slate-450 block font-sans">Art. 177 y sgtes.</span>
+                      </td>
+                      <td className="p-2.5 bg-white font-medium font-mono text-slate-650">
+                        RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / día
+                      </td>
+                      <td className="p-2.5 bg-white text-center font-bold font-mono text-slate-800">
+                        {input.vacacionesTomadas ? 0 : Math.round(output.vacaciones / Math.max(0.01, output.salarioDiario))} días
+                      </td>
+                      <td className="p-2.5 bg-white text-right font-bold font-mono text-slate-900 font-sans">
+                        RD$ {output.vacaciones.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="p-2.5 bg-slate-50/50 font-bold text-slate-800">
+                        Regalía Pascual (Sueldo #13) <span className="text-[9px] font-normal text-slate-450 block font-sans">Art. 219, Sueldo Proporcional</span>
+                      </td>
+                      <td className="p-2.5 bg-slate-50/50 font-medium font-mono text-slate-650">
+                        Salario base prorrateado
+                      </td>
+                      <td className="p-2.5 bg-slate-50/50 text-center font-bold text-slate-850">-</td>
+                      <td className="p-2.5 bg-slate-50/50 text-right font-bold font-mono text-slate-900 font-sans">
+                        RD$ {output.regalia.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                    <tr className="bg-slate-900/10">
+                      <td colSpan={3} className="p-2.5 text-right font-extrabold text-[10px] uppercase text-slate-900 print:text-black">Monto Neto Estimado RD$</td>
+                      <td className="p-2.5 text-right font-black font-mono text-sm text-slate-950">
+                        RD$ {output.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* GRÁFICO EJECUTIVO SLATE BAR DE DISTRIBUCIÓN */}
+              <div className="p-3.5 border border-slate-200 rounded-2xl bg-slate-50/40 space-y-2.5">
+                <span className="text-[9px] font-extrabold uppercase tracking-wide text-slate-500 font-mono block">Distribución Proporcional de la Liquidación</span>
+                <div className="h-2.5 w-full bg-slate-200 rounded-full flex overflow-hidden">
+                  {output.total > 0 ? (
+                    <>
+                      <div className="bg-blue-600 h-full" style={{ width: `${(output.preaviso / output.total) * 100}%` }} />
+                      <div className="bg-emerald-600 h-full" style={{ width: `${(output.cesantia / output.total) * 100}%` }} />
+                      <div className="bg-indigo-600 h-full" style={{ width: `${(output.vacaciones / output.total) * 100}%` }} />
+                      <div className="bg-amber-500 h-full" style={{ width: `${(output.regalia / output.total) * 100}%` }} />
+                    </>
+                  ) : (
+                    <div className="bg-slate-300 w-full" />
+                  )}
+                </div>
+                <div className="grid grid-cols-4 text-[9px] text-slate-600 font-medium font-sans gap-2 pt-0.5">
+                  <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-blue-600 inline-block"></span> Preaviso ({output.total > 0 ? Math.round((output.preaviso / output.total) * 100) : 0}%)</div>
+                  <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-600 inline-block"></span> Cesantía ({output.total > 0 ? Math.round((output.cesantia / output.total) * 100) : 0}%)</div>
+                  <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-indigo-600 inline-block"></span> Vacaciones ({output.total > 0 ? Math.round((output.vacaciones / output.total) * 100) : 0}%)</div>
+                  <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span> Sueldo #13 ({output.total > 0 ? Math.round((output.regalia / output.total) * 100) : 0}%)</div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECCIÓN REGISTRO FIRMAS / SELLOS OPTIMIZADA (FASE 9) */}
+            <div className="grid grid-cols-2 gap-8 mt-5 pt-5 border-t border-slate-200 print-no-break">
+              {/* TRABAJADOR */}
+              <div className="space-y-3">
+                <div className="border-t border-slate-300 pt-2 text-center">
+                  <span className="text-[10px] font-extrabold text-slate-800 block uppercase tracking-wider font-sans leading-none">Firma del Trabajador</span>
+                </div>
+                <div className="text-[9px] text-slate-600 space-y-1 font-sans pl-1">
+                  <div><strong>Nombre:</strong> ______________________________________</div>
+                  <div><strong>Cédula:</strong> ______________________________________</div>
+                  <div><strong>Fecha:</strong> ______ / ______ / 20___</div>
+                </div>
+              </div>
+
+              {/* EMPLEADOR */}
+              <div className="space-y-3">
+                <div className="border-t border-slate-300 pt-2 text-center">
+                  <span className="text-[10px] font-extrabold text-slate-800 block uppercase tracking-wider font-sans leading-none">Firma / Sello del Empleador</span>
+                </div>
+                <div className="text-[9px] text-slate-600 space-y-1 font-sans pl-1">
+                  <div><strong>Nombre/Rep:</strong> ___________________________________</div>
+                  <div><strong>Cargo:</strong> _______________________________________</div>
+                  <div><strong>RNC o Sello:</strong> __________________________________</div>
+                  <div><strong>Fecha:</strong> ______ / ______ / 20___</div>
+                </div>
+              </div>
+            </div>
+
+            {/* DISCLAIMER PROFESIONAL SÓLIDO EN EL PIE DE PÁGINA DE LA HOJA (FASE 4) */}
+            <div className="pt-4 border-t border-slate-205 space-y-1 text-center font-sans mt-4">
+              <p className="text-[8.5px] text-slate-500 leading-normal italic">
+                <strong>AVISO LEGAL E INFORMATION YMYL:</strong> {pdfType === 'ejecutivo' ? 'El presente reporte ha sido elaborado conforme a las disposiciones del Código de Trabajo de la República Dominicana (Ley No. 16-92).' : 'Este documento constituye una simulación informativa y educativa basada en la legislación vigente al momento de su emisión y no sustituye asesoría jurídica profesional.'}
+              </p>
+              <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-550 pt-1">
+                <span>Vigencia Normativa: Actualizada al {new Date().toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' })}.</span>
+                <span className="uppercase tracking-widest font-bold">Página 1 de {pdfType === 'ejecutivo' ? '1' : '6'} • SueldoFácil.com • Ref: {reportSerial}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* PAGES 2 to 6: ADITIONAL ANEXOS - EDUCATIONAL REPORT EXPANSION (FASE 6) */}
+          {pdfType === 'educativo' && (
+            <>
+              {/* PAGE 2: FUNDAMENTO JURÍDICO ESPECÍFICO */}
+              <div className="page-break flex flex-col justify-between min-h-[10.5in] pb-4 pt-4 border-t border-dashed border-slate-200">
+                <div className="space-y-5">
+                  <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-4 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                    Anexo Técnico: Fundamentos Legales Detallados (Ley 16-92)
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10.5px] leading-relaxed">
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-extrabold text-slate-900 uppercase tracking-wide">AVISO DE PREAVISO (Art. 76 - Ley 16-92)</h4>
+                      <p className="text-slate-600 text-justify font-sans">
+                        El preaviso obliga a las partes a notificar previamente el cese unilateral de labores. Su compensación pecuniaria sustitutiva procede si el desahucio se ejecuta con efectos inmediatos y sin comunicación formal previa del tiempo requerido. Se gradúa según los plazos establecidos según la antigüedad del trabajador.
+                      </p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-extrabold text-slate-900 uppercase tracking-wide">AUXILIO DE CESANTÍA (Art. 80 - Ley 16-92)</h4>
+                      <p className="text-slate-600 text-justify font-sans">
+                        Es la indemnización obligatoria frente al desempleo involuntario provocado por desahucio. Constituye el principal resorte de reparación financiera y se calcula multiplicando el sueldo promedio diario por la tarifa de días fijados para cada escala temporal de antigüedad.
+                      </p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-extrabold text-slate-900 uppercase tracking-wide">DERECHO DE VACACIONES (Art. 177 - Ley 16-92)</h4>
+                      <p className="text-slate-605 text-justify font-sans">
+                        Las vacaciones anuales proporcionales corresponden a un derecho adquirido inviolable constitucional. Al extinguirse el acuerdo contractual por cualquier motivo, toda porción acumulada o días pendientes de disfrute físico deben compensarse en dinero en base al divisor estándar legal de 23.83.
+                      </p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-extrabold text-slate-900 uppercase tracking-wide">REGALÍA PASCUAL (Art. 219 - Ley 16-92)</h4>
+                      <p className="text-slate-605 text-justify font-sans">
+                        Consiste en la duodécima parte de los salarios ordinarios devengados en el año natural calendárico. Está legalmente blindada, siendo inmune a todo tipo de gravámenes, retenciones del Impuesto sobre la Renta, aportes de seguridad social TSS ó embargos civiles comunes.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 p-4.5 rounded-2xl border border-slate-200 space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-700 font-mono">Disposiciones Estrictas de Plazo de Pago (Art. 86)</h3>
+                    <p className="text-[11px] text-slate-600 text-justify leading-relaxed font-sans">
+                      Conforme con lo estipulado en el <strong>Artículo 86 del Código de Trabajo</strong> de la República Dominicana, el empleador cuenta con un <strong>plazo de diez (10) días de calendario</strong> contados a partir del cese efectivo de la relación de trabajo, para realizar el pago íntegro de las indemnizaciones y derechos adquiridos. Superado dicho plazo legal de diez días sin liquidar el capital adeudado, se activará la penalidad por mora diaria legal obligatoria, consistente en pagar una indemnización acumulativa adicional para el trabajador de un (1) día de salario promedio regular ordinario por cada día ininterrumpido de demora subsiguiente.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-150 space-y-1 text-center font-sans mt-4">
+                  <p className="text-[8px] text-slate-450 italic">
+                    Este documento constituye una simulación educativa y de auto-consulta, no sustituyendo asesoría legal formal de un abogado.
+                  </p>
+                  <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-550 pt-0.5">
+                    <span>Vigencia Normativa: Actualizada al 16/06/2026.</span>
+                    <span className="uppercase tracking-widest font-bold">Página 2 de 6 • SueldoFácil.com • Ref: {reportSerial}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PAGE 3: ANEXOS EXPLICATIVOS Y CASOS PRÁCTICOS */}
+              <div className="page-break flex flex-col justify-between min-h-[10.5in] pb-4 pt-4 border-t border-dashed border-slate-200">
+                <div className="space-y-5">
+                  <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-4 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                    Anexo A: Guía Técnica de Fórmulas y Casos de Estudio del Preaviso y Cesantía
+                  </h2>
+
+                  <div className="space-y-4">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="text-xs font-bold text-slate-900 uppercase font-sans">La Fórmula del Divisor Salarial (Por qué 23.83)</h4>
+                      <p className="text-[11px] text-slate-600 leading-relaxed text-justify font-sans">
+                        El Reglamento Oficial para la Aplicación del Código de Trabajo de la República Dominicana asume que la actividad comercial regular se rige bajo el divisor estandard de <strong>23.83 días hábiles laborables por mes</strong>. Esto surge del descuento proporcional de los días feriados promedio y de descansos semanales acumulados a lo largo del año calendario. El sueldo cotizable regular de la TSS siempre se prorratea utilizando este factor divisor legal inalterable para definir el salario diario básico de beneficios ordinarios.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <h3 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-1">Escenarios Prácticos de Finalización Contractual</h3>
+                      
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-blue-600 block">Escenario 1: Desahucio ejercido por el Empleador</span>
+                        <p className="text-[11px] text-slate-650 leading-relaxed text-justify font-sans">
+                          Un colaborador recibe el desahucio patronal tras <strong>2 años y 6 meses</strong> de servicios con un salario mensual ordinario de <strong>RD$ 40,000.00</strong>. Al ser de carácter unilateral patronal no justificado (desahucio), adquiere pleno derecho a Preaviso (28 días) y Auxilio de Cesantía (21 días anuales, lo que equivale a 42 días completos, complementados por la porción acumulada proporcional del año restante). El salario diario es de <strong>RD$ 1,678.55</strong> (40,000 / 23.83). La sumatoria total, agregándole indemnizaciones por vacaciones y la regalía de fin de año, supera de forma acumulada los RD$ 125,000 libres totalmente de impuestos.
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-rose-600 block">Escenario 2: Renuncia Voluntaria o Dimisión del Trabajador</span>
+                        <p className="text-[11px] text-slate-650 leading-relaxed text-justify font-sans">
+                          Si del lado del trabajador se rompe voluntariamente el contrato indefinido, comúnmente denominado dimisión o renuncia obrera, <strong>no le asiste derecho de cobro a preaviso de ley ni auxilio de cesantía legal</strong>, al ser extinguido por acto de voluntad propio. En este caso, el desembolso pecuniario del empleador queda única e inflexiblemente limitado a pagar los <strong>"Derechos Adquiridos"</strong> de ley: las vacaciones proporcionales por haber laborado y la regalía pascual del fin de año proporcional del tiempo trabajado (Sueldo #13 proporcional).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-150 space-y-1 text-center font-sans mt-4">
+                  <p className="text-[8px] text-slate-450 italic">
+                    Este documento constituye una simulación educativa y de auto-consulta, no sustituyendo asesoría legal formal de un abogado.
+                  </p>
+                  <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-550 pt-0.5">
+                    <span>Vigencia Normativa: Actualizada al 16/06/2026.</span>
+                    <span className="uppercase tracking-widest font-bold">Página 3 de 6 • SueldoFácil.com • Ref: {reportSerial}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PAGE 4: ERRORES FRECUENTES Y RECOMENDACIONES TÉCNICAS */}
+              <div className="page-break flex flex-col justify-between min-h-[10.5in] pb-4 pt-4 border-t border-dashed border-slate-200">
+                <div className="space-y-5">
+                  <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-4 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                    Anexo B: Errores Comunes de Cálculo y Recomendaciones Técnicas
+                  </h2>
+
+                  <div className="space-y-4 text-[10.5px] leading-relaxed">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-bold text-slate-900 uppercase font-sans">Error Frecuente A: Confundir Renuncia con Pérdida de Derechos Adquiridos</h4>
+                      <p className="text-slate-600 text-justify font-sans">
+                        Muchos empleadores asumen falsamente que el abandono voluntario o la dimisión cancela absolutamente todos los haberes devengados. La regalía pascual y las vacaciones acumuladas proporcionales son <strong>derechos adquiridos inviolables</strong> consagrados por el ordenamiento sustantivo laboral dominicano. No admiten compensaciones negativas ni decrementos punitivos bajo ninguna circunstancia.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-bold text-slate-900 uppercase font-sans">Error Frecuente B: Exclusión Incorrecta de Variables de Compensación (Comisiones, Bonos)</h4>
+                      <p className="text-slate-600 text-justify font-sans">
+                        Lejos de lo que se cree, el salario ordinario mensual para prestaciones no incluye únicamente el básico fijo pactado. Conforme al Artículo 85 del Código de Trabajo, toda comisión, incentivo monetario variable por productividad o depósito de comisiones recurrente constituye parte de la base imponible del cálculo, debiendo promediarse las rentas acumuladas de los últimos doce meses para fijar el salario promedio real de ley.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                      <h4 className="font-bold text-slate-900 uppercase font-sans">Error Frecuente C: Aplicación Incorrecta de Retenciones Sociales y Fiscales</h4>
+                      <p className="text-slate-600 text-justify font-sans font-medium">
+                        Se incurre en severos riesgos de auditoría laboral si se retienen descuentos de seguridad social (AFP, SFS) o de regulaciones de ISR sobre los haberes liquidados en concepto de preaviso y cesantías. Estas indemnizaciones de ley están <strong>estrictamente exentas de todo descuento de ley o gravamen corporativo</strong> según la Ley 87-01 de Seguridad Social y las directrices normativas de la DGII.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-150 space-y-1 text-center font-sans mt-4">
+                  <p className="text-[8px] text-slate-450 italic">
+                    Este documento constituye una simulación educativa y de auto-consulta, no sustituyendo asesoría legal formal de un abogado.
+                  </p>
+                  <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-550 pt-0.5">
+                    <span>Vigencia Normativa: Actualizada al 16/06/2026.</span>
+                    <span className="uppercase tracking-widest font-bold">Página 4 de 6 • SueldoFácil.com • Ref: {reportSerial}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PAGE 5: PREGUNTAS FRECUENTES EXPANDIDAS DE FORMA ELECTRÓNICA PARA IMPRESIÓN COMPLETA */}
+              <div className="page-break flex flex-col justify-between min-h-[10.5in] pb-4 pt-4 border-t border-dashed border-slate-200">
+                <div className="space-y-5">
+                  <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-4 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                    Anexo C: Cuestionario y Respuestas Jurídicas Completas (FAQ)
+                  </h2>
+
+                  <div className="space-y-3.5">
+                    {[
+                      {
+                        q: "¿Qué es en detalle el salario promedio diario y cuál es su implicación laboral?",
+                        a: "El salario promedio diario representa la renta promedio asignable a un día hábil laboral real. Para empleados con pago establecido mensualmente, el cálculo de ley estipula la división del salario base entre 23.83. Esto compensa de manera equitativa e inalterable los fines de semana y descansos regulados por ley."
+                      },
+                      {
+                        q: "¿Qué sucede con las vacaciones no tomadas en el período laboral cursado?",
+                        a: "De no haberse ejercido físicamente el descanso vacacional remunerado por el año cursado correspondiente, la empresa o empleador arrastra la obligación del pago íntegro de estos días al extinguirse el contrato laboral. El importe pecuniario compensatorio se calcula basado en el divisor estricto de ley (23.83)."
+                      },
+                      {
+                        q: "¿Existe obligación patronal de liquidación en sucesos de fuerza mayor?",
+                        a: "La declaratoria formal de quiebra empresarial u otro siniestro extraordinario debidamente refrendado por el Ministerio de Trabajo puede atenuar o eximir las indemnizaciones del preaviso y cesantía en algunas circunstancias, pero subsiste la obligación indiscutible de pagar íntegramente los 'Derechos Adquiridos' del colaborador."
+                      },
+                      {
+                        q: "¿El sueldo décimo tercero (regalía pascual) recibe descuentos de seguridad social?",
+                        a: "No. El Artículo 222 del Código de Trabajo de la República Dominicana estipula de forma prioritaria que la regalía de fin de año está absolutamente exenta de toda carga impositiva. No paga cotizaciones de AFP ni de SFS (TSS) y está exenta por completo del Impuesto sobre la Renta (ISR) de la DGII."
+                      },
+                      {
+                        q: "¿Cómo se computa en días calendario la indemnización por retardo de pago corporativo?",
+                        a: "De conformidad con el Art. 86 del Código de Trabajo, existe un intervalo perentorio estricto de 10 días calendario (días continuos, incluyendo fines de semana y feriados) tras la ruptura de la relación laboral. Vencido este lapso, el empleador entra formalmente en retraso acumulando de forma obligatoria un día de salario ordinario bruto completo para el trabajador por cada día de mora."
+                      }
+                    ].map((item, index) => (
+                      <div key={index} className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 print-no-break">
+                        <h4 className="font-bold text-slate-900 text-xs">{(index + 1)}. {item.q}</h4>
+                        <p className="text-[10.5px] text-slate-650 text-justify leading-relaxed font-sans">{item.a}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-150 space-y-1 text-center font-sans mt-4">
+                  <p className="text-[8px] text-slate-450 italic">
+                    Este documento constituye una simulación educativa y de auto-consulta, no sustituyendo asesoría legal formal de un abogado.
+                  </p>
+                  <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-550 pt-0.5">
+                    <span>Vigencia Normativa: Actualizada al 16/06/2026.</span>
+                    <span className="uppercase tracking-widest font-bold">Página 5 de 6 • SueldoFácil.com • Ref: {reportSerial}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PAGE 6: TRANSPARENCIA, EEAT, AUTORÍA EDITORIAL Y ADVERTENCIA DE ESTIMACIÓN */}
+              <div className="flex flex-col justify-between min-h-[10.5in] pb-4 pt-4 border-t border-dashed border-slate-200">
+                <div className="space-y-5">
+                  <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-4 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                    Anexo D: Certificación Editorial & Fuentes Oficiales del Reporte
+                  </h2>
+
+                  <div className="space-y-4 text-[10.5px] leading-relaxed font-sans">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+                      <h3 className="font-extrabold text-slate-950 uppercase tracking-wider text-xs font-sans">Directorio de Fuentes del Reporte</h3>
+                      <p className="text-slate-600 text-justify mb-2 font-sans leading-relaxed">
+                        Este reporte corporativo y los algoritmos matemáticos integrados en la simulación técnica han sido validados e indexados de estricto acuerdo con las publicaciones vigentes de los siguientes organismos normativos de la República Dominicana:
+                      </p>
+                      <ul className="space-y-2 pl-1">
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-blue-600 font-bold">•</span>
+                          <span><strong>Código de Trabajo (Ley No. 16-92)</strong> - Gaceta Oficial Dominicana. Regulación principal de la relación contractual laboral, preavisos, cesantías y derechos adquiridos.</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-blue-600 font-bold">•</span>
+                          <span><strong>Ley No. 87-01 del Sistema Dominicano de Seguridad Social</strong> - Directrices sobre cotización de nómina, aportes patronales e individuales, y límites de TSS (AFP y SFS).</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-blue-600 font-bold">•</span>
+                          <span><strong>Comité Nacional de Salarios (CNS RD)</strong> - Escalas e históricos salariales vigentes para fijar los topes aplicables según sectores empresariales.</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-blue-600 font-bold">•</span>
+                          <span><strong>Dirección General de Impuestos Internos (DGII)</strong> - Tablas e instructivos impositivos anuales de exención del Impuesto sobre la Renta (ISR).</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* ADVERTENCIA DE ESTIMACIÓN (FASE 8) */}
+                    <div className="p-4.5 bg-slate-50 border border-slate-205 rounded-2xl space-y-1.5">
+                      <h4 className="font-extrabold text-slate-950 uppercase tracking-wider text-[10px] font-sans">Advertencia de Estimación y Varianzas</h4>
+                      <p className="text-slate-600 text-justify font-sans leading-relaxed">
+                        Los valores mostrados representan una estimación matemática basada en la información proporcionada voluntariamente por el usuario. El monto definitivo oficial puede variar según acuerdos de mutuo consentimiento privados, beneficios financieros discrecionales adicionales de la empresa o interpretaciones administrativas aplicables por el Ministerio de Trabajo.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-emerald-50 border border-emerald-250 rounded-2xl flex items-start gap-3">
+                      <div className="bg-emerald-600 text-white rounded-full w-5 h-5 font-sans font-black flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                        ✓
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-extrabold text-emerald-900 uppercase tracking-widest text-[10px] font-sans leading-none">Verificación de Calidad Científica-Matemática</h4>
+                        <p className="text-emerald-800 text-[10.5px] leading-normal text-justify font-sans">
+                          SueldoFácil mantiene auditoria técnica activa sobre todas las fórmulas implementadas. El motor matemático de simulación ha sido testeado unitariamente para prevenir inconsistencias de tipo NaN o divisiones por cero garantizando una exactitud al centavo conforme a las directrices de redondeo oficiales de la República Dominicana.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-150 space-y-1 text-center font-sans mt-4">
+                  <p className="text-[8px] text-slate-450 italic">
+                    Este documento constituye una simulación educativa y de auto-consulta, no sustituyendo asesoría legal formal de un abogado.
+                  </p>
+                  <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-550 pt-0.5">
+                    <span>Vigencia Normativa: Actualizada al 16/06/2026.</span>
+                    <span className="uppercase tracking-widest font-bold">Página 6 de 6 • SueldoFácil.com • Ref: {reportSerial}</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
   );
 }

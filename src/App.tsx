@@ -31,6 +31,7 @@ import PoliticaEditorial from './components/PoliticaEditorial';
 import SobreNosotros from './components/SobreNosotros';
 import Contacto from './components/Contacto';
 import YmylDisclaimer from './components/YmylDisclaimer';
+import VerificadorReporte from './components/VerificadorReporte';
 
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
@@ -40,6 +41,7 @@ export default function App() {
   const [historyLogs, setHistoryLogs] = useState<any[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [aiInitialMessage, setAiInitialMessage] = useState<string | null>(null);
+  const [urlCode, setUrlCode] = useState<string | null>(null);
 
   const handleAskSavingTips = (netSalary: number) => {
     const formattedSalary = netSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -65,6 +67,14 @@ export default function App() {
       }
     } catch (e) {
       console.error(e);
+    }
+
+    // Check query parameters for verification code
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryCode = urlParams.get('codigo') || urlParams.get('code');
+    if (queryCode) {
+      setUrlCode(queryCode);
+      setTab('verificar');
     }
 
     // Check shared URL hash states to support shared link calculations!
@@ -916,6 +926,11 @@ export default function App() {
           <Contacto />
         )}
 
+        {/* VIEW: VERIFICAR REPORTE */}
+        {tab === 'verificar' && (
+          <VerificadorReporte urlCode={urlCode} onBackToHome={() => selectTab('home')} />
+        )}
+
       </main>
 
       {/* FOOTER */}
@@ -938,6 +953,8 @@ export default function App() {
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('prestaciones')}>PRESTACIONES</span>
             <span>•</span>
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('salario')}>SALARIO NETO</span>
+            <span>•</span>
+            <span className="hover:text-white cursor-pointer text-blue-400 font-extrabold" onClick={() => selectTab('verificar')}>VERIFICAR REPORTE</span>
             <span>•</span>
             <span className="hover:text-white cursor-pointer" onClick={() => selectTab('blog')}>BLOG</span>
             <span>•</span>

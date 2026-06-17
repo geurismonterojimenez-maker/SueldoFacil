@@ -19,6 +19,7 @@ export type TabType =
   | 'analizador_recibos'
   | 'plan_ahorro'
   | 'presupuesto_anual'
+  | 'verificar'
   | 'editorial'
   | 'sobre_nosotros'
   | 'contacto';
