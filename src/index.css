@@ -221,5 +221,16 @@
   #printable-savings-planner .sm\:grid-cols-10 {
     grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
   }
+
+  /* Unified print helper classes */
+  .print-no-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
 }
 

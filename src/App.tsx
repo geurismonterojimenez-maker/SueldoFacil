@@ -33,6 +33,8 @@ import Contacto from './components/Contacto';
 import YmylDisclaimer from './components/YmylDisclaimer';
 import VerificadorReporte from './components/VerificadorReporte';
 import { PrestacionesPrintReport } from './components/PrestacionesPrintReport';
+import SalarioNetoPrintReport from './components/SalarioNetoPrintReport';
+import CostoLaboralPrintReport from './components/CostoLaboralPrintReport';
 
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
@@ -332,9 +334,16 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const isPrintMode = new URLSearchParams(window.location.search).get('print_report') === 'true';
+  const params = new URLSearchParams(window.location.search);
+  const isPrintMode = params.get('print_report') === 'true';
+  const printType = params.get('type') || 'prestaciones';
 
   if (isPrintMode) {
+    if (printType === 'salario') {
+      return <SalarioNetoPrintReport />;
+    } else if (printType === 'costos') {
+      return <CostoLaboralPrintReport />;
+    }
     return <PrestacionesPrintReport />;
   }
 

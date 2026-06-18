@@ -26,6 +26,33 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
   const [showShareTooltip, setShowShareTooltip] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
+  const [reportSerial] = useState(() => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const hh = String(today.getHours()).padStart(2, '0');
+    const min = String(today.getMinutes()).padStart(2, '0');
+    const ss = String(today.getSeconds()).padStart(2, '0');
+    return `SF-SN-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
+  });
+
+  const handlePrint = () => {
+    if (!output) return;
+    analytics.logPdfDescargado('salario', 'Sueldo Neto');
+    try {
+      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
+        input,
+        output,
+        reportSerial
+      }));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=salario&token=${token}`, '_blank');
+    } catch (e) {
+      console.error("Error setting print calculations", e);
+    }
+  };
+
   useEffect(() => {
     try {
       const result = calcularSalarioNeto(input);
@@ -247,10 +274,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
 
         <div className="flex flex-wrap gap-2.5 mt-6 border-t border-slate-800 pt-5">
           <button
-            onClick={() => {
-              analytics.logPdfDescargado('salario', 'Sueldo Neto');
-              window.print();
-            }}
+            onClick={handlePrint}
             className="flex-1 min-w-[90px] bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700 font-sans"
           >
             <Printer className="w-4 h-4" />
