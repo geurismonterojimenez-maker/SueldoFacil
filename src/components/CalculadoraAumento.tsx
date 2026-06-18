@@ -108,7 +108,7 @@ export default function CalculadoraAumento() {
       localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       
       const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=aumento&token=${token}&data=${dataString}`, '_blank');
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=aumento&token=${token}&data=${encodeURIComponent(dataString)}`, '_blank');
     } catch (e) {
       console.error("Error setting print calculations", e);
     }

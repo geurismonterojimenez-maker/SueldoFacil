@@ -143,7 +143,8 @@ export default function AumentoPrintReport() {
 
       if (dataParam) {
         try {
-          stored = decodeURIComponent(escape(atob(dataParam)));
+          const normalizedBase64 = dataParam.replace(/ /g, '+');
+          stored = decodeURIComponent(escape(atob(normalizedBase64)));
         } catch (err) {
           console.error("Error decoding base64 data parameter", err);
         }
@@ -204,7 +205,7 @@ export default function AumentoPrintReport() {
     );
   }
 
-  if (!data) {
+  if (!data || !data.input || !data.output) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-800 p-6">
         <div className="max-w-md w-full bg-white border border-slate-200 p-6 rounded-2xl text-center space-y-4">

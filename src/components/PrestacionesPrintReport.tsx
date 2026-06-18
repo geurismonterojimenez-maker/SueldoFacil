@@ -153,7 +153,8 @@ export function PrestacionesPrintReport() {
 
       if (dataParam) {
         try {
-          stored = decodeURIComponent(escape(atob(dataParam)));
+          const normalizedBase64 = dataParam.replace(/ /g, '+');
+          stored = decodeURIComponent(escape(atob(normalizedBase64)));
         } catch (err) {
           console.error("Error decoding base64 data parameter", err);
         }
@@ -232,7 +233,7 @@ export function PrestacionesPrintReport() {
     );
   }
 
-  if (!data) {
+  if (!data || !data.input || !data.output) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans p-6 text-center">
         <div className="max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-4">
