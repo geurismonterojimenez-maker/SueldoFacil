@@ -157,9 +157,9 @@ export function calcularSalarioNeto(input: SalarioInput): SalarioOutput {
   const topeAFP = salarioMinimoGrande * RETENCIONES_CONFIG.afp.topeSueldosMinimos; // RD$ 483,000
   const topeSFS = salarioMinimoGrande * RETENCIONES_CONFIG.sfs.topeSueldosMinimos; // RD$ 241,500
   
-  // Descuentos de Seguridad Social (Empleado)
-  const afp = Math.min(salarioBaseSS, topeAFP) * RETENCIONES_CONFIG.afp.empleado;
-  const sfs = Math.min(salarioBaseSS, topeSFS) * RETENCIONES_CONFIG.sfs.empleado;
+  // Descuentos de Seguridad Social (Empleado) - Redondeados al centavo por ley de nómina
+  const afp = Math.round((Math.min(salarioBaseSS, topeAFP) * RETENCIONES_CONFIG.afp.empleado) * 100) / 100;
+  const sfs = Math.round((Math.min(salarioBaseSS, topeSFS) * RETENCIONES_CONFIG.sfs.empleado) * 100) / 100;
   
   // Base imponible para ISR (Deducciones previas reducen la base imponible)
   const salarioSujetoISR = Math.max(0, (salarioBruto + ingresosAdicionales) - afp - sfs);
