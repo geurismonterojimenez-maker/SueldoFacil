@@ -4,7 +4,11 @@ import { calcularCostoLaboral } from '../utils/calculator';
 import { DollarSign, Shield, Info, Check, Printer, Percent } from 'lucide-react';
 import AdsenseMock from './AdsenseMock';
 
-export default function CostoLaboral() {
+interface Props {
+  onPrint?: (data: any) => void;
+}
+
+export default function CostoLaboral({ onPrint }: Props = {}) {
   const [input, setInput] = useState<CostoLaboralInput>({
     salarioMensual: '40000',
     riesgoLaboral: 1.2, // ARL 1.2% por defecto
@@ -32,6 +36,12 @@ export default function CostoLaboral() {
         output,
         reportSerial
       };
+      
+      if (onPrint) {
+        onPrint(payload);
+        return;
+      }
+
       const payloadStr = JSON.stringify(payload);
       sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);

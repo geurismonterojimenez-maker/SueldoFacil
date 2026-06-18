@@ -134,7 +134,7 @@ function numeroALetras(num: number): string {
   return `${result} ${suffix} CON ${centavosStr}/100`;
 }
 
-export function PrestacionesPrintReport() {
+export function PrestacionesPrintReport({ directData }: { directData?: any }) {
   const [data, setData] = useState<{
     input: PrestacionesInput;
     output: PrestacionesOutput;
@@ -145,6 +145,11 @@ export function PrestacionesPrintReport() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (directData) {
+      setData(directData);
+      setLoading(false);
+      return;
+    }
     try {
       const params = new URLSearchParams(window.location.search);
       const dataParam = params.get('data');
@@ -178,11 +183,13 @@ export function PrestacionesPrintReport() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [directData]);
 
   // Run automatically when document is ready & fully rendered, and register afterprint event
   useEffect(() => {
     if (data) {
+      if (directData) return;
+
       const timer = setTimeout(() => {
         window.print();
       }, 900);

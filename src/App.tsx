@@ -47,6 +47,22 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [aiInitialMessage, setAiInitialMessage] = useState<string | null>(null);
   const [urlCode, setUrlCode] = useState<string | null>(null);
+  const [printData, setPrintData] = useState<{ type: string; data: any } | null>(null);
+
+  // Trigger inline window print
+  useEffect(() => {
+    if (printData) {
+      const timer = setTimeout(() => {
+        window.print();
+        setPrintData(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [printData]);
+
+  const handlePrintTrigger = (type: string, data: any) => {
+    setPrintData({ type, data });
+  };
 
   const handleAskSavingTips = (netSalary: number) => {
     const formattedSalary = netSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -356,6 +372,7 @@ export default function App() {
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
+      <div className={printData ? "print:hidden flex-1 flex flex-col w-full" : "flex-1 flex flex-col w-full"}>
       {/* HEADER PRINCIPAL */}
       <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors print:hidden ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -853,12 +870,12 @@ export default function App() {
 
         {/* VIEW: PRESTACIONES */}
         {tab === 'prestaciones' && (
-          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} />
+          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} onPrint={(data) => handlePrintTrigger('prestaciones', data)} />
         )}
 
         {/* VIEW: SALARIO NETO */}
         {tab === 'salario' && (
-          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} />
+          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} onPrint={(data) => handlePrintTrigger('salario', data)} />
         )}
 
         {/* VIEW: NOMINA */}
@@ -868,12 +885,12 @@ export default function App() {
 
         {/* VIEW: COSTOS LABORALES */}
         {tab === 'costos' && (
-          <CostoLaboral />
+          <CostoLaboral onPrint={(data) => handlePrintTrigger('costos', data)} />
         )}
 
         {/* VIEW: HORAS EXTRAS */}
         {tab === 'horas_extras' && (
-          <HorasExtras />
+          <HorasExtras onPrint={(data) => handlePrintTrigger('horas_extras', data)} />
         )}
 
         {/* VIEW: COMPARADOR DE EMPLEOS */}
@@ -912,7 +929,7 @@ export default function App() {
 
         {/* VIEW: CALCULADORA AUMENTO */}
         {tab === 'calculadora_aumento' && (
-          <CalculadoraAumento />
+          <CalculadoraAumento onPrint={(data) => handlePrintTrigger('aumento', data)} />
         )}
 
         {/* VIEW: MI DICIEMBRE */}
@@ -1008,6 +1025,17 @@ export default function App() {
           </p>
         </div>
       </footer>
+      </div>
+
+      {printData && (
+        <div className="hidden print:block absolute inset-0 bg-white z-50">
+          {printData.type === 'prestaciones' && <PrestacionesPrintReport directData={printData.data} />}
+          {printData.type === 'salario' && <SalarioNetoPrintReport directData={printData.data} />}
+          {printData.type === 'costos' && <CostoLaboralPrintReport directData={printData.data} />}
+          {printData.type === 'aumento' && <AumentoPrintReport directData={printData.data} />}
+          {printData.type === 'horas_extras' && <HorasExtrasPrintReport directData={printData.data} />}
+        </div>
+      )}
     </div>
   );
 }

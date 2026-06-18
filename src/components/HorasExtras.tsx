@@ -21,7 +21,11 @@ interface HorasExtrasOutput {
   salarioTotalConExtras: number;
 }
 
-export default function HorasExtras() {
+interface Props {
+  onPrint?: (data: any) => void;
+}
+
+export default function HorasExtras({ onPrint }: Props = {}) {
   const [input, setInput] = useState<HorasExtrasInput>({
     salarioMensual: '30000',
     horasExtrasOrdinarias: '10',
@@ -39,23 +43,27 @@ export default function HorasExtras() {
     const horasNocturnas = parseFloat(input.horasNocturnas) || 0;
     const horasFeriadas = parseFloat(input.horasFeriadas) || 0;
 
-    // Calcular sueldo diario promedio y luego por hora ordinaria
-    // Se asume semana de 44 horas y mes laboral estándar.
-    // En RD, la jornada es de 8 horas diarias. El valor por hora estándar es:
-    const sueldoDiario = salario / LEGAL_CONFIG.prestaciones.divisorSalarial;
-    const sueldoPorHora = sueldoDiario / 8;
+    // Calcular costo por hora (salario mensual / 23.83 / 8 horas de ley)
+    const sueldoDiario = salario / LEGAL_CONFIG.diasLaborablesMes;
+    const costoHora = sueldoDiario / LEGAL_CONFIG.horasJornadaDiaria;
 
-    // Calculos con recargos oficiales en República Dominicana (Código Laboral Art. 203)
-    const ordinariasRecargo = sueldoPorHora * 1.35 * horasOrdinarias; // +35%
-    const extremasRecargo = sueldoPorHora * 2.0 * horasExtremas;       // +100% (excede 68h)
-    const nocturnidadRecargo = sueldoPorHora * 0.15 * horasNocturnas;  // +15% sueldo base nocturno
-    const feriadosRecargo = sueldoPorHora * 2.0 * horasFeriadas;       // +100% días feriados o descanso
+    // Recargo del 35% para las primeras 24 horas extras (sobre la jornada de 44 horas hasta 68 semanales)
+    const ordinariasRecargo = horasOrdinarias * (costoHora * 1.35);
+
+    // Recargo del 100% para horas extras por encima de 68 semanales
+    const extremasRecargo = horasExtremas * (costoHora * 2.0);
+
+    // Recargo del 15% para jornada nocturna (9:00 PM a 7:00 AM)
+    const nocturnidadRecargo = horasNocturnas * (costoHora * 0.15);
+
+    // Recargo del 100% para trabajo en días feriados o descanso semanal
+    const feriadosRecargo = horasFeriadas * (costoHora * 2.0);
 
     const totalAdicional = ordinariasRecargo + extremasRecargo + nocturnidadRecargo + feriadosRecargo;
     const salarioTotalConExtras = salario + totalAdicional;
 
     setOutput({
-      salarioPorHora: sueldoPorHora,
+      salarioPorHora: costoHora,
       montoExtrasOrdinarias: ordinariasRecargo,
       montoExtrasExtremas: extremasRecargo,
       montoNocturnas: nocturnidadRecargo,
@@ -87,6 +95,12 @@ export default function HorasExtras() {
         output,
         reportSerial
       };
+      
+      if (onPrint) {
+        onPrint(payload);
+        return;
+      }
+
       const payloadStr = JSON.stringify(payload);
       sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);

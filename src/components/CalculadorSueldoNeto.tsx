@@ -11,9 +11,10 @@ interface Props {
   onSaveCalculation: (calc: { type: string; label: string; result: number; timestamp: string; details: any }) => void;
   initialState?: any;
   onAskSavingTips?: (netSalary: number) => void;
+  onPrint?: (data: any) => void;
 }
 
-export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, onAskSavingTips }: Props) {
+export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, onAskSavingTips, onPrint }: Props) {
   const [input, setInput] = useState<SalarioInput>(() => {
     const savedSalario = localStorage.getItem('sueldofacil_prof_salario') || '45000';
     return {
@@ -47,6 +48,12 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
         output,
         reportSerial
       };
+      
+      if (onPrint) {
+        onPrint(payload);
+        return;
+      }
+
       const payloadStr = JSON.stringify(payload);
       sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);

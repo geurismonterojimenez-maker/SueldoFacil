@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CostoLaboralInput, CostoLaboralOutput } from '../types';
 import { Printer, ArrowLeft, Download, ShieldCheck } from 'lucide-react';
 
-export default function CostoLaboralPrintReport() {
+export default function CostoLaboralPrintReport({ directData }: { directData?: any }) {
   const [data, setData] = useState<{
     input: CostoLaboralInput;
     output: CostoLaboralOutput;
@@ -11,6 +11,11 @@ export default function CostoLaboralPrintReport() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (directData) {
+      setData(directData);
+      setLoading(false);
+      return;
+    }
     try {
       const params = new URLSearchParams(window.location.search);
       const dataParam = params.get('data');
@@ -43,10 +48,12 @@ export default function CostoLaboralPrintReport() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [directData]);
 
   useEffect(() => {
     if (data) {
+      if (directData) return;
+
       const timer = setTimeout(() => {
         window.print();
       }, 950);
@@ -68,7 +75,7 @@ export default function CostoLaboralPrintReport() {
         window.removeEventListener('afterprint', handleAfterPrint);
       };
     }
-  }, [data]);
+  }, [data, directData]);
 
   if (loading) {
     return (

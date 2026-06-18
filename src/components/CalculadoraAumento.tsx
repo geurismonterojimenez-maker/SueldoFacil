@@ -3,7 +3,11 @@ import { Sparkles, Calculator, Share2, Download, Check, RefreshCw, Info, ArrowUp
 import { calcularSalarioNeto } from '../utils/calculator';
 import AdsenseMock from './AdsenseMock';
 
-export default function CalculadoraAumento() {
+interface Props {
+  onPrint?: (data: any) => void;
+}
+
+export default function CalculadoraAumento({ onPrint }: Props = {}) {
   const [salarioActual, setSalarioActual] = useState('45000');
   const [porcentajeAumento, setPorcentajeAumento] = useState('15');
   const [aumentoFijo, setAumentoFijo] = useState('0');
@@ -38,31 +42,27 @@ export default function CalculadoraAumento() {
     const nuevoBruto = Math.max(0, actual + aumentoSuma);
 
     // Calculate before vs after tax
-    const calcActual = calcularSalarioNeto({ salarioBruto: actual.toString() });
-    const calcNuevo = calcularSalarioNeto({ salarioBruto: nuevoBruto.toString() });
+    try {
+      const resultActual = calcularSalarioNeto({ salarioBruto: salarioActual, ingresosAdicionales: '0', percepcionISR: true });
+      const resultNuevo = calcularSalarioNeto({ salarioBruto: nuevoBruto.toString(), ingresosAdicionales: '0', percepcionISR: true });
 
-    setResultados({
-      actualBruto: actual,
-      nuevoBruto: nuevoBruto,
-      incrementoBruto: nuevoBruto - actual,
-      
-      actualNeto: calcActual.salarioNeto,
-      nuevoNeto: calcNuevo.salarioNeto,
-      incrementoNeto: calcNuevo.salarioNeto - calcActual.salarioNeto,
-      incrementoAnualNeto: (calcNuevo.salarioNeto - calcActual.salarioNeto) * 12,
-
-      actualAfp: calcActual.afp,
-      nuevoAfp: calcNuevo.afp,
-      cambioAfp: calcNuevo.afp - calcActual.afp,
-
-      actualSfs: calcActual.sfs,
-      nuevoSfs: calcNuevo.sfs,
-      cambioSfs: calcNuevo.sfs - calcActual.sfs,
-
-      actualIsr: calcActual.isr,
-      nuevoIsr: calcNuevo.isr,
-      cambioIsr: calcNuevo.isr - calcActual.isr,
-    });
+      setResultados({
+        salarioBrutoActual: actual,
+        aumentoBruto: aumentoSuma,
+        salarioBrutoNuevo: nuevoBruto,
+        netoActual: resultActual.salarioNeto,
+        netoNuevo: resultNuevo.salarioNeto,
+        aumentoNetoEfectivo: resultNuevo.salarioNeto - resultActual.salarioNeto,
+        isrActual: resultActual.isr,
+        isrNuevo: resultNuevo.isr,
+        afpActual: resultActual.afp,
+        afpNuevo: resultNuevo.afp,
+        sfsActual: resultActual.sfs,
+        sfsNuevo: resultNuevo.sfs
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }, [salarioActual, porcentajeAumento, aumentoFijo]);
 
   const handleCompartir = () => {
@@ -103,6 +103,12 @@ export default function CalculadoraAumento() {
         output: resultados,
         reportSerial
       };
+      
+      if (onPrint) {
+        onPrint(payload);
+        return;
+      }
+      
       const payloadStr = JSON.stringify(payload);
       sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);

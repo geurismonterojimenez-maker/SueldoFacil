@@ -131,7 +131,7 @@ function numeroALetras(num: number): string {
   return `${result} ${suffix} CON ${centavosStr}/100`;
 }
 
-export default function SalarioNetoPrintReport() {
+export default function SalarioNetoPrintReport({ directData }: { directData?: any }) {
   const [data, setData] = useState<{
     input: SalarioInput;
     output: SalarioOutput;
@@ -140,6 +140,11 @@ export default function SalarioNetoPrintReport() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (directData) {
+      setData(directData);
+      setLoading(false);
+      return;
+    }
     try {
       const params = new URLSearchParams(window.location.search);
       const dataParam = params.get('data');
@@ -172,10 +177,12 @@ export default function SalarioNetoPrintReport() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [directData]);
 
   useEffect(() => {
     if (data) {
+      if (directData) return;
+
       const timer = setTimeout(() => {
         window.print();
       }, 950);

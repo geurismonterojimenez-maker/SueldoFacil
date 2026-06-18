@@ -130,11 +130,16 @@ function numeroALetras(num: number): string {
   return `${result} ${suffix} CON ${centavosStr}/100`;
 }
 
-export default function AumentoPrintReport() {
+export default function AumentoPrintReport({ directData }: { directData?: any }) {
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (directData) {
+      setData(directData);
+      setLoading(false);
+      return;
+    }
     try {
       const params = new URLSearchParams(window.location.search);
       const dataParam = params.get('data');
@@ -167,10 +172,12 @@ export default function AumentoPrintReport() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [directData]);
 
   useEffect(() => {
     if (data) {
+      if (directData) return;
+
       const timer = setTimeout(() => {
         window.print();
       }, 950);
@@ -192,7 +199,7 @@ export default function AumentoPrintReport() {
         window.removeEventListener('afterprint', handleAfterPrint);
       };
     }
-  }, [data]);
+  }, [data, directData]);
 
   if (loading) {
     return (

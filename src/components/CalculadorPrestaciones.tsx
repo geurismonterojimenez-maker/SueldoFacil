@@ -10,9 +10,10 @@ import { analytics } from '../utils/analytics';
 interface Props {
   onSaveCalculation: (calc: { type: string; label: string; result: number; timestamp: string; details: any }) => void;
   initialState?: any;
+  onPrint?: (data: any) => void;
 }
 
-export default function CalculadorPrestaciones({ onSaveCalculation, initialState }: Props) {
+export default function CalculadorPrestaciones({ onSaveCalculation, initialState, onPrint }: Props) {
   const [input, setInput] = useState<PrestacionesInput>(() => {
     const savedSalario = localStorage.getItem('sueldofacil_prof_salario') || '35000';
     const savedFechaIngreso = localStorage.getItem('sueldofacil_prof_fecha_ingreso') || '2023-01-01';
