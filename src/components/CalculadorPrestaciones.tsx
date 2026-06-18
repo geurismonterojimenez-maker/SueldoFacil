@@ -98,13 +98,18 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
     analytics.logPdfDescargado('prestaciones', 'Prestaciones Laborales');
     try {
       const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
+      const payload = {
         input,
         output,
         reportSerial,
         pdfType
-      }));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&token=${token}`, '_blank');
+      };
+      const payloadStr = JSON.stringify(payload);
+      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
+      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
+      
+      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&token=${token}&data=${dataString}`, '_blank');
     } catch (e) {
       console.error("Error setting print calculations", e);
     }

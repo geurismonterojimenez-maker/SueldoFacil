@@ -13,10 +13,23 @@ export default function CostoLaboralPrintReport() {
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
+      const dataParam = params.get('data');
       const token = params.get('token');
       let stored = null;
-      if (token) {
+
+      if (dataParam) {
+        try {
+          stored = decodeURIComponent(escape(atob(dataParam)));
+        } catch (err) {
+          console.error("Error decoding base64 data parameter", err);
+        }
+      }
+
+      if (!stored && token) {
         stored = sessionStorage.getItem(`sueldofacil_report_${token}`);
+        if (!stored) {
+          stored = localStorage.getItem(`sueldofacil_report_${token}`);
+        }
       }
       if (!stored) {
         stored = localStorage.getItem('sueldofacil_costos_print');

@@ -82,12 +82,17 @@ export default function HorasExtras() {
       const ss = String(today.getSeconds()).padStart(2, '0');
       const reportSerial = `SF-HEX-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
 
-      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
+      const payload = {
         input,
         output,
         reportSerial
-      }));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=horas_extras&token=${token}`, '_blank');
+      };
+      const payloadStr = JSON.stringify(payload);
+      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
+      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
+      
+      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=horas_extras&token=${token}&data=${dataString}`, '_blank');
     } catch (e) {
       console.error("Error setting print calculations", e);
     }
