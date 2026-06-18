@@ -247,11 +247,21 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
         if (fs.existsSync(filePath)) {
           const rawHtml = fs.readFileSync(filePath, 'utf-8');
           const enrichedHtml = injectSEOMetadata(rawHtml, req.path);
+          
+          // Prevent caching of index.html so clients always request the latest hashed bundles
+          res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+          res.set('Pragma', 'no-cache');
+          res.set('Expires', '0');
+          res.set('Surrogate-Control', 'no-store');
+          
           return res.status(200).type('text/html').send(enrichedHtml);
         }
       } catch (err) {
         console.error("SEO Prerender Error in Production routing:", err);
       }
+      
+      // Fallback response with same headers
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
