@@ -69,6 +69,30 @@ export default function HorasExtras() {
     setInput(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePrint = () => {
+    if (!output) return;
+    try {
+      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const hh = String(today.getHours()).padStart(2, '0');
+      const min = String(today.getMinutes()).padStart(2, '0');
+      const ss = String(today.getSeconds()).padStart(2, '0');
+      const reportSerial = `SF-HEX-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
+
+      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
+        input,
+        output,
+        reportSerial
+      }));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=horas_extras&token=${token}`, '_blank');
+    } catch (e) {
+      console.error("Error setting print calculations", e);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* CARD FORMULARIO (IZQUIERDA) */}
@@ -241,7 +265,7 @@ export default function HorasExtras() {
 
         <div className="pt-4 border-t border-slate-800">
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="w-full bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700"
           >
             Imprimir Reporte de Horas

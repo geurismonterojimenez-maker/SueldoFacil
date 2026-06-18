@@ -82,7 +82,31 @@ export default function CalculadoraAumento() {
   };
 
   const handleDownloadPDF = () => {
-    window.print();
+    if (!resultados) return;
+    try {
+      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const hh = String(today.getHours()).padStart(2, '0');
+      const min = String(today.getMinutes()).padStart(2, '0');
+      const ss = String(today.getSeconds()).padStart(2, '0');
+      const reportSerial = `SF-AUM-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
+
+      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
+        input: {
+          salarioActual,
+          porcentajeAumento,
+          aumentoFijo
+        },
+        output: resultados,
+        reportSerial
+      }));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=aumento&token=${token}`, '_blank');
+    } catch (e) {
+      console.error("Error setting print calculations", e);
+    }
   };
 
   return (

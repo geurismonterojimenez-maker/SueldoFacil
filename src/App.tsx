@@ -35,6 +35,8 @@ import VerificadorReporte from './components/VerificadorReporte';
 import { PrestacionesPrintReport } from './components/PrestacionesPrintReport';
 import SalarioNetoPrintReport from './components/SalarioNetoPrintReport';
 import CostoLaboralPrintReport from './components/CostoLaboralPrintReport';
+import AumentoPrintReport from './components/AumentoPrintReport';
+import HorasExtrasPrintReport from './components/HorasExtrasPrintReport';
 
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
@@ -343,6 +345,10 @@ export default function App() {
       return <SalarioNetoPrintReport />;
     } else if (printType === 'costos') {
       return <CostoLaboralPrintReport />;
+    } else if (printType === 'aumento') {
+      return <AumentoPrintReport />;
+    } else if (printType === 'horas_extras') {
+      return <HorasExtrasPrintReport />;
     }
     return <PrestacionesPrintReport />;
   }
