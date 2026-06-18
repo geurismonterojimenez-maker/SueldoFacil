@@ -296,8 +296,6 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
             </button>
           </div>
         </div>
-
-        <AdsenseMock slot="prestaciones-sidebar" type="banner" />
       </div>
 
       {/* CARD DERECHA: RESULTADOS EN TIEMPO REAL */}
@@ -326,6 +324,9 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                   Sueldo promedio diario establecido: RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Sueldo / 23.83)
                 </p>
               </div>
+
+              {/* ANUNCIO #1: Rectángulo de Alto RPM bajo el bloque de resumen principal */}
+              <AdsenseMock slot="prestaciones-results-inline" type="square" />
 
               {/* LISTA COMPONENTES */}
               <div className="space-y-3.5 border-t border-slate-800 pt-5">
@@ -495,6 +496,11 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
         </div>
       </div>
 
+      {/* ANUNCIO REUBICADO: Al final de la cuadrícula general de cálculo (ancho completo) */}
+      <div className="lg:col-span-12 w-full mt-4">
+        <AdsenseMock slot="prestaciones-sidebar" type="banner" />
+      </div>
+
       {/* COMPONENT ENRICHMENT: SECCIÓN DE INFORMACIÓN Y EDUCACIÓN LABORAL (EEAT) */}
       <div className="lg:col-span-12 mt-12 space-y-10 border-t border-slate-200 dark:border-slate-800/80 pt-10 text-slate-850 dark:text-slate-200">
         
@@ -532,6 +538,9 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                 </div>
               </div>
             </section>
+
+            {/* ANUNCIO #2: In-Content en la Guía Educativa */}
+            <AdsenseMock slot="prestaciones-guide-incontent" type="infeed" />
 
             {/* CASOS PRÁCTICOS */}
             <section className="space-y-3.5">
@@ -586,6 +595,9 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           {/* COLUMNA ADYACENTE / ACCORDION FAQ */}
           <div className="md:col-span-4 space-y-6">
             
+            {/* ANUNCIO #3: Pre FAQ en el Sidebar */}
+            <AdsenseMock slot="prestaciones-pre-faq" type="square" />
+
             <div className="bg-slate-50 dark:bg-slate-950/30 p-5 border border-slate-200/60 dark:border-slate-850 rounded-2xl">
               <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 font-mono mb-4 flex items-center gap-1.5">
                 <HelpCircle className="w-4 h-4 text-blue-500" />
@@ -661,6 +673,11 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
 
           </div>
 
+        </div>
+
+        {/* ANUNCIO #4: Multiplex Pre-Footer */}
+        <div className="w-full mt-8">
+          <AdsenseMock slot="prestaciones-multiplex-footer" type="multiplex" />
         </div>
 
         {/* COMPONENTE EEAT AUTORÍA */}

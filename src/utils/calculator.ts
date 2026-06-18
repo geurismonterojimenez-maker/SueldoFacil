@@ -10,15 +10,15 @@ export function calcularTiempoServicio(fechaIngresoStr: string, fechaSalidaStr: 
     return { anos: 0, meses: 0, dias: 0, totalMeses: 0 };
   }
   
-  let years = sal.getFullYear() - ing.getFullYear();
-  let months = sal.getMonth() - ing.getMonth();
-  let days = sal.getDate() - ing.getDate();
+  let years = sal.getUTCFullYear() - ing.getUTCFullYear();
+  let months = sal.getUTCMonth() - ing.getUTCMonth();
+  let days = sal.getUTCDate() - ing.getUTCDate();
   
   if (days < 0) {
     months--;
     // Get days in the previous month of sal
-    const prevMonth = new Date(sal.getFullYear(), sal.getMonth(), 0);
-    days += prevMonth.getDate();
+    const prevMonth = new Date(Date.UTC(sal.getUTCFullYear(), sal.getUTCMonth(), 0));
+    days += prevMonth.getUTCDate();
   }
   
   if (months < 0) {
@@ -111,7 +111,7 @@ export function calcularPrestacionesLaborales(input: PrestacionesInput): Prestac
   if (input.incluyeRegalia) {
     const ing = new Date(input.fechaIngreso);
     const sal = new Date(input.fechaSalida);
-    const inicioAnio = new Date(sal.getFullYear(), 0, 1);
+    const inicioAnio = new Date(Date.UTC(sal.getUTCFullYear(), 0, 1));
     const fechaInicioEfectiva = ing > inicioAnio ? ing : inicioAnio;
     
     const tsRegalia = calcularTiempoServicio(
