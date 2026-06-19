@@ -112,7 +112,7 @@ export default function CostoLaboralPrintReport({ directData }: { directData?: a
     <div className="bg-slate-100 min-h-screen text-slate-900 font-sans antialiased text-[11px] leading-relaxed py-8 px-4 print:p-0 print:bg-white print:min-h-0">
       
       {/* CONTROLES DE LA PÁGINA */}
-      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-between print:hidden">
+      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-between print-hidden">
         <div className="flex items-center gap-2.5">
           <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-blue-600 rounded-full inline-block"></span>
@@ -136,171 +136,166 @@ export default function CostoLaboralPrintReport({ directData }: { directData?: a
       </div>
 
       {/* REPORTE FISICO */}
-      <div className="bg-white max-w-[8.5in] mx-auto p-8 border border-slate-200 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
-        
-        {/* CABECERA */}
-        <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
+      <div className="print-clean bg-white max-w-[8.5in] mx-auto p-5 border border-slate-200 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
+        <div className="flex flex-col justify-between min-h-[8.2in] pb-1">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="bg-slate-900 text-white p-1 rounded font-bold font-mono text-xs">
-                <span className="text-blue-400">S</span>F
+            {/* CABECERA */}
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3 mb-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="bg-slate-900 text-white p-1 rounded font-bold font-mono text-xs">
+                    <span className="text-blue-400">S</span>F
+                  </div>
+                  <span className="text-sm font-extrabold tracking-tight text-slate-900 uppercase">SueldoFácil.com</span>
+                </div>
+                <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Reporte de Costo Laboral Empresarial</h1>
+                <p className="text-[9px] text-slate-500 mt-1">Estudio de costos de personal, aportes al SDSS y provisiones de liquidación (República Dominicana).</p>
               </div>
-              <span className="text-sm font-extrabold tracking-tight text-slate-900 uppercase">SueldoFácil.com</span>
+
+              <div className="text-right text-[9px] space-y-0.5 font-mono text-slate-600 border border-slate-250 p-2 rounded-xl bg-slate-50">
+                <div><strong>Código:</strong> {reportSerial}</div>
+                <div><strong>Emitido:</strong> {new Date().toLocaleDateString('es-DO')}</div>
+                <div><strong>Versión:</strong> TSS/CNS 2026</div>
+              </div>
             </div>
-            <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Reporte de Costo Laboral Empresarial</h1>
-            <p className="text-[9px] text-slate-500 mt-1">Estudio de costos de personal, aportes al SDSS y provisiones de liquidación (República Dominicana).</p>
+
+            {/* DETALLE GENERAL DEL CÁLCULO */}
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/60 mb-3">
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">1. Resumen de Carga Financiera</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Salario Base Nominal</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.salarioBase.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Aportes Sociales (Patrón)</span>
+                  <span className="text-xs font-bold text-rose-600 font-mono">RD$ {totalCargasPatronales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Provisiones Adicionales</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">RD$ {totalProvisionesAnuales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Costo Total de Contratación</span>
+                  <span className="text-xs font-black text-blue-600 font-mono">RD$ {output.totalCostoEmpresarial.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+              <div className="mt-2.5 pt-2.5 border-t border-slate-200 text-[10px] text-slate-650 flex justify-between items-center">
+                <span>
+                  Costo adicional por encima del salario base nominal:
+                </span>
+                <span className="font-black text-blue-600 text-xs font-mono">
+                  + {output.porcentajeAdicional.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+
+            {/* DESGLOSE DETALLADO */}
+            <div className="mb-3 text-[10px]">
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">2. Desglose Detallado de Aportes y Provisiones Mensuales</h2>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-slate-900 text-white text-[9.5px]">
+                    <th className="p-1.5 border border-slate-800 rounded-l">Categoría / Concepto Laboral</th>
+                    <th className="p-1.5 border border-slate-800 text-center">Tasa / Método de Ley</th>
+                    <th className="p-1.5 border border-slate-800 text-right rounded-r">Costo Mensual (RD$)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {/* Salario Base */}
+                  <tr className="font-bold">
+                    <td className="p-1.5">Salario Nominal del Colaborador (Base)</td>
+                    <td className="p-1.5 text-center">-</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {output.salarioBase.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  
+                  {/* Aportaciones Patronales */}
+                  <tr>
+                    <td className="p-1.5 pl-4 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full inline-block"></span>
+                      Seguro de Pensiones (AFP - Aporte Patronal)
+                    </td>
+                    <td className="p-1.5 text-center font-mono">7.10%</td>
+                    <td className="p-1.5 text-right font-mono text-rose-600">RD$ {output.afpPatronal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 pl-4 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full inline-block"></span>
+                      Seguro Familiar de Salud (SFS - Aporte Patronal)
+                    </td>
+                    <td className="p-1.5 text-center font-mono">7.09%</td>
+                    <td className="p-1.5 text-right font-mono text-rose-600">RD$ {output.sfsPatronal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 pl-4 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full inline-block"></span>
+                      Seguro de Riesgos Laborales (ARL - IDOPPRIL)
+                    </td>
+                    <td className="p-1.5 text-center font-mono">{input.riesgoLaboral}% (Riesgo Fijo)</td>
+                    <td className="p-1.5 text-right font-mono text-rose-600">RD$ {output.arl.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+
+                  {/* Provisiones */}
+                  <tr>
+                    <td className="p-1.5 pl-4 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
+                      Provisión Mensual de Vacaciones (Estimado 14 días/año)
+                    </td>
+                    <td className="p-1.5 text-center font-mono">~4.9% del Salario</td>
+                    <td className="p-1.5 text-right font-mono text-slate-800">RD$ {output.provisionVacaciones.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 pl-4 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
+                      Provisión Mensual de Regalía Pascual (Sueldo #13)
+                    </td>
+                    <td className="p-1.5 text-center font-mono">8.33% (1/12 del Salario)</td>
+                    <td className="p-1.5 text-right font-mono text-slate-800">RD$ {output.provisionRegalia.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 pl-4 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
+                      Provisión Mensual de Cesantía (Fondo de Liquidación)
+                    </td>
+                    <td className="p-1.5 text-center font-mono">~5.8% (21 días/año)</td>
+                    <td className="p-1.5 text-right font-mono text-slate-800">RD$ {output.provisionCesantia.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+
+                  {/* Totales */}
+                  <tr className="bg-blue-50 font-black text-slate-900 text-xs">
+                    <td className="p-1.5">Costo Real Completo Empresarial del Puesto</td>
+                    <td className="p-1.5 text-center font-mono text-[9px] text-slate-500">+ {output.porcentajeAdicional.toFixed(1)}% Adicional</td>
+                    <td className="p-1.5 text-right font-mono text-blue-600">RD$ {output.totalCostoEmpresarial.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="text-right text-[9px] space-y-0.5 font-mono text-slate-600 border border-slate-250 p-2.5 rounded-xl bg-slate-50">
-            <div><strong>Código:</strong> {reportSerial}</div>
-            <div><strong>Emitido:</strong> {new Date().toLocaleDateString('es-DO')}</div>
-            <div><strong>Versión:</strong> TSS/CNS 2026</div>
-          </div>
-        </div>
-
-        {/* DETALLE GENERAL DEL CÁLCULO */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 mb-6">
-          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">1. Resumen de Carga Financiera</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Salario Base Nominal</span>
-              <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.salarioBase.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Aportes Sociales (Patrón)</span>
-              <span className="text-xs font-bold text-rose-600 font-mono">RD$ {totalCargasPatronales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Provisiones Adicionales</span>
-              <span className="text-xs font-bold text-slate-800 font-mono">RD$ {totalProvisionesAnuales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Costo Total de Contratación</span>
-              <span className="text-xs font-black text-blue-600 font-mono">RD$ {output.totalCostoEmpresarial.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-          </div>
-          <div className="mt-3.5 pt-3 border-t border-slate-200 text-[10px] text-slate-650 flex justify-between items-center">
-            <span>
-              Costo adicional por encima del salario base nominal:
-            </span>
-            <span className="font-black text-blue-600 text-xs font-mono">
-              + {output.porcentajeAdicional.toFixed(2)}%
-            </span>
-          </div>
-        </div>
-
-        {/* DESGLOSE DETALLADO */}
-        <div className="mb-6">
-          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">2. Desglose Detallado de Aportes y Provisiones Mensuales</h2>
-          <table class="w-full border-collapse">
-            <thead>
-              <tr class="bg-slate-900 text-white text-[9.5px]">
-                <th class="p-2 border border-slate-800 rounded-l">Categoría / Concepto Laboral</th>
-                <th class="p-2 border border-slate-800 text-center">Tasa / Método de Ley</th>
-                <th class="p-2 border border-slate-800 text-right rounded-r">Costo Mensual (RD$)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-slate-700">
-              {/* Salario Base */}
-              <tr class="font-bold">
-                <td class="p-2">Salario Nominal del Colaborador (Base)</td>
-                <td class="p-2 text-center">-</td>
-                <td class="p-2 text-right font-mono">RD$ {output.salarioBase.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              
-              {/* Aportaciones Patronales */}
-              <tr>
-                <td class="p-2 pl-4 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full inline-block"></span>
-                  Seguro de Pensiones (AFP - Aporte Patronal)
-                </td>
-                <td class="p-2 text-center font-mono">7.10%</td>
-                <td class="p-2 text-right font-mono text-rose-600">RD$ {output.afpPatronal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td class="p-2 pl-4 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full inline-block"></span>
-                  Seguro Familiar de Salud (SFS - Aporte Patronal)
-                </td>
-                <td class="p-2 text-center font-mono">7.09%</td>
-                <td class="p-2 text-right font-mono text-rose-600">RD$ {output.sfsPatronal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td class="p-2 pl-4 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full inline-block"></span>
-                  Seguro de Riesgos Laborales (ARL - IDOPPRIL)
-                </td>
-                <td class="p-2 text-center font-mono">{input.riesgoLaboral}% (Riesgo Fijo)</td>
-                <td class="p-2 text-right font-mono text-rose-600">RD$ {output.arl.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-
-              {/* Provisiones */}
-              <tr>
-                <td class="p-2 pl-4 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
-                  Provisión Mensual de Vacaciones (Estimado 14 días/año)
-                </td>
-                <td class="p-2 text-center font-mono">~4.9% del Salario</td>
-                <td class="p-2 text-right font-mono text-slate-800">RD$ {output.provisionVacaciones.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td class="p-2 pl-4 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
-                  Provisión Mensual de Regalía Pascual (Sueldo #13)
-                </td>
-                <td class="p-2 text-center font-mono">8.33% (1/12 del Salario)</td>
-                <td class="p-2 text-right font-mono text-slate-800">RD$ {output.provisionRegalia.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td class="p-2 pl-4 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
-                  Provisión Mensual de Cesantía (Fondo de Liquidación)
-                </td>
-                <td class="p-2 text-center font-mono">~5.8% (21 días/año)</td>
-                <td class="p-2 text-right font-mono text-slate-800">RD$ {output.provisionCesantia.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-
-              {/* Totales */}
-              <tr class="bg-blue-50 font-black text-slate-900 text-xs">
-                <td class="p-2">Costo Real Completo Empresarial del Puesto</td>
-                <td class="p-2 text-center font-mono text-[9px] text-slate-500">+ {output.porcentajeAdicional.toFixed(1)}% Adicional</td>
-                <td class="p-2 text-right font-mono text-blue-600">RD$ {output.totalCostoEmpresarial.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* NOTAS INFORMATIVAS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-[9px] text-slate-500 text-justify leading-relaxed">
           <div>
-            <strong>Aportaciones Patronales Obligatorias:</strong> Corresponden a los aportes definidos por la Ley 87-01 del Sistema Dominicano de Seguridad Social, aplicados sobre el sueldo bruto ordinario del trabajador y sujetos a los límites de tope mensual.
-          </div>
-          <div>
-            <strong>Provisiones Recomendadas (Pasivo Laboral):</strong> Aunque no son un desembolso inmediato mensual, representan la carga devengada por el colaborador que la empresa debe reservar para responder a las obligaciones legales de fin de año o desahucio.
-          </div>
-        </div>
+            {/* ÁREA DE FIRMAS (NO BREAK) */}
+            <div className="print-no-break grid grid-cols-2 gap-8 border-t border-slate-200 pt-3 mt-3 select-none">
+              <div className="text-center">
+                <div className="h-10 border-b border-slate-350 mx-auto max-w-[200px]"></div>
+                <span className="text-[9px] font-bold text-slate-650 block mt-1.5">Elaborado por</span>
+                <span className="text-[8px] text-slate-400 block">Firma y Sello del Contable / RRHH</span>
+              </div>
+              <div className="text-center">
+                <div className="h-10 border-b border-slate-350 mx-auto max-w-[200px]"></div>
+                <span className="text-[9px] font-bold text-slate-650 block mt-1.5">Autorizado por</span>
+                <span className="text-[8px] text-slate-400 block">Firma y Sello de la Gerencia Financiera</span>
+              </div>
+            </div>
 
-        {/* ÁREA DE FIRMAS (NO BREAK) */}
-        <div className="print-no-break grid grid-cols-2 gap-8 border-t border-slate-200 pt-8 mt-8 select-none">
-          <div className="text-center">
-            <div className="h-14 border-b border-slate-350 mx-auto max-w-[200px]"></div>
-            <span className="text-[9px] font-bold text-slate-650 block mt-2">Elaborado por</span>
-            <span className="text-[8px] text-slate-400 block">Firma y Sello del Contable / RRHH</span>
+            {/* CERTIFICACIÓN DE SEGURIDAD LOCAL */}
+            <div className="mt-3 border-t border-slate-100 pt-2 flex justify-between items-center text-[8.5px] text-slate-400 select-none">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                Certificado bajo algoritmos de cálculo SueldoFácil.com
+              </span>
+              <span>&copy; 2026 SueldoFácil — Todos los derechos reservados.</span>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="h-14 border-b border-slate-350 mx-auto max-w-[200px]"></div>
-            <span className="text-[9px] font-bold text-slate-650 block mt-2">Autorizado por</span>
-            <span className="text-[8px] text-slate-400 block">Firma y Sello de la Gerencia Financiera</span>
-          </div>
-        </div>
-
-        {/* CERTIFICACIÓN DE SEGURIDAD LOCAL */}
-        <div className="mt-8 border-t border-slate-100 pt-4 flex justify-between items-center text-[8.5px] text-slate-400 select-none">
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-            Certificado bajo algoritmos de cálculo SueldoFácil.com
-          </span>
-          <span>&copy; 2026 SueldoFácil — Todos los derechos reservados.</span>
         </div>
 
       </div>

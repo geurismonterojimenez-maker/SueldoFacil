@@ -69,6 +69,12 @@ function numeroALetras(num: number): string {
   };
 
   const seccion = (num: number, divisor: number, strSingular: string, strPlural: string): string => {
+    if (divisor === 1) {
+      if (num < 10) return unidades(num);
+      if (num < 100) return decenas(num);
+      return centenas(num);
+    }
+
     const c = Math.floor(num / divisor);
     const rest = num % divisor;
     let label = '';
@@ -81,12 +87,6 @@ function numeroALetras(num: number): string {
       }
     } else {
       label = '';
-    }
-
-    if (divisor === 1) {
-      if (num < 10) return unidades(num);
-      if (num < 100) return decenas(num);
-      return centenas(num);
     }
 
     return label + (rest > 0 ? ' ' + seccion(rest, 1, 'UN', '') : '');
@@ -244,7 +244,7 @@ export default function AumentoPrintReport({ directData }: { directData?: any })
     <div className="bg-slate-100 min-h-screen text-slate-900 font-sans antialiased text-[11px] leading-relaxed py-8 px-4 print:p-0 print:bg-white print:min-h-0">
       
       {/* CONTROLES DE LA PÁGINA */}
-      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-between print:hidden">
+      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-between print-hidden">
         <div className="flex items-center gap-2.5">
           <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-blue-600 rounded-full inline-block"></span>
@@ -266,149 +266,142 @@ export default function AumentoPrintReport({ directData }: { directData?: any })
           </button>
         </div>
       </div>
-
       {/* REPORTE FISICO */}
-      <div className="bg-white max-w-[8.5in] mx-auto p-8 border border-slate-200 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
-        
-        {/* CABECERA */}
-        <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
+      <div className="print-clean bg-white max-w-[8.5in] mx-auto p-5 border border-slate-200 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
+        <div className="flex flex-col justify-between min-h-[8.2in] pb-1">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="bg-slate-900 text-white p-1 rounded font-bold font-mono text-xs">
-                <span className="text-blue-400">S</span>F
+            {/* CABECERA */}
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3 mb-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="bg-slate-900 text-white p-1 rounded font-bold font-mono text-xs">
+                    <span className="text-blue-400">S</span>F
+                  </div>
+                  <span className="text-sm font-extrabold tracking-tight text-slate-900 uppercase">SueldoFácil.com</span>
+                </div>
+                <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Estudio Comparativo de Aumento Salarial</h1>
+                <p className="text-[9px] text-slate-500 mt-1">Análisis de impacto impositivo y neto (TSS/ISR) para la República Dominicana.</p>
               </div>
-              <span className="text-sm font-extrabold tracking-tight text-slate-900 uppercase">SueldoFácil.com</span>
+
+              <div className="text-right text-[9px] space-y-0.5 font-mono text-slate-600 border border-slate-250 p-2.5 rounded-xl bg-slate-50">
+                <div><strong>Código:</strong> {reportSerial}</div>
+                <div><strong>Fecha:</strong> {new Date().toLocaleDateString('es-DO')}</div>
+                <div><strong>Legislación:</strong> TSS y Código Tributario RD</div>
+              </div>
             </div>
-            <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Estudio Comparativo de Aumento Salarial</h1>
-            <p className="text-[9px] text-slate-500 mt-1">Análisis de impacto impositivo y neto (TSS/ISR) para la República Dominicana.</p>
+
+            {/* RESUMEN DEL IMPACTO */}
+            <div className="bg-blue-50/40 rounded-xl p-3 border border-blue-100 mb-3">
+              <h2 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2 border-b border-blue-100 pb-1">1. Resumen Ejecutivo del Incremento</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Aumento Bruto Sugerido</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">RD$ {incrementoBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Aumento Neto Real</span>
+                  <span className="text-xs font-black text-emerald-600 font-mono">RD$ {incrementoNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Eficiencia del Aumento</span>
+                  <span className="text-xs font-bold text-blue-600 font-mono">
+                    {incrementoBruto > 0 ? ((incrementoNeto / incrementoBruto) * 100).toFixed(1) : '0.0'}%
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Incremento Neto Anualizado</span>
+                  <span className="text-xs font-black text-emerald-700 font-mono">RD$ {incrementoAnualNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* COMPARACIÓN ANTES VS DESPUÉS */}
+            <div className="mb-3 text-[10px]">
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">2. Cuadro Comparativo Mensual (Antes vs. Después)</h2>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-slate-900 text-white text-[9.5px]">
+                    <th className="p-1.5 border border-slate-800 rounded-l">Estructura Salarial</th>
+                    <th className="p-1.5 border border-slate-800 text-right">Situación Anterior (RD$)</th>
+                    <th className="p-1.5 border border-slate-800 text-right">Nueva Situación (RD$)</th>
+                    <th className="p-1.5 border border-slate-800 text-right rounded-r">Variación Neta (RD$)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td className="p-1.5 font-semibold">Salario Bruto</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {actualBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {nuevoBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono text-emerald-600 font-bold">+RD$ {incrementoBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 font-semibold">Descuento AFP (2.87%)</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {(data.output.actualAfp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {(data.output.nuevoAfp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono text-rose-500 font-bold">+RD$ {cambioAfp.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 font-semibold">Descuento SFS (3.04%)</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {(data.output.actualSfs || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {(data.output.nuevoSfs || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono text-rose-500 font-bold">+RD$ {cambioSfs.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 font-semibold">Retención ISR (Escala DGII)</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {(data.output.actualIsr || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {(data.output.nuevoIsr || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono text-rose-500 font-bold">+RD$ {cambioIsr.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr className="bg-slate-900/5 font-bold text-slate-900">
+                    <td className="p-1.5">Total Deducciones Aplicadas</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {((data.output.actualAfp || 0) + (data.output.actualSfs || 0) + (data.output.actualIsr || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {((data.output.nuevoAfp || 0) + (data.output.nuevoSfs || 0) + (data.output.nuevoIsr || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono text-rose-650 font-black">+RD$ {(cambioAfp + cambioSfs + cambioIsr).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr className="bg-emerald-50/40 font-black text-slate-900 text-xs">
+                    <td className="p-1.5 text-emerald-800">SALARIO NETO LIQUIDO</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {actualNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {nuevoNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="p-1.5 text-right font-mono text-emerald-650 text-xs font-black">+RD$ {incrementoNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* VALOR EN LETRAS */}
+            <div className="border border-slate-200 rounded-xl p-2.5 mb-3 text-slate-700 bg-slate-50/30">
+              <span className="text-[8.5px] font-bold text-slate-400 uppercase block mb-1">Incremento Neto en Letras Oficiales</span>
+              <p className="text-[10px] font-bold text-slate-800 leading-normal uppercase">
+                SON: {numeroALetras(incrementoNeto)}
+              </p>
+            </div>
           </div>
 
-          <div className="text-right text-[9px] space-y-0.5 font-mono text-slate-600 border border-slate-250 p-2.5 rounded-xl bg-slate-50">
-            <div><strong>Código:</strong> {reportSerial}</div>
-            <div><strong>Fecha:</strong> {new Date().toLocaleDateString('es-DO')}</div>
-            <div><strong>Legislación:</strong> TSS y Código Tributario RD</div>
-          </div>
-        </div>
+          <div>
+            {/* ÁREA DE FIRMAS (NO BREAK) */}
+            <div className="print-no-break grid grid-cols-2 gap-8 border-t border-slate-200 pt-3 mt-3 select-none">
+              <div className="text-center">
+                <div className="h-10 border-b border-slate-350 mx-auto max-w-[200px]"></div>
+                <span className="text-[9px] font-bold text-slate-650 block mt-1.5">Aprobado por Recursos Humanos</span>
+                <span className="text-[8px] text-slate-400 block">Firma y Sello del Evaluador</span>
+              </div>
+              <div className="text-center">
+                <div className="h-10 border-b border-slate-350 mx-auto max-w-[200px]"></div>
+                <span className="text-[9px] font-bold text-slate-650 block mt-1.5">Colaborador Conforme</span>
+                <span className="text-[8px] text-slate-400 block">Firma y Cédula</span>
+              </div>
+            </div>
 
-        {/* RESUMEN DEL IMPACTO */}
-        <div className="bg-blue-50/40 rounded-xl p-4 border border-blue-100 mb-6">
-          <h2 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2 border-b border-blue-100 pb-1">1. Resumen Ejecutivo del Incremento</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Aumento Bruto Sugerido</span>
-              <span className="text-xs font-bold text-slate-800 font-mono">RD$ {incrementoBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Aumento Neto Real</span>
-              <span className="text-xs font-black text-emerald-600 font-mono">RD$ {incrementoNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Eficiencia del Aumento</span>
-              <span className="text-xs font-bold text-blue-600 font-mono">
-                {incrementoBruto > 0 ? ((incrementoNeto / incrementoBruto) * 100).toFixed(1) : '0.0'}%
+            {/* CERTIFICACIÓN DE SEGURIDAD LOCAL */}
+            <div className="mt-3 border-t border-slate-100 pt-2 flex justify-between items-center text-[8.5px] text-slate-400 select-none">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                Certificado bajo algoritmos de cálculo SueldoFácil.com
               </span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Incremento Neto Anualizado</span>
-              <span className="text-xs font-black text-emerald-700 font-mono">RD$ {incrementoAnualNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              <span>&copy; 2026 SueldoFácil — Todos los derechos reservados.</span>
             </div>
           </div>
         </div>
-
-        {/* COMPARACIÓN ANTES VS DESPUÉS */}
-        <div className="mb-6">
-          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">2. Cuadro Comparativo Mensual (Antes vs. Después)</h2>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-slate-900 text-white text-[9.5px]">
-                <th className="p-2 border border-slate-800 rounded-l">Estructura Salarial</th>
-                <th className="p-2 border border-slate-800 text-right">Situación Anterior (RD$)</th>
-                <th className="p-2 border border-slate-800 text-right">Nueva Situación (RD$)</th>
-                <th className="p-2 border border-slate-800 text-right rounded-r">Variación Neta (RD$)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              <tr>
-                <td className="p-2 font-semibold">Salario Bruto</td>
-                <td className="p-2 text-right font-mono">RD$ {actualBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono">RD$ {nuevoBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono text-emerald-600 font-bold">+RD$ {incrementoBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td className="p-2 font-semibold">Descuento AFP (2.87%)</td>
-                <td className="p-2 text-right font-mono">RD$ {(data.output.actualAfp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono">RD$ {(data.output.nuevoAfp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono text-rose-500 font-bold">+RD$ {cambioAfp.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td className="p-2 font-semibold">Descuento SFS (3.04%)</td>
-                <td className="p-2 text-right font-mono">RD$ {(data.output.actualSfs || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono">RD$ {(data.output.nuevoSfs || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono text-rose-500 font-bold">+RD$ {cambioSfs.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td className="p-2 font-semibold">Retención ISR (Escala DGII)</td>
-                <td className="p-2 text-right font-mono">RD$ {(data.output.actualIsr || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono">RD$ {(data.output.nuevoIsr || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono text-rose-500 font-bold">+RD$ {cambioIsr.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr className="bg-slate-900/5 font-bold text-slate-900">
-                <td className="p-2">Total Deducciones Aplicadas</td>
-                <td className="p-2 text-right font-mono">RD$ {((data.output.actualAfp || 0) + (data.output.actualSfs || 0) + (data.output.actualIsr || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono">RD$ {((data.output.nuevoAfp || 0) + (data.output.nuevoSfs || 0) + (data.output.nuevoIsr || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono text-rose-650 font-black">+RD$ {(cambioAfp + cambioSfs + cambioIsr).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr className="bg-emerald-50/40 font-black text-slate-900 text-xs">
-                <td className="p-2 text-emerald-800">SALARIO NETO LIQUIDO</td>
-                <td className="p-2 text-right font-mono">RD$ {actualNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono">RD$ {nuevoNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="p-2 text-right font-mono text-emerald-650 text-xs font-black">+RD$ {incrementoNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* VALOR EN LETRAS */}
-        <div className="border border-slate-200 rounded-xl p-3.5 mb-6 text-slate-700 bg-slate-50/30">
-          <span className="text-[8.5px] font-bold text-slate-400 uppercase block mb-1">Incremento Neto en Letras Oficiales</span>
-          <p className="text-[10px] font-bold text-slate-800 leading-normal uppercase">
-            SON: {numeroALetras(incrementoNeto)}
-          </p>
-        </div>
-
-        {/* COMENTARIO ANALÍTICO */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-[9.5px] text-slate-500 text-justify leading-relaxed">
-          <div>
-            <strong>Retención Impositiva Marginal:</strong> A medida que el sueldo bruto aumenta, una proporción mayor de la renta excedentaria ingresa en los tramos superiores de la escala progresiva del ISR (15%, 20% y 25%), lo que incide sobre la tasa efectiva de tributación del aumento.
-          </div>
-          <div>
-            <strong>Límites TSS en el Incremento:</strong> Si el sueldo bruto anterior ya superaba los topes reglamentarios TSS (10 salarios mínimos para SFS y 20 para AFP), el incremento bruto no generará cargos adicionales de seguridad social, dirigiéndose todo el descuento marginal al ISR.
-          </div>
-        </div>
-
-        {/* ÁREA DE FIRMAS (NO BREAK) */}
-        <div className="print-no-break grid grid-cols-2 gap-8 border-t border-slate-200 pt-8 mt-8 select-none">
-          <div className="text-center">
-            <div className="h-14 border-b border-slate-350 mx-auto max-w-[200px]"></div>
-            <span className="text-[9px] font-bold text-slate-650 block mt-2">Aprobado por Recursos Humanos</span>
-            <span className="text-[8px] text-slate-400 block">Firma y Sello del Evaluador</span>
-          </div>
-          <div className="text-center">
-            <div className="h-14 border-b border-slate-350 mx-auto max-w-[200px]"></div>
-            <span className="text-[9px] font-bold text-slate-650 block mt-2">Colaborador Conforme</span>
-            <span className="text-[8px] text-slate-400 block">Firma y Cédula</span>
-          </div>
-        </div>
-
-        {/* CERTIFICACIÓN DE SEGURIDAD LOCAL */}
-        <div className="mt-8 border-t border-slate-100 pt-4 flex justify-between items-center text-[8.5px] text-slate-400 select-none">
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-            Certificado bajo algoritmos de cálculo SueldoFácil.com
-          </span>
-          <span>&copy; 2026 SueldoFácil — Todos los derechos reservados.</span>
-        </div>
-
       </div>
     </div>
   );

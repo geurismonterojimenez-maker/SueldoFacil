@@ -196,6 +196,20 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     ogDescription: "Calculadora limpia y exacta con las tasas actualizadas de Seguridad Social y DGII.",
     canonical: "https://sueldofacil.com/salario/"
   },
+  isr: {
+    title: "Calculadora de Impuesto Sobre la Renta (ISR) RD - SueldoFacil",
+    description: "Calcula la retención mensual del Impuesto Sobre la Renta (ISR) de la DGII según la escala y tramos impositivos vigentes en República Dominicana.",
+    ogTitle: "Calculadora ISR Dominicana | SueldoFacil",
+    ogDescription: "Averigua si tu salario está exento del Impuesto Sobre la Renta y calcula la tasa de retención correspondiente en República Dominicana.",
+    canonical: "https://sueldofacil.com/isr/"
+  },
+  afp_sfs: {
+    title: "Calculadora de AFP y SFS (Seguridad Social) RD - SueldoFacil",
+    description: "Calcula los descuentos mensuales obligatorios de Seguro Familiar de Salud (SFS 3.04%) y Administradora de Fondos de Pensiones (AFP 2.87%) en República Dominicana.",
+    ogTitle: "Cálculo de AFP y SFS en República Dominicana",
+    ogDescription: "Conoce el desglose exacto de tus cotizaciones de la Seguridad Social según las tasas oficiales del Ministerio de Trabajo.",
+    canonical: "https://sueldofacil.com/afp-sfs/"
+  },
   nominas: {
     title: "Calculadora de Nómina Colectiva RD - Registro y Deducciones TSS",
     description: "Administra y simula deducciones de nóminas de varios empleados de manera unificada bajo el Código Tributario dominicano.",

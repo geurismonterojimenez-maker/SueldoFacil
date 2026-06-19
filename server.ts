@@ -29,10 +29,90 @@ const SEO_MAP: Record<string, SEOMetadata> = {
     description: "Desglosa tus deducciones mensuales TSS (AFP 2.87%, SFS 3.04%) e Impuesto Sobre la Renta (ISR) de la DGII según tu nivel salarial en RD.",
     canonical: "https://sueldofacil.com/salario/"
   },
+  "/isr": {
+    title: "Calculadora de Impuesto Sobre la Renta (ISR) RD - SueldoFácil",
+    description: "Calcula la retención mensual del Impuesto Sobre la Renta (ISR) de la DGII según la escala y tramos impositivos vigentes en República Dominicana.",
+    canonical: "https://sueldofacil.com/isr/"
+  },
+  "/afp-sfs": {
+    title: "Calculadora de AFP y SFS (Seguridad Social) RD - SueldoFácil",
+    description: "Calcula los descuentos mensuales obligatorios de Seguro Familiar de Salud (SFS 3.04%) y Administradora de Fondos de Pensiones (AFP 2.87%) en República Dominicana.",
+    canonical: "https://sueldofacil.com/afp-sfs/"
+  },
+  "/costos": {
+    title: "Calculadora de Costo Laboral de Empleados - SueldoFácil",
+    description: "Calcula el costo total real de contratación en República Dominicana, incluyendo aportes TSS patronales (7.10% AFP, 7.09% SFS, ARL) y provisiones de ley.",
+    canonical: "https://sueldofacil.com/costos/"
+  },
+  "/horas-extras": {
+    title: "Calculadora de Horas Extras y Recargos de Nocturnidad RD - SueldoFácil",
+    description: "Monitorea y calcula con exactitud las horas de trabajo adicionales diurnas, nocturnas y días feriados con recargo del 35%, 50% y 100%.",
+    canonical: "https://sueldofacil.com/horas-extras/"
+  },
+  "/nominas": {
+    title: "Calculadora de Nómina Colectiva RD - Registro y Deducciones TSS - SueldoFácil",
+    description: "Administra y simula deducciones de nóminas de varios empleados de manera unificada bajo el Código Tributario dominicano.",
+    canonical: "https://sueldofacil.com/nominas/"
+  },
+  "/comparador": {
+    title: "Comparador de Ofertas Laborales y Beneficios en RD - SueldoFácil",
+    description: "Compara de forma interactiva dos ofertas de empleo descontando impuestos nacionales de ley e integrando beneficios anuales.",
+    canonical: "https://sueldofacil.com/comparador/"
+  },
+  "/documentos": {
+    title: "Generador de Cartas Laborales y Contratos Legales de RD - SueldoFácil",
+    description: "Genera al instante contratos fijos, cartas de renuncia con preaviso, cartas de despido y reclamos de aumento listos para imprimir.",
+    canonical: "https://sueldofacil.com/documentos/"
+  },
+  "/asistente-ia": {
+    title: "Asistente de Inteligencia Artificial para Ley de Trabajo Dominicana - SueldoFácil",
+    description: "Asistente virtual conversacional experto en el Código de Trabajo del país y normativas de la TSS para evacuar consultas impositivas.",
+    canonical: "https://sueldofacil.com/asistente-ia/"
+  },
+  "/blog": {
+    title: "Guías, Tutoriales y Consejos Laborales de República Dominicana - SueldoFácil",
+    description: "Infórmate de forma amigable sobre el impuesto de las bonificaciones, doble sueldo, despidos intempestivos y reglamentos TSS de vigencia activa.",
+    canonical: "https://sueldofacil.com/blog/"
+  },
   "/panel": {
     title: "Mi Panel de Banca Laboral y Bitácora del Trabajador RD - SueldoFácil",
     description: "Historial acumulativo de tus cotizaciones laborales dominicanas, planificador de fondo de ahorro y simulación de incremento salarial técnico.",
     canonical: "https://sueldofacil.com/panel/"
+  },
+  "/salarios-profesion": {
+    title: "Guía de Salarios por Profesión en República Dominicana - SueldoFácil",
+    description: "Consulta cuánto gana un programador, contador, médico o abogado en RD. Estadísticas salariales reales y tendencias por provincia de vigencia activa.",
+    canonical: "https://sueldofacil.com/salarios-profesion/"
+  },
+  "/calcular-aumento": {
+    title: "Calculadora de Aumento Salarial República Dominicana - SueldoFácil",
+    description: "Calcula en cuánto incrementa tu salario neto real tras un aumento de sueldo bruto. Desglose inmediato con impuestos (SFS, AFP, ISR).",
+    canonical: "https://sueldofacil.com/calcular-aumento/"
+  },
+  "/mi-diciembre": {
+    title: "Calculadora Sueldo #13 (Doble Sueldo Pascual y Regalía) RD - SueldoFácil",
+    description: "Estima de forma gratuita tu Regalía Pascual de fin de año en República Dominicana, completamente exenta de AFP, SFS e ISR.",
+    canonical: "https://sueldofacil.com/mi-diciembre/"
+  },
+  "/biblioteca": {
+    title: "Biblioteca de Legislación de Trabajo Dominicana - SueldoFácil",
+    description: "Estudia las regulaciones del Código de Trabajo dominicano de manera simple. Guías sobre cesantía, preaviso, horas extras y vacaciones oficiales.",
+    canonical: "https://sueldofacil.com/biblioteca/"
+  },
+  "/analizar-recibos": {
+    title: "Auditor de Recibos de Nómina Dominicana - SueldoFácil",
+    description: "Audita tus volantes de pago mensuales de forma digital. Descubre discrepancias en los descuentos de la TSS (AFP, SFS) o retenciones de ISR de la DGII.",
+    canonical: "https://sueldofacil.com/analizar-recibos/"
+  },
+  "/plan-ahorro": {
+    title: "Plan de Ahorro RD | Sueldo Fácil",
+    description: "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana.",
+    canonical: "https://sueldofacil.com/plan-ahorro/"
+  },
+  "/presupuesto-anual": {
+    title: "Presupuesto Anual RD | Sueldo Fácil",
+    description: "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana.",
+    canonical: "https://sueldofacil.com/presupuesto-anual/"
   },
   "/sobre-nosotros": {
     title: "Sobre Nosotros y Equipo de Expertos | Sueldo Fácil",
@@ -48,11 +128,6 @@ const SEO_MAP: Record<string, SEOMetadata> = {
     title: "Contacto y Soporte Institucional | Sueldo Fácil",
     description: "Contacte al departamento de redacción y soporte analítico de Sueldo Fácil para sugerencias, aclaraciones legislativas o asesorías.",
     canonical: "https://sueldofacil.com/contacto/"
-  },
-  "/mi-diciembre": {
-    title: "Calculadora Sueldo #13 (Doble Sueldo Pascual y Regalía) RD - SueldoFácil",
-    description: "Estima de forma gratuita tu Regalía Pascual de fin de año en República Dominicana, completamente exenta de AFP, SFS e ISR.",
-    canonical: "https://sueldofacil.com/mi-diciembre/"
   }
 };
 

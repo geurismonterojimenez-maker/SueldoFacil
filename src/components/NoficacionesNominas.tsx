@@ -123,7 +123,7 @@ export default function NoficacionesNominas() {
           </div>
           <button
             onClick={handleExportCSV}
-            className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold py-2 px-3 border border-slate-200 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+            className="bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold py-2 px-3 border border-slate-200 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-all shrink-0 print:hidden"
           >
             <FileDown className="w-4 h-4" />
             Exportar CSV
@@ -131,7 +131,7 @@ export default function NoficacionesNominas() {
         </div>
 
         {/* INPUT DE NUEVO TRABAJADOR */}
-        <form onSubmit={handleAddEmployee} className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end bg-slate-50 p-4 border border-slate-200 rounded-xl">
+        <form onSubmit={handleAddEmployee} className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end bg-slate-50 p-4 border border-slate-200 rounded-xl print:hidden">
           <div className="md:col-span-4">
             <label className="block text-[10px] font-semibold text-slate-600 uppercase mb-1.5">Nombre Completo</label>
             <input
@@ -186,7 +186,7 @@ export default function NoficacionesNominas() {
                 <th className="p-3 text-right">SFS Desc.</th>
                 <th className="p-3 text-right">ISR Retenido</th>
                 <th className="p-3 text-right">Salario Neto</th>
-                <th className="p-3 text-center">Acción</th>
+                <th className="p-3 text-center print:hidden">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -203,7 +203,7 @@ export default function NoficacionesNominas() {
                     <td className="p-3 text-right font-mono text-rose-500">-RD$ {netObj.sfs.toFixed(0)}</td>
                     <td className="p-3 text-right font-mono text-rose-500">-RD$ {netObj.isr.toFixed(0)}</td>
                     <td className="p-3 text-right font-mono font-bold text-slate-800">RD$ {netObj.salarioNeto.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td className="p-3 text-center">
+                    <td className="p-3 text-center print:hidden">
                       <button
                         onClick={() => handleDeleteEmployee(emp.id)}
                         className="text-slate-400 hover:text-red-650 p-1 rounded hover:bg-red-50/50 cursor-pointer transition-all"

@@ -414,7 +414,7 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-xs font-semibold">
       
       {/* PANEL IZQUIERDO DE AYUDA / SUGERENCIAS */}
-      <div className="lg:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-5 space-y-6">
+      <div className="lg:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-5 space-y-6 print:hidden">
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <span className="p-1 px-2 rounded-lg bg-blue-100/80 text-blue-600">
@@ -498,10 +498,10 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
       </div>
 
       {/* CHAT WINDOW DERECHA */}
-      <div className="lg:col-span-8 flex flex-col bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm h-[650px] justify-between">
+      <div className="lg:col-span-8 flex flex-col bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm h-[650px] justify-between print:h-auto print:border-none print:shadow-none print:overflow-visible">
         
         {/* HEADER */}
-        <div className="bg-slate-900 px-5 py-4 flex items-center justify-between border-b border-slate-800">
+        <div className="bg-slate-900 px-5 py-4 flex items-center justify-between border-b border-slate-800 print:hidden">
           <div className="flex items-center gap-3">
             <div className="relative">
               <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse"></span>
@@ -589,7 +589,7 @@ Haz el informe sumamente estructurado, con viñetas elegantes y párrafos muy co
           </div>
         ) : (
           /* MODALIDAD EXPERTA GUIADA (WIZARD) FASE 7 */
-          <div className="flex-1 flex flex-col bg-slate-50 overflow-y-auto p-6 justify-between">
+          <div className="flex-1 flex flex-col bg-slate-50 overflow-y-auto p-6 justify-between print:bg-white print:p-0 print:overflow-visible">
             
             {expertStep === 1 && (
               <div className="space-y-6 animate-fade-in self-stretch max-w-lg mx-auto py-4">

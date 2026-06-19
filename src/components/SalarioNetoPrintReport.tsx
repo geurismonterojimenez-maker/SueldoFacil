@@ -70,6 +70,12 @@ function numeroALetras(num: number): string {
   };
 
   const seccion = (num: number, divisor: number, strSingular: string, strPlural: string): string => {
+    if (divisor === 1) {
+      if (num < 10) return unidades(num);
+      if (num < 100) return decenas(num);
+      return centenas(num);
+    }
+
     const c = Math.floor(num / divisor);
     const rest = num % divisor;
     let label = '';
@@ -82,12 +88,6 @@ function numeroALetras(num: number): string {
       }
     } else {
       label = '';
-    }
-
-    if (divisor === 1) {
-      if (num < 10) return unidades(num);
-      if (num < 100) return decenas(num);
-      return centenas(num);
     }
 
     return label + (rest > 0 ? ' ' + seccion(rest, 1, 'UN', '') : '');
@@ -237,7 +237,7 @@ export default function SalarioNetoPrintReport({ directData }: { directData?: an
     <div className="bg-slate-100 min-h-screen text-slate-900 font-sans antialiased text-[11px] leading-relaxed py-8 px-4 print:p-0 print:bg-white print:min-h-0">
       
       {/* CONTROLES DE LA PÁGINA */}
-      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-between print:hidden">
+      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-between print-hidden">
         <div className="flex items-center gap-2.5">
           <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-blue-600 rounded-full inline-block"></span>
@@ -259,133 +259,127 @@ export default function SalarioNetoPrintReport({ directData }: { directData?: an
           </button>
         </div>
       </div>
-
       {/* REPORTE FISICO */}
-      <div className="bg-white max-w-[8.5in] mx-auto p-8 border border-slate-200 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
-        
-        {/* CABECERA */}
-        <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
+      <div className="print-clean bg-white max-w-[8.5in] mx-auto p-5 border border-slate-200 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
+        <div className="flex flex-col justify-between min-h-[8.2in] pb-1">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="bg-slate-900 text-white p-1 rounded font-bold font-mono text-xs">
-                <span className="text-blue-400">S</span>F
+            {/* CABECERA */}
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3 mb-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="bg-slate-900 text-white p-1 rounded font-bold font-mono text-xs">
+                    <span className="text-blue-400">S</span>F
+                  </div>
+                  <span className="text-sm font-extrabold tracking-tight text-slate-900 uppercase">SueldoFácil.com</span>
+                </div>
+                <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Reporte Ejecutivo de Salario Neto</h1>
+                <p className="text-[9px] text-slate-500 mt-1">Cálculo de deducciones de ley conforme a la TSS y escalas fiscales de la DGII de RD.</p>
               </div>
-              <span className="text-sm font-extrabold tracking-tight text-slate-900 uppercase">SueldoFácil.com</span>
+
+              <div className="text-right text-[8.5px] space-y-0.5 font-mono text-slate-600 border border-slate-250 p-2 rounded-xl bg-slate-50">
+                <div><strong>Código:</strong> {reportSerial}</div>
+                <div><strong>Emitido:</strong> {new Date().toLocaleDateString('es-DO')}</div>
+                <div><strong>Normativa:</strong> Ley 87-01 RD</div>
+              </div>
             </div>
-            <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Reporte Ejecutivo de Salario Neto</h1>
-            <p className="text-[9px] text-slate-500 mt-1">Cálculo de deducciones de ley conforme a la TSS y escalas fiscales de la DGII de RD.</p>
+
+            {/* DETALLE GENERAL DEL CÁLCULO */}
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/60 mb-3">
+              <h2 className="text-[10px] font-bold text-slate-800 uppercase tracking-wider mb-1.5 border-b border-slate-200 pb-1">1. Datos Generales de la Simulación</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <span className="text-[8.5px] font-bold text-slate-400 uppercase block">Salario Bruto Mensual</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.salarioBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[8.5px] font-bold text-slate-400 uppercase block">Ingresos Adicionales</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.ingresosAdicionales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[8.5px] font-bold text-slate-400 uppercase block">Retenciones de Ley</span>
+                  <span className="text-xs font-bold text-rose-600 font-mono">RD$ {output.retencionesTotales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="text-[8.5px] font-bold text-slate-400 uppercase block">Salario Neto Recibido</span>
+                  <span className="text-xs font-black text-emerald-600 font-mono">RD$ {output.salarioNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* DESGLOSE DETALLADO */}
+            <div className="mb-3 text-[10px]">
+              <h2 className="text-[10px] font-bold text-slate-800 uppercase tracking-wider mb-1.5 border-b border-slate-200 pb-1">2. Desglose de Deducciones y Cargas Sociales</h2>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-slate-900 text-white text-[8px] font-bold uppercase tracking-wider">
+                    <th className="p-1.5 border border-slate-800 rounded-l">Concepto de Deducción</th>
+                    <th className="p-1.5 border border-slate-800 text-center">Porcentaje (%)</th>
+                    <th className="p-1.5 border border-slate-800 text-right rounded-r">Monto Deducido (RD$)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td className="p-1.5 font-semibold">Seguro de Pensiones (AFP - Empleado)</td>
+                    <td className="p-1.5 text-center font-mono text-[9px]">2.87%</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {output.afp.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 font-semibold">Seguro Familiar de Salud (SFS - Empleado)</td>
+                    <td className="p-1.5 text-center font-mono text-[9px]">3.04%</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {output.sfs.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr>
+                    <td className="p-1.5 font-semibold">Impuesto Sobre la Renta (ISR - Escala de la DGII)</td>
+                    <td className="p-1.5 text-center font-mono text-[9px]">Variable</td>
+                    <td className="p-1.5 text-right font-mono">RD$ {output.isr.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr className="bg-slate-50 font-bold text-slate-900">
+                    <td className="p-1.5">Total de Retenciones Aplicadas</td>
+                    <td className="p-1.5 text-center">-</td>
+                    <td className="p-1.5 text-right font-mono text-rose-600">RD$ {output.retencionesTotales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  <tr className="bg-blue-50/40 font-black text-slate-900 text-xs">
+                    <td className="p-1.5">Monto Neto a Depositar al Empleado</td>
+                    <td className="p-1.5 text-center font-mono text-[9px] text-slate-500">{output.porcentajeNeto.toFixed(1)}% del Salario</td>
+                    <td className="p-1.5 text-right font-mono text-emerald-600">RD$ {output.salarioNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* VALOR EN LETRAS */}
+            <div className="border border-slate-200 rounded-xl p-2.5 mb-3 text-slate-700 bg-slate-50/30">
+              <span className="text-[8px] font-bold text-slate-400 uppercase block mb-0.5">Monto en Letras Oficiales</span>
+              <p className="text-[9.5px] font-bold text-slate-800 leading-normal uppercase">
+                SON: {numeroALetras(output.salarioNeto)}
+              </p>
+            </div>
           </div>
 
-          <div className="text-right text-[9px] space-y-0.5 font-mono text-slate-600 border border-slate-250 p-2.5 rounded-xl bg-slate-50">
-            <div><strong>Código:</strong> {reportSerial}</div>
-            <div><strong>Emitido:</strong> {new Date().toLocaleDateString('es-DO')}</div>
-            <div><strong>Normativa:</strong> Ley 87-01 y Código Tributario RD</div>
-          </div>
-        </div>
-
-        {/* DETALLE GENERAL DEL CÁLCULO */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 mb-6">
-          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">1. Datos Generales de la Simulación</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Salario Bruto Mensual</span>
-              <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.salarioBruto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Ingresos Adicionales</span>
-              <span className="text-xs font-bold text-slate-800 font-mono">RD$ {output.ingresosAdicionales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Retenciones de Ley</span>
-              <span className="text-xs font-bold text-rose-600 font-mono">RD$ {output.retencionesTotales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase block">Salario Neto Recibido</span>
-              <span className="text-xs font-black text-emerald-600 font-mono">RD$ {output.salarioNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* DESGLOSE DETALLADO */}
-        <div className="mb-6">
-          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">2. Desglose de Deducciones y Cargas Sociales</h2>
-          <table class="w-full border-collapse">
-            <thead>
-              <tr class="bg-slate-900 text-white text-[9.5px]">
-                <th class="p-2 border border-slate-800 rounded-l">Concepto de Deducción</th>
-                <th class="p-2 border border-slate-800 text-center">Porcentaje (%)</th>
-                <th class="p-2 border border-slate-800 text-right rounded-r">Monto Deducido (RD$)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-slate-700">
-              <tr>
-                <td class="p-2 font-semibold">Seguro de Pensiones (AFP - Empleado)</td>
-                <td class="p-2 text-center font-mono">2.87%</td>
-                <td class="p-2 text-right font-mono">RD$ {output.afp.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td class="p-2 font-semibold">Seguro Familiar de Salud (SFS - Empleado)</td>
-                <td class="p-2 text-center font-mono">3.04%</td>
-                <td class="p-2 text-right font-mono">RD$ {output.sfs.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr>
-                <td class="p-2 font-semibold">Impuesto Sobre la Renta (ISR - Escala de la DGII)</td>
-                <td class="p-2 text-center font-mono">Variable</td>
-                <td class="p-2 text-right font-mono">RD$ {output.isr.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr class="bg-slate-50 font-bold text-slate-900">
-                <td class="p-2">Total de Retenciones Aplicadas</td>
-                <td class="p-2 text-center">-</td>
-                <td class="p-2 text-right font-mono text-rose-600">RD$ {output.retencionesTotales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-              <tr class="bg-blue-50/40 font-black text-slate-900 text-xs">
-                <td class="p-2">Monto Neto a Depositar al Empleado</td>
-                <td class="p-2 text-center font-mono text-[9px] text-slate-500">{output.porcentajeNeto.toFixed(1)}% del Salario</td>
-                <td class="p-2 text-right font-mono text-emerald-600">RD$ {output.salarioNeto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* VALOR EN LETRAS */}
-        <div className="border border-slate-200 rounded-xl p-3.5 mb-6 text-slate-700 bg-slate-50/30">
-          <span className="text-[8.5px] font-bold text-slate-400 uppercase block mb-1">Monto en Letras Oficiales</span>
-          <p className="text-[10px] font-bold text-slate-800 leading-normal uppercase">
-            SON: {numeroALetras(output.salarioNeto)}
-          </p>
-        </div>
-
-        {/* NOTAS LEGALES E INFORMATIVAS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-[9.5px] text-slate-500 text-justify leading-relaxed">
           <div>
-            <strong>Base Imponible del Impuesto:</strong> Conforme al Código Tributario Dominicano, las cotizaciones obligatorias a la Seguridad Social (AFP y SFS) están exentas de tributos y se deducen del sueldo bruto para obtener la base imponible del Impuesto sobre la Renta.
-          </div>
-          <div>
-            <strong>Topes Salariales de Cotización:</strong> El cálculo aplica los límites máximos establecidos por la Tesorería de la Seguridad Social (TSS) equivalentes a 10 salarios mínimos para el seguro de salud (SFS) y 20 salarios mínimos para pensiones (AFP).
-          </div>
-        </div>
+            {/* ÁREA DE FIRMAS (NO BREAK) */}
+            <div className="print-no-break grid grid-cols-2 gap-8 border-t border-slate-200 pt-3 mt-3 select-none">
+              <div className="text-center">
+                <div className="h-10 border-b border-slate-350 mx-auto max-w-[200px]"></div>
+                <span className="text-[9px] font-bold text-slate-650 block mt-1.5">Firma del Colaborador</span>
+                <span className="text-[8px] text-slate-400 block">Recibido Conforme</span>
+              </div>
+              <div className="text-center">
+                <div className="h-10 border-b border-slate-350 mx-auto max-w-[200px]"></div>
+                <span className="text-[9px] font-bold text-slate-650 block mt-1.5">Por la Empresa</span>
+                <span className="text-[8px] text-slate-400 block">Firma y Sello de Recursos Humanos</span>
+              </div>
+            </div>
 
-        {/* ÁREA DE FIRMAS (NO BREAK) */}
-        <div className="print-no-break grid grid-cols-2 gap-8 border-t border-slate-200 pt-8 mt-8 select-none">
-          <div className="text-center">
-            <div className="h-14 border-b border-slate-350 mx-auto max-w-[200px]"></div>
-            <span className="text-[9px] font-bold text-slate-650 block mt-2">Firma del Colaborador</span>
-            <span className="text-[8px] text-slate-400 block">Recibido Conforme</span>
+            {/* CERTIFICACIÓN DE SEGURIDAD LOCAL */}
+            <div className="mt-3 border-t border-slate-100 pt-2 flex justify-between items-center text-[8px] text-slate-400 select-none">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                Certificado bajo algoritmos de cálculo SueldoFácil.com
+              </span>
+              <span>&copy; 2026 SueldoFácil — Todos los derechos reservados.</span>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="h-14 border-b border-slate-350 mx-auto max-w-[200px]"></div>
-            <span className="text-[9px] font-bold text-slate-650 block mt-2">Por la Empresa</span>
-            <span className="text-[8px] text-slate-400 block">Firma y Sello de Recursos Humanos</span>
-          </div>
-        </div>
-
-        {/* CERTIFICACIÓN DE SEGURIDAD LOCAL */}
-        <div className="mt-8 border-t border-slate-100 pt-4 flex justify-between items-center text-[8.5px] text-slate-400 select-none">
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-            Certificado bajo algoritmos de cálculo SueldoFácil.com
-          </span>
-          <span>&copy; 2026 SueldoFácil — Todos los derechos reservados.</span>
         </div>
 
       </div>

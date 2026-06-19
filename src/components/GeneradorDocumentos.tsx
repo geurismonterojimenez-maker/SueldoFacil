@@ -3,7 +3,11 @@ import { TipoCarta, CartaInput } from '../types';
 import { FileText, Copy, Printer, Check, Info, ShieldCheck } from 'lucide-react';
 import AdsenseMock from './AdsenseMock';
 
-export default function GeneradorDocumentos() {
+interface Props {
+  onPrint?: (data: string) => void;
+}
+
+export default function GeneradorDocumentos({ onPrint }: Props = {}) {
   const [tipo, setTipo] = useState<TipoCarta>('renuncia');
   const [copied, setCopied] = useState(false);
   const [input, setInput] = useState<CartaInput>({
@@ -37,7 +41,7 @@ ${input.nombreEmpresa}
 RNC: ${input.rncEmpresa || 'N/D'}
 Su Despacho.-
 
-Asunto: Comunicación de Dimisión Voluntaria (Renuncia Formal)
+Asunto: Comunicación de Renuncia Voluntaria (Término de Contrato por Desahucio del Trabajador)
 
 Distinguidos Señores:
 
@@ -47,6 +51,7 @@ Esta renuncia se hará efectiva laboralmente el día ${input.fechaEfectiva}, mot
 
 1. Se otorga formal aviso laboral conforme a lo pactado en el Código de Trabajo de la República Dominicana (Ley No. 16-92) para cumplir con el período legal de preaviso que me corresponde.
 2. Solicito la elaboración de mi saldo de liquidación correspondiente a mis derechos adquiridos irrenunciables, tales como: Vacaciones proporcionales no tomadas, Regalía Pascual (Sueldo 13 proporcional) y la retribución de cualquier otro incentivo pendiente de pago.
+3. De conformidad con lo establecido en la legislación laboral para la terminación voluntaria del contrato de trabajo por parte del trabajador (desahucio), reconozco que me corresponde recibir únicamente el pago por concepto de mis derechos adquiridos de acuerdo con lo que otorga la ley, extinguiéndose bajo este tipo de salida el reclamo de auxilio de cesantía o preaviso patronal.
 
 Agradezco profundamente la valiosa oportunidad que me brindaron de formar parte de su organización durante este tiempo, lo cual me ha permitido crecer tanto a nivel profesional como humano.
 
@@ -172,9 +177,14 @@ ______________________                   ______________________
   };
 
   const handlePrint = () => {
+    const content = getTemplateContent();
+    if (onPrint) {
+      onPrint(content);
+      return;
+    }
     const printWindow = window.open('', '_blank');
     if (printWindow) {
-      printWindow.document.write(`<pre style="font-family: inherit; font-size: 14px; white-space: pre-wrap; padding: 40px;">${getTemplateContent()}</pre>`);
+      printWindow.document.write(`<pre style="font-family: inherit; font-size: 14px; white-space: pre-wrap; padding: 40px;">${content}</pre>`);
       printWindow.document.close();
       printWindow.print();
     }

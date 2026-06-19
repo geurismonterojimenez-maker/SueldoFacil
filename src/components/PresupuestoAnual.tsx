@@ -102,6 +102,18 @@ export default function PresupuestoAnual() {
     setVariableExpenses(variableExpenses.filter(i => i.id !== id));
   };
 
+  const handleEditIncome = (id: string, value: number) => {
+    setIncomes(prev => prev.map(item => item.id === id ? { ...item, value } : item));
+  };
+
+  const handleEditFixed = (id: string, value: number) => {
+    setFixedExpenses(prev => prev.map(item => item.id === id ? { ...item, value } : item));
+  };
+
+  const handleEditVariable = (id: string, value: number) => {
+    setVariableExpenses(prev => prev.map(item => item.id === id ? { ...item, value } : item));
+  };
+
   // Core calculations taking scenario multipliers into account
   const baseTotals = useMemo(() => {
     const totalInc = incomes.reduce((acc, curr) => acc + curr.value, 0);
@@ -423,7 +435,15 @@ export default function PresupuestoAnual() {
                 <div key={item.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/20">
                   <span className="text-xs font-extrabold text-slate-800 dark:text-slate-300">{item.label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">RD$ {item.value.toLocaleString('en-US')}</span>
+                    <div className="flex items-center gap-0.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-lg px-2 py-0.5 text-slate-500 dark:text-slate-400 shadow-sm">
+                      <span className="text-[9px] font-extrabold font-mono">RD$</span>
+                      <input
+                        type="number"
+                        value={item.value === 0 ? '' : item.value}
+                        onChange={(e) => handleEditIncome(item.id, e.target.value === '' ? 0 : Number(e.target.value))}
+                        className="w-20 bg-transparent text-xs font-mono font-bold text-slate-800 dark:text-slate-250 focus:outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
                     <button
                       onClick={() => handleDeleteIncome(item.id)}
                       className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
@@ -475,7 +495,15 @@ export default function PresupuestoAnual() {
                 <div key={item.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200/20">
                   <span className="text-xs font-semibold text-slate-800 dark:text-slate-300">{item.label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">RD$ {item.value.toLocaleString('en-US')}</span>
+                    <div className="flex items-center gap-0.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-lg px-2 py-0.5 text-slate-500 dark:text-slate-400 shadow-sm">
+                      <span className="text-[9px] font-extrabold font-mono">RD$</span>
+                      <input
+                        type="number"
+                        value={item.value === 0 ? '' : item.value}
+                        onChange={(e) => handleEditFixed(item.id, e.target.value === '' ? 0 : Number(e.target.value))}
+                        className="w-20 bg-transparent text-xs font-mono font-bold text-slate-800 dark:text-slate-250 focus:outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
                     <button
                       onClick={() => handleDeleteFixed(item.id)}
                       className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"
@@ -531,13 +559,21 @@ export default function PresupuestoAnual() {
                     <div>
                       <span className="text-xs font-semibold text-slate-800 dark:text-slate-300 block">{item.label}</span>
                       {isSelectedCut && (
-                        <span className="text-[9px] text-amber-500 font-bold font-mono">¡Corte del {cutPercentage}% activo!</span>
+                        <span className="text-[9px] text-amber-500 font-bold font-mono block">
+                          ¡Corte del {cutPercentage}% activo! (Final: RD$ {Math.round(finalVal).toLocaleString('en-US')})
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-450">
-                        RD$ {Math.round(finalVal).toLocaleString('en-US')}
-                      </span>
+                      <div className="flex items-center gap-0.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-lg px-2 py-0.5 text-slate-500 dark:text-slate-400 shadow-sm">
+                        <span className="text-[9px] font-extrabold font-mono">RD$</span>
+                        <input
+                          type="number"
+                          value={item.value === 0 ? '' : item.value}
+                          onChange={(e) => handleEditVariable(item.id, e.target.value === '' ? 0 : Number(e.target.value))}
+                          className="w-20 bg-transparent text-xs font-mono font-bold text-slate-800 dark:text-slate-250 focus:outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
                       <button
                         onClick={() => handleDeleteVariable(item.id)}
                         className="p-1 hover:bg-red-100 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer"

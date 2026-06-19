@@ -106,6 +106,12 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
         pdfType
       };
       const payloadStr = JSON.stringify(payload);
+      
+      if (onPrint) {
+        onPrint(payload);
+        return;
+      }
+
       sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
       

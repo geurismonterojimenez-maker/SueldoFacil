@@ -38,8 +38,49 @@ import CostoLaboralPrintReport from './components/CostoLaboralPrintReport';
 import AumentoPrintReport from './components/AumentoPrintReport';
 import HorasExtrasPrintReport from './components/HorasExtrasPrintReport';
 
+const TAB_PATH_MAP: Record<TabType, string> = {
+  home: '/',
+  prestaciones: '/prestaciones',
+  salario: '/salario',
+  isr: '/isr',
+  afp_sfs: '/afp-sfs',
+  costos: '/costos',
+  horas_extras: '/horas-extras',
+  nominas: '/nominas',
+  comparador: '/comparador',
+  cartas_contratos: '/documentos',
+  ai_assistant: '/asistente-ia',
+  blog: '/blog',
+  dashboard: '/panel',
+  salarios_profesiones: '/salarios-profesion',
+  calculadora_aumento: '/calcular-aumento',
+  mi_diciembre: '/mi-diciembre',
+  biblioteca_laboral: '/biblioteca',
+  analizador_recibos: '/analizar-recibos',
+  plan_ahorro: '/plan-ahorro',
+  presupuesto_anual: '/presupuesto-anual',
+  sobre_nosotros: '/sobre-nosotros',
+  editorial: '/politica-editorial',
+  contacto: '/contacto',
+  verificar: '/verificar'
+};
+
 export default function App() {
-  const [tab, setTab] = useState<TabType>('home');
+  const [tab, setTab] = useState<TabType>(() => {
+    const pathname = window.location.pathname;
+    const cleanPath = pathname.split('?')[0].replace(/\/$/, "") || '/';
+    
+    if (cleanPath.startsWith('/verificar')) {
+      return 'verificar';
+    }
+    
+    for (const [key, value] of Object.entries(TAB_PATH_MAP)) {
+      if (value === cleanPath) {
+        return key as TabType;
+      }
+    }
+    return 'home';
+  });
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredSearch, setFilteredSearch] = useState<SearchItem[]>([]);
@@ -49,14 +90,23 @@ export default function App() {
   const [urlCode, setUrlCode] = useState<string | null>(null);
   const [printData, setPrintData] = useState<{ type: string; data: any } | null>(null);
 
-  // Trigger inline window print
+  // Trigger inline window print with afterprint cleanup
   useEffect(() => {
     if (printData) {
+      const handleAfterPrint = () => {
+        setPrintData(null);
+      };
+      
+      window.addEventListener('afterprint', handleAfterPrint);
+      
       const timer = setTimeout(() => {
         window.print();
-        setPrintData(null);
-      }, 300);
-      return () => clearTimeout(timer);
+      }, 150);
+
+      return () => {
+        window.removeEventListener('afterprint', handleAfterPrint);
+        clearTimeout(timer);
+      };
     }
   }, [printData]);
 
@@ -124,6 +174,29 @@ export default function App() {
         console.error("Failed to parse base64 share link state", e);
       }
     }
+    // Sync browser back/forward buttons
+    const handlePopState = () => {
+      const pathname = window.location.pathname;
+      const cleanPath = pathname.split('?')[0].replace(/\/$/, "") || '/';
+      
+      if (cleanPath.startsWith('/verificar')) {
+        setTab('verificar');
+        return;
+      }
+      
+      for (const [key, value] of Object.entries(TAB_PATH_MAP)) {
+        if (value === cleanPath) {
+          setTab(key as TabType);
+          return;
+        }
+      }
+      setTab('home');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   // Update SEO Head metrics conforming to SEO specialist & CRO rules
@@ -271,7 +344,7 @@ export default function App() {
     const faqsForTab = FAQ_ITEMS.filter(f => {
       if (tab === 'prestaciones' && f.category === 'prestaciones') return true;
       if (tab === 'mi_diciembre' && f.category === 'regalia') return true;
-      if (tab === 'salario' && f.category === 'seguridad_social') return true;
+      if ((tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') && f.category === 'seguridad_social') return true;
       return false;
     });
 
@@ -342,13 +415,20 @@ export default function App() {
 
   const handleSelectHistoryItem = (log: any) => {
     // Navigate straight to the saved calculation category
-    setTab(log.type as TabType);
+    selectTab(log.type as TabType);
   };
 
   const selectTab = (t: TabType) => {
     setTab(t);
     setSearchQuery('');
     setMobileMenuOpen(false);
+    
+    // Update path via History API
+    const targetPath = TAB_PATH_MAP[t] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -370,11 +450,11 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`print-clean min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      <div className={printData ? "print:hidden flex-1 flex flex-col w-full" : "flex-1 flex flex-col w-full"}>
+      <div className={printData ? "print-hidden flex-1 flex flex-col w-full" : "flex-1 flex flex-col w-full"}>
       {/* HEADER PRINCIPAL */}
-      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors print:hidden ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
+      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors print-hidden ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* LOGO */}
@@ -421,7 +501,7 @@ export default function App() {
             </button>
             <button 
               onClick={() => selectTab('salario')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${tab === 'salario' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${(tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
             >
               Salario Neto
             </button>
@@ -510,7 +590,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => selectTab('salario')}
-            className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${tab === 'salario' ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
+            className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${(tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
           >
             Salario Neto
           </button>
@@ -873,8 +953,8 @@ export default function App() {
           <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} onPrint={(data) => handlePrintTrigger('prestaciones', data)} />
         )}
 
-        {/* VIEW: SALARIO NETO */}
-        {tab === 'salario' && (
+        {/* VIEW: SALARIO NETO, ISR, AFP/SFS */}
+        {(tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') && (
           <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} onPrint={(data) => handlePrintTrigger('salario', data)} />
         )}
 
@@ -900,7 +980,7 @@ export default function App() {
 
         {/* VIEW: DOCUMENTOS */}
         {tab === 'cartas_contratos' && (
-          <GeneradorDocumentos />
+          <GeneradorDocumentos onPrint={(data) => handlePrintTrigger('documento', data)} />
         )}
 
         {/* VIEW: ASISTENTE IA */}
@@ -1028,12 +1108,17 @@ export default function App() {
       </div>
 
       {printData && (
-        <div className="hidden print:block absolute inset-0 bg-white z-50">
+        <div className="print-clean hidden print:block bg-white w-full min-h-screen">
           {printData.type === 'prestaciones' && <PrestacionesPrintReport directData={printData.data} />}
           {printData.type === 'salario' && <SalarioNetoPrintReport directData={printData.data} />}
           {printData.type === 'costos' && <CostoLaboralPrintReport directData={printData.data} />}
           {printData.type === 'aumento' && <AumentoPrintReport directData={printData.data} />}
           {printData.type === 'horas_extras' && <HorasExtrasPrintReport directData={printData.data} />}
+          {printData.type === 'documento' && (
+            <pre className="p-10 font-sans text-sm whitespace-pre-wrap text-black bg-white min-h-screen w-full leading-relaxed border-none">
+              {printData.data}
+            </pre>
+          )}
         </div>
       )}
     </div>
