@@ -47,6 +47,16 @@ export default function CalculadoraAumento({ onPrint }: Props = {}) {
       const resultNuevo = calcularSalarioNeto({ salarioBruto: nuevoBruto.toString(), ingresosAdicionales: '0', percepcionISR: true });
 
       setResultados({
+        cambioAfp: resultNuevo.afp - resultActual.afp,
+        cambioSfs: resultNuevo.sfs - resultActual.sfs,
+        cambioIsr: resultNuevo.isr - resultActual.isr,
+        incrementoNeto: resultNuevo.salarioNeto - resultActual.salarioNeto,
+        actualNeto: resultActual.salarioNeto,
+        actualBruto: actual,
+        nuevoNeto: resultNuevo.salarioNeto,
+        nuevoBruto: nuevoBruto,
+        incrementoAnualNeto: (resultNuevo.salarioNeto - resultActual.salarioNeto) * 12,
+        
         salarioBrutoActual: actual,
         aumentoBruto: aumentoSuma,
         salarioBrutoNuevo: nuevoBruto,
