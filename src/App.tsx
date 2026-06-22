@@ -9,78 +9,33 @@ import { TabType, SearchItem, SEOConfig } from './types';
 import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS } from './constants';
 
 // Component imports
-import CalculadorPrestaciones from './components/CalculadorPrestaciones';
-import CalculadorSueldoNeto from './components/CalculadorSueldoNeto';
-import AsistenteIA from './components/AsistenteIA';
-import HorasExtras from './components/HorasExtras';
-import CostoLaboral from './components/CostoLaboral';
-import ComparadorEmpleos from './components/ComparadorEmpleos';
-import GeneradorDocumentos from './components/GeneradorDocumentos';
-import BlogVirtual from './components/BlogVirtual';
-import NoficacionesNominas from './components/NoficacionesNominas';
-import DashboardVirtual from './components/DashboardVirtual';
-import CentroSalarios from './components/CentroSalarios';
-import CalculadoraAumento from './components/CalculadoraAumento';
-import MiDiciembre from './components/MiDiciembre';
-import BibliotecaLaboral from './components/BibliotecaLaboral';
-import AnalizadorRecibos from './components/AnalizadorRecibos';
+const CalculadorPrestaciones = React.lazy(() => import('./components/CalculadorPrestaciones'));
+const CalculadorSueldoNeto = React.lazy(() => import('./components/CalculadorSueldoNeto'));
+const AsistenteIA = React.lazy(() => import('./components/AsistenteIA'));
+const HorasExtras = React.lazy(() => import('./components/HorasExtras'));
+const CostoLaboral = React.lazy(() => import('./components/CostoLaboral'));
+const ComparadorEmpleos = React.lazy(() => import('./components/ComparadorEmpleos'));
+const GeneradorDocumentos = React.lazy(() => import('./components/GeneradorDocumentos'));
+const BlogVirtual = React.lazy(() => import('./components/BlogVirtual'));
+const NoficacionesNominas = React.lazy(() => import('./components/NoficacionesNominas'));
+const DashboardVirtual = React.lazy(() => import('./components/DashboardVirtual'));
+const CentroSalarios = React.lazy(() => import('./components/CentroSalarios'));
+const CalculadoraAumento = React.lazy(() => import('./components/CalculadoraAumento'));
+const MiDiciembre = React.lazy(() => import('./components/MiDiciembre'));
+const BibliotecaLaboral = React.lazy(() => import('./components/BibliotecaLaboral'));
+const AnalizadorRecibos = React.lazy(() => import('./components/AnalizadorRecibos'));
 import AdsenseMock from './components/AdsenseMock';
-import PlanAhorro from './components/PlanAhorro';
-import PresupuestoAnual from './components/PresupuestoAnual';
-import PoliticaEditorial from './components/PoliticaEditorial';
-import SobreNosotros from './components/SobreNosotros';
-import Contacto from './components/Contacto';
+const PlanAhorro = React.lazy(() => import('./components/PlanAhorro'));
+const PresupuestoAnual = React.lazy(() => import('./components/PresupuestoAnual'));
+const PoliticaEditorial = React.lazy(() => import('./components/PoliticaEditorial'));
+const SobreNosotros = React.lazy(() => import('./components/SobreNosotros'));
+const Contacto = React.lazy(() => import('./components/Contacto'));
 import YmylDisclaimer from './components/YmylDisclaimer';
-import VerificadorReporte from './components/VerificadorReporte';
+const VerificadorReporte = React.lazy(() => import('./components/VerificadorReporte'));
 import { PrestacionesPrintReport } from './components/PrestacionesPrintReport';
-import SalarioNetoPrintReport from './components/SalarioNetoPrintReport';
-import CostoLaboralPrintReport from './components/CostoLaboralPrintReport';
-import AumentoPrintReport from './components/AumentoPrintReport';
-import HorasExtrasPrintReport from './components/HorasExtrasPrintReport';
-
-const TAB_PATH_MAP: Record<TabType, string> = {
-  home: '/',
-  prestaciones: '/prestaciones',
-  salario: '/salario',
-  isr: '/isr',
-  afp_sfs: '/afp-sfs',
-  costos: '/costos',
-  horas_extras: '/horas-extras',
-  nominas: '/nominas',
-  comparador: '/comparador',
-  cartas_contratos: '/documentos',
-  ai_assistant: '/asistente-ia',
-  blog: '/blog',
-  dashboard: '/panel',
-  salarios_profesiones: '/salarios-profesion',
-  calculadora_aumento: '/calcular-aumento',
-  mi_diciembre: '/mi-diciembre',
-  biblioteca_laboral: '/biblioteca',
-  analizador_recibos: '/analizar-recibos',
-  plan_ahorro: '/plan-ahorro',
-  presupuesto_anual: '/presupuesto-anual',
-  sobre_nosotros: '/sobre-nosotros',
-  editorial: '/politica-editorial',
-  contacto: '/contacto',
-  verificar: '/verificar'
-};
 
 export default function App() {
-  const [tab, setTab] = useState<TabType>(() => {
-    const pathname = window.location.pathname;
-    const cleanPath = pathname.split('?')[0].replace(/\/$/, "") || '/';
-    
-    if (cleanPath.startsWith('/verificar')) {
-      return 'verificar';
-    }
-    
-    for (const [key, value] of Object.entries(TAB_PATH_MAP)) {
-      if (value === cleanPath) {
-        return key as TabType;
-      }
-    }
-    return 'home';
-  });
+  const [tab, setTab] = useState<TabType>('home');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredSearch, setFilteredSearch] = useState<SearchItem[]>([]);
@@ -88,31 +43,6 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [aiInitialMessage, setAiInitialMessage] = useState<string | null>(null);
   const [urlCode, setUrlCode] = useState<string | null>(null);
-  const [printData, setPrintData] = useState<{ type: string; data: any } | null>(null);
-
-  // Trigger inline window print with afterprint cleanup
-  useEffect(() => {
-    if (printData) {
-      const handleAfterPrint = () => {
-        setPrintData(null);
-      };
-      
-      window.addEventListener('afterprint', handleAfterPrint);
-      
-      const timer = setTimeout(() => {
-        window.print();
-      }, 150);
-
-      return () => {
-        window.removeEventListener('afterprint', handleAfterPrint);
-        clearTimeout(timer);
-      };
-    }
-  }, [printData]);
-
-  const handlePrintTrigger = (type: string, data: any) => {
-    setPrintData({ type, data });
-  };
 
   const handleAskSavingTips = (netSalary: number) => {
     const formattedSalary = netSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -174,29 +104,6 @@ export default function App() {
         console.error("Failed to parse base64 share link state", e);
       }
     }
-    // Sync browser back/forward buttons
-    const handlePopState = () => {
-      const pathname = window.location.pathname;
-      const cleanPath = pathname.split('?')[0].replace(/\/$/, "") || '/';
-      
-      if (cleanPath.startsWith('/verificar')) {
-        setTab('verificar');
-        return;
-      }
-      
-      for (const [key, value] of Object.entries(TAB_PATH_MAP)) {
-        if (value === cleanPath) {
-          setTab(key as TabType);
-          return;
-        }
-      }
-      setTab('home');
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
   }, []);
 
   // Update SEO Head metrics conforming to SEO specialist & CRO rules
@@ -344,7 +251,7 @@ export default function App() {
     const faqsForTab = FAQ_ITEMS.filter(f => {
       if (tab === 'prestaciones' && f.category === 'prestaciones') return true;
       if (tab === 'mi_diciembre' && f.category === 'regalia') return true;
-      if ((tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') && f.category === 'seguridad_social') return true;
+      if (tab === 'salario' && f.category === 'seguridad_social') return true;
       return false;
     });
 
@@ -415,46 +322,27 @@ export default function App() {
 
   const handleSelectHistoryItem = (log: any) => {
     // Navigate straight to the saved calculation category
-    selectTab(log.type as TabType);
+    setTab(log.type as TabType);
   };
 
   const selectTab = (t: TabType) => {
     setTab(t);
     setSearchQuery('');
     setMobileMenuOpen(false);
-    
-    // Update path via History API
-    const targetPath = TAB_PATH_MAP[t] || '/';
-    if (window.location.pathname !== targetPath) {
-      window.history.pushState(null, '', targetPath);
-    }
-    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const params = new URLSearchParams(window.location.search);
-  const isPrintMode = params.get('print_report') === 'true';
-  const printType = params.get('type') || 'prestaciones';
+  const isPrintMode = new URLSearchParams(window.location.search).get('print_report') === 'true';
 
   if (isPrintMode) {
-    if (printType === 'salario') {
-      return <SalarioNetoPrintReport />;
-    } else if (printType === 'costos') {
-      return <CostoLaboralPrintReport />;
-    } else if (printType === 'aumento') {
-      return <AumentoPrintReport />;
-    } else if (printType === 'horas_extras') {
-      return <HorasExtrasPrintReport />;
-    }
     return <PrestacionesPrintReport />;
   }
 
   return (
-    <div className={`print-clean min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-150 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      <div className={printData ? "print-hidden flex-1 flex flex-col w-full" : "flex-1 flex flex-col w-full"}>
       {/* HEADER PRINCIPAL */}
-      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors print-hidden ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
+      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors print:hidden ${darkMode ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-205'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* LOGO */}
@@ -501,7 +389,7 @@ export default function App() {
             </button>
             <button 
               onClick={() => selectTab('salario')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${(tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${tab === 'salario' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
             >
               Salario Neto
             </button>
@@ -558,6 +446,7 @@ export default function App() {
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
               title="Cambiar Modo"
+              aria-label="Cambiar tema de color"
             >
               {darkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -566,6 +455,7 @@ export default function App() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+              aria-label="Abrir menú de navegación"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -590,7 +480,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => selectTab('salario')}
-            className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${(tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
+            className={`w-full text-left p-2.5 rounded-xl text-sm font-semibold flex items-center ${tab === 'salario' ? 'bg-slate-150 text-slate-900' : 'text-slate-600'}`}
           >
             Salario Neto
           </button>
@@ -642,6 +532,12 @@ export default function App() {
 
       {/* CORE CONTENIDO MARCO */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <React.Suspense fallback={
+          <div className="py-20 text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-xs font-bold text-slate-500 font-sans tracking-wide">Cargando herramienta...</p>
+          </div>
+        }>
         
         {/* WIDGET: CONMUTADOR LABORAL (SWITCHES / STICH) */}
         {['prestaciones', 'salario', 'nominas', 'costos', 'horas_extras', 'comparador', 'salarios_profesiones', 'calculadora_aumento', 'mi_diciembre', 'biblioteca_laboral', 'analizador_recibos', 'plan_ahorro', 'presupuesto_anual'].includes(tab) && (
@@ -730,6 +626,7 @@ export default function App() {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full bg-white border border-slate-200/80 rounded-2xl py-3.5 pl-12 pr-4 shadow-sm text-sm focus:outline-none focus:ring-4 focus:ring-blue-550/10 focus:border-blue-500 transition-all font-medium text-slate-800"
+                  aria-label="Buscar calculadoras, leyes y FAQs de SueldoFácil"
                 />
               </div>
 
@@ -950,12 +847,12 @@ export default function App() {
 
         {/* VIEW: PRESTACIONES */}
         {tab === 'prestaciones' && (
-          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} onPrint={(data) => handlePrintTrigger('prestaciones', data)} />
+          <CalculadorPrestaciones onSaveCalculation={handleSaveCalculation} />
         )}
 
-        {/* VIEW: SALARIO NETO, ISR, AFP/SFS */}
-        {(tab === 'salario' || tab === 'isr' || tab === 'afp_sfs') && (
-          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} onPrint={(data) => handlePrintTrigger('salario', data)} />
+        {/* VIEW: SALARIO NETO */}
+        {tab === 'salario' && (
+          <CalculadorSueldoNeto onSaveCalculation={handleSaveCalculation} onAskSavingTips={handleAskSavingTips} />
         )}
 
         {/* VIEW: NOMINA */}
@@ -965,12 +862,12 @@ export default function App() {
 
         {/* VIEW: COSTOS LABORALES */}
         {tab === 'costos' && (
-          <CostoLaboral onPrint={(data) => handlePrintTrigger('costos', data)} />
+          <CostoLaboral />
         )}
 
         {/* VIEW: HORAS EXTRAS */}
         {tab === 'horas_extras' && (
-          <HorasExtras onPrint={(data) => handlePrintTrigger('horas_extras', data)} />
+          <HorasExtras />
         )}
 
         {/* VIEW: COMPARADOR DE EMPLEOS */}
@@ -980,7 +877,7 @@ export default function App() {
 
         {/* VIEW: DOCUMENTOS */}
         {tab === 'cartas_contratos' && (
-          <GeneradorDocumentos onPrint={(data) => handlePrintTrigger('documento', data)} />
+          <GeneradorDocumentos />
         )}
 
         {/* VIEW: ASISTENTE IA */}
@@ -1009,7 +906,7 @@ export default function App() {
 
         {/* VIEW: CALCULADORA AUMENTO */}
         {tab === 'calculadora_aumento' && (
-          <CalculadoraAumento onPrint={(data) => handlePrintTrigger('aumento', data)} />
+          <CalculadoraAumento />
         )}
 
         {/* VIEW: MI DICIEMBRE */}
@@ -1057,6 +954,7 @@ export default function App() {
           <VerificadorReporte urlCode={urlCode} onBackToHome={() => selectTab('home')} />
         )}
 
+        </React.Suspense>
       </main>
 
       {/* FOOTER */}
@@ -1105,22 +1003,6 @@ export default function App() {
           </p>
         </div>
       </footer>
-      </div>
-
-      {printData && (
-        <div className="print-clean hidden print:block bg-white w-full min-h-screen">
-          {printData.type === 'prestaciones' && <PrestacionesPrintReport directData={printData.data} />}
-          {printData.type === 'salario' && <SalarioNetoPrintReport directData={printData.data} />}
-          {printData.type === 'costos' && <CostoLaboralPrintReport directData={printData.data} />}
-          {printData.type === 'aumento' && <AumentoPrintReport directData={printData.data} />}
-          {printData.type === 'horas_extras' && <HorasExtrasPrintReport directData={printData.data} />}
-          {printData.type === 'documento' && (
-            <pre className="p-10 font-sans text-sm whitespace-pre-wrap text-black bg-white min-h-screen w-full leading-relaxed border-none">
-              {printData.data}
-            </pre>
-          )}
-        </div>
-      )}
     </div>
   );
 }

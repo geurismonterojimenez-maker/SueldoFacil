@@ -1,1 +1,6 @@
-{"name":"SueldoFacil","description":"Calculadora de salarios, prestaciones laborales, cesantía, regalía, ISR, AFP, SFS y asistente IA de legislación laboral en la República Dominicana.","requestFramePermissions":[],"majorCapabilities":["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]}
+{
+  "name": "SueldoFacil",
+  "description": "Calculadora de salarios, prestaciones laborales, cesantía, regalía, ISR, AFP, SFS y asistente IA de legislación laboral en la República Dominicana.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

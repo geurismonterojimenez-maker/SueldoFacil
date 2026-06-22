@@ -10,10 +10,9 @@ import { analytics } from '../utils/analytics';
 interface Props {
   onSaveCalculation: (calc: { type: string; label: string; result: number; timestamp: string; details: any }) => void;
   initialState?: any;
-  onPrint?: (data: any) => void;
 }
 
-export default function CalculadorPrestaciones({ onSaveCalculation, initialState, onPrint }: Props) {
+export default function CalculadorPrestaciones({ onSaveCalculation, initialState }: Props) {
   const [input, setInput] = useState<PrestacionesInput>(() => {
     const savedSalario = localStorage.getItem('sueldofacil_prof_salario') || '35000';
     const savedFechaIngreso = localStorage.getItem('sueldofacil_prof_fecha_ingreso') || '2023-01-01';
@@ -99,24 +98,13 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
     analytics.logPdfDescargado('prestaciones', 'Prestaciones Laborales');
     try {
       const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      const payload = {
+      sessionStorage.setItem(`sueldofacil_report_${token}`, JSON.stringify({
         input,
         output,
         reportSerial,
         pdfType
-      };
-      const payloadStr = JSON.stringify(payload);
-      
-      if (onPrint) {
-        onPrint(payload);
-        return;
-      }
-
-      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      
-      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&token=${token}&data=${encodeURIComponent(dataString)}`, '_blank');
+      }));
+      window.open(window.location.origin + window.location.pathname + `?print_report=true&token=${token}`, '_blank');
     } catch (e) {
       console.error("Error setting print calculations", e);
     }
@@ -155,12 +143,13 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">1. Tiempo de Servicio</span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
+                <label htmlFor="fecha-ingreso" className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
                   Fecha de Ingreso (Entrada)
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                   <input
+                    id="fecha-ingreso"
                     type="date"
                     value={input.fechaIngreso}
                     onChange={e => handleInputChange('fechaIngreso', e.target.value)}
@@ -170,12 +159,13 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
+                <label htmlFor="fecha-salida" className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
                   Fecha de Salida (Último Día)
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                   <input
+                    id="fecha-salida"
                     type="date"
                     value={input.fechaSalida}
                     onChange={e => handleInputChange('fechaSalida', e.target.value)}
@@ -190,12 +180,13 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           <div className="bg-slate-50/50 p-4 border border-slate-100 rounded-2xl space-y-3">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">2. Sueldo Base</span>
             <div>
-              <label className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
+              <label htmlFor="salario-mensual" className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
                 Salario Mensual Ordinario (RD$)
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                 <input
+                  id="salario-mensual"
                   type="number"
                   placeholder="Ej: 35000"
                   value={input.salarioMensual}
@@ -211,10 +202,11 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           <div className="bg-slate-50/50 p-4 border border-slate-100 rounded-2xl space-y-3">
             <span className="text-[10px] font-bold text-slate-550 uppercase tracking-widest block">3. Motivo del Egreso</span>
             <div>
-              <label className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
+              <label htmlFor="tipo-salida" className="block text-[10px] font-extrabold text-slate-600 mb-1.5 uppercase tracking-wide">
                 Causa de salida laboral
               </label>
               <select
+                id="tipo-salida"
                 value={input.tipoSalida}
                 onChange={e => handleInputChange('tipoSalida', e.target.value)}
                 className="w-full bg-white text-slate-800 border border-slate-200 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold"
@@ -288,6 +280,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                   </span>
                 </div>
                 <input
+                  aria-label="Días de vacaciones pendientes"
                   type="number"
                   disabled={input.vacacionesTomadas}
                   value={input.vacacionesTomadas ? 0 : input.diasVacacionesPendientes}
@@ -308,6 +301,8 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
             </button>
           </div>
         </div>
+
+        <AdsenseMock slot="prestaciones-sidebar" type="banner" />
       </div>
 
       {/* CARD DERECHA: RESULTADOS EN TIEMPO REAL */}
@@ -336,9 +331,6 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                   Sueldo promedio diario establecido: RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Sueldo / 23.83)
                 </p>
               </div>
-
-              {/* ANUNCIO #1: Rectángulo de Alto RPM bajo el bloque de resumen principal */}
-              <AdsenseMock slot="prestaciones-results-inline" type="square" />
 
               {/* LISTA COMPONENTES */}
               <div className="space-y-3.5 border-t border-slate-800 pt-5">
@@ -508,11 +500,6 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
         </div>
       </div>
 
-      {/* ANUNCIO REUBICADO: Al final de la cuadrícula general de cálculo (ancho completo) */}
-      <div className="lg:col-span-12 w-full mt-4">
-        <AdsenseMock slot="prestaciones-sidebar" type="banner" />
-      </div>
-
       {/* COMPONENT ENRICHMENT: SECCIÓN DE INFORMACIÓN Y EDUCACIÓN LABORAL (EEAT) */}
       <div className="lg:col-span-12 mt-12 space-y-10 border-t border-slate-200 dark:border-slate-800/80 pt-10 text-slate-850 dark:text-slate-200">
         
@@ -550,9 +537,6 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
                 </div>
               </div>
             </section>
-
-            {/* ANUNCIO #2: In-Content en la Guía Educativa */}
-            <AdsenseMock slot="prestaciones-guide-incontent" type="infeed" />
 
             {/* CASOS PRÁCTICOS */}
             <section className="space-y-3.5">
@@ -607,9 +591,6 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           {/* COLUMNA ADYACENTE / ACCORDION FAQ */}
           <div className="md:col-span-4 space-y-6">
             
-            {/* ANUNCIO #3: Pre FAQ en el Sidebar */}
-            <AdsenseMock slot="prestaciones-pre-faq" type="square" />
-
             <div className="bg-slate-50 dark:bg-slate-950/30 p-5 border border-slate-200/60 dark:border-slate-850 rounded-2xl">
               <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 font-mono mb-4 flex items-center gap-1.5">
                 <HelpCircle className="w-4 h-4 text-blue-500" />
@@ -685,11 +666,6 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
 
           </div>
 
-        </div>
-
-        {/* ANUNCIO #4: Multiplex Pre-Footer */}
-        <div className="w-full mt-8">
-          <AdsenseMock slot="prestaciones-multiplex-footer" type="multiplex" />
         </div>
 
         {/* COMPONENTE EEAT AUTORÍA */}

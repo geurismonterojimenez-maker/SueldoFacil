@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -19,12 +18,31 @@
 
 /* HIGH-FIDELITY PRINT STYLES FOR PROFESSIONAL PDFS AND REPORTS */
 @media print {
+  /* Hide all generic web elements, navs, floating cards, tooltips, ads, sliders, control inputs & generic buttons */
+  header,
+  footer,
+  aside,
+  form,
+  nav,
+  button,
+  input,
+  select,
+  textarea,
+  .print\:hidden,
+  .no-print,
+  .adsense-wrapper,
+  .adsense-mock,
+  #adsbygoogle,
+  .floating-menu,
+  .theme-toggle,
+  .back-to-top {
+    display: none !important;
+  }
 
   /* Reset layout structure to leverage full Letter/A4 print bounds */
   body,
   #root,
   main,
-  .min-h-screen,
   .max-w-7xl,
   .mx-auto {
     background: #ffffff !important;
@@ -80,12 +98,12 @@
   }
 
   /* Format visual report cards as beautiful flat documents */
-  .bg-white:not(#printable-savings-planner *):not(.print-clean *):not(.print-clean):not(#root):not(.min-h-screen),
-  .dark\:bg-slate-900:not(#printable-savings-planner *):not(.print-clean *):not(.print-clean):not(#root):not(.min-h-screen),
-  .bg-slate-50:not(#printable-savings-planner *):not(.print-clean *):not(.print-clean):not(#root):not(.min-h-screen),
-  .dark\:bg-slate-950:not(#printable-savings-planner *):not(.print-clean *):not(.print-clean):not(#root):not(.min-h-screen),
-  .rounded-2xl:not(#printable-savings-planner *):not(.print-clean *):not(.print-clean):not(#root):not(.min-h-screen),
-  .rounded-3xl:not(#printable-savings-planner *):not(.print-clean *):not(.print-clean):not(#root):not(.min-h-screen) {
+  .bg-white:not(#printable-savings-planner *),
+  .dark\:bg-slate-900:not(#printable-savings-planner *),
+  .bg-slate-50:not(#printable-savings-planner *),
+  .dark\:bg-slate-950:not(#printable-savings-planner *),
+  .rounded-2xl:not(#printable-savings-planner *),
+  .rounded-3xl:not(#printable-savings-planner *) {
     background: #ffffff !important;
     background-color: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
@@ -201,46 +219,6 @@
 
   #printable-savings-planner .sm\:grid-cols-10 {
     grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
-  }
-
-  /* Unified print helper classes */
-  .print-no-break {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  .page-break {
-    page-break-after: always !important;
-    break-after: page !important;
-  }
-
-  .print-clean {
-    border: none !important;
-    border-style: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
-
-  /* Force hide print-hidden elements at the very bottom so they override layouts like .flex or .grid */
-  header,
-  footer,
-  aside,
-  form,
-  nav,
-  button,
-  input,
-  select,
-  textarea,
-  .print-hidden,
-  .print\:hidden,
-  .no-print,
-  .adsense-wrapper,
-  .adsense-mock,
-  #adsbygoogle,
-  .floating-menu,
-  .theme-toggle,
-  .back-to-top {
-    display: none !important;
   }
 }
 

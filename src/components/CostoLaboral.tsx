@@ -4,54 +4,13 @@ import { calcularCostoLaboral } from '../utils/calculator';
 import { DollarSign, Shield, Info, Check, Printer, Percent } from 'lucide-react';
 import AdsenseMock from './AdsenseMock';
 
-interface Props {
-  onPrint?: (data: any) => void;
-}
-
-export default function CostoLaboral({ onPrint }: Props = {}) {
+export default function CostoLaboral() {
   const [input, setInput] = useState<CostoLaboralInput>({
     salarioMensual: '40000',
     riesgoLaboral: 1.2, // ARL 1.2% por defecto
   });
 
   const [output, setOutput] = useState<CostoLaboralOutput | null>(null);
-
-  const [reportSerial] = useState(() => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const hh = String(today.getHours()).padStart(2, '0');
-    const min = String(today.getMinutes()).padStart(2, '0');
-    const ss = String(today.getSeconds()).padStart(2, '0');
-    return `SF-CL-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
-  });
-
-  const handlePrint = () => {
-    if (!output) return;
-    try {
-      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      const payload = {
-        input,
-        output,
-        reportSerial
-      };
-      
-      if (onPrint) {
-        onPrint(payload);
-        return;
-      }
-
-      const payloadStr = JSON.stringify(payload);
-      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      
-      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=costos&token=${token}&data=${encodeURIComponent(dataString)}`, '_blank');
-    } catch (e) {
-      console.error("Error setting print calculations", e);
-    }
-  };
 
   useEffect(() => {
     try {
@@ -220,7 +179,7 @@ export default function CostoLaboral({ onPrint }: Props = {}) {
 
         <div className="pt-4 border-t border-slate-800">
           <button
-            onClick={handlePrint}
+            onClick={() => window.print()}
             className="w-full bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700"
           >
             Exportar a Planilla de Presupuesto

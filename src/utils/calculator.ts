@@ -3,35 +3,49 @@ import { RETENCIONES_CONFIG, ISR_ESCALAS } from "../constants";
 
 // Helper to calculate date differences
 export function calcularTiempoServicio(fechaIngresoStr: string, fechaSalidaStr: string) {
-  const ing = new Date(fechaIngresoStr);
-  const sal = new Date(fechaSalidaStr);
-  
-  if (isNaN(ing.getTime()) || isNaN(sal.getTime())) {
+  const parseDate = (str: string) => {
+    if (!str) return null;
+    const parts = str.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1; // 0-indexed
+      const d = parseInt(parts[2], 10);
+      return { y, m, d };
+    }
+    const dt = new Date(str);
+    if (isNaN(dt.getTime())) return null;
+    return { y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate() };
+  };
+
+  const ingParts = parseDate(fechaIngresoStr);
+  const salParts = parseDate(fechaSalidaStr);
+
+  if (!ingParts || !salParts) {
     return { anos: 0, meses: 0, dias: 0, totalMeses: 0 };
   }
-  
-  let years = sal.getUTCFullYear() - ing.getUTCFullYear();
-  let months = sal.getUTCMonth() - ing.getUTCMonth();
-  let days = sal.getUTCDate() - ing.getUTCDate();
-  
+
+  let years = salParts.y - ingParts.y;
+  let months = salParts.m - ingParts.m;
+  let days = salParts.d - ingParts.d;
+
   if (days < 0) {
     months--;
-    // Get days in the previous month of sal
-    const prevMonth = new Date(Date.UTC(sal.getUTCFullYear(), sal.getUTCMonth(), 0));
-    days += prevMonth.getUTCDate();
+    // Get total days in the previous month of the target year/month
+    const prevMonthLastDate = new Date(salParts.y, salParts.m, 0).getDate();
+    days += prevMonthLastDate;
   }
-  
+
   if (months < 0) {
     years--;
     months += 12;
   }
-  
+
   if (years < 0) {
     return { anos: 0, meses: 0, dias: 0, totalMeses: 0 };
   }
-  
+
   const totalMeses = (years * 12) + months + (days / 30);
-  
+
   return { anos: years, meses: months, dias: days, totalMeses };
 }
 
@@ -109,13 +123,21 @@ export function calcularPrestacionesLaborales(input: PrestacionesInput): Prestac
   // 4. Regalía Pascual (Sueldo 13 proporcional)
   let regalia = 0;
   if (input.incluyeRegalia) {
-    const ing = new Date(input.fechaIngreso);
-    const sal = new Date(input.fechaSalida);
-    const inicioAnio = new Date(Date.UTC(sal.getUTCFullYear(), 0, 1));
-    const fechaInicioEfectiva = ing > inicioAnio ? ing : inicioAnio;
+    const partsIng = input.fechaIngreso.split('-');
+    const partsSal = input.fechaSalida.split('-');
+    
+    const ingYear = parseInt(partsIng[0], 10);
+    const salYear = parseInt(partsSal[0], 10);
+    
+    let fechaInicioEfectiva = input.fechaIngreso;
+    
+    // Si entró en un año anterior, calcula la regalía desde el primero de enero del año de salida actual
+    if (ingYear < salYear) {
+      fechaInicioEfectiva = `${salYear}-01-01`;
+    }
     
     const tsRegalia = calcularTiempoServicio(
-      fechaInicioEfectiva.toISOString().split('T')[0],
+      fechaInicioEfectiva,
       input.fechaSalida
     );
     const mesesAnioActual = (tsRegalia.anos * 12) + tsRegalia.meses + (tsRegalia.dias / 30);
@@ -157,9 +179,9 @@ export function calcularSalarioNeto(input: SalarioInput): SalarioOutput {
   const topeAFP = salarioMinimoGrande * RETENCIONES_CONFIG.afp.topeSueldosMinimos; // RD$ 483,000
   const topeSFS = salarioMinimoGrande * RETENCIONES_CONFIG.sfs.topeSueldosMinimos; // RD$ 241,500
   
-  // Descuentos de Seguridad Social (Empleado) - Redondeados al centavo por ley de nómina
-  const afp = Math.round((Math.min(salarioBaseSS, topeAFP) * RETENCIONES_CONFIG.afp.empleado) * 100) / 100;
-  const sfs = Math.round((Math.min(salarioBaseSS, topeSFS) * RETENCIONES_CONFIG.sfs.empleado) * 100) / 100;
+  // Descuentos de Seguridad Social (Empleado)
+  const afp = Math.min(salarioBaseSS, topeAFP) * RETENCIONES_CONFIG.afp.empleado;
+  const sfs = Math.min(salarioBaseSS, topeSFS) * RETENCIONES_CONFIG.sfs.empleado;
   
   // Base imponible para ISR (Deducciones previas reducen la base imponible)
   const salarioSujetoISR = Math.max(0, (salarioBruto + ingresosAdicionales) - afp - sfs);

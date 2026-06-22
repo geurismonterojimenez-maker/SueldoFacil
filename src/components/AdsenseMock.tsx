@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 interface AdsenseMockProps {
   slot?: string;
-  type?: 'banner' | 'square' | 'sidebar' | 'infeed' | 'multiplex';
+  type?: 'banner' | 'square' | 'sidebar' | 'infeed';
 }
 
 declare global {
@@ -34,7 +34,7 @@ export default function AdsenseMock({ slot = "default", type = "banner" }: Adsen
 
   if (type === 'square' || type === 'sidebar') {
     adSlot = "9925726553"; // SueldoFacil_Cuadrado
-  } else if (type === 'infeed' || type === 'multiplex') {
+  } else if (type === 'infeed') {
     adSlot = "7571025953"; // Anuncios In-feed3
   }
 
@@ -43,25 +43,14 @@ export default function AdsenseMock({ slot = "default", type = "banner" }: Adsen
     ? "w-full max-w-sm mx-auto my-4 text-center" 
     : type === 'sidebar' 
     ? "w-full my-4 text-center" 
-    : type === 'multiplex'
-    ? "w-full my-6 text-center"
-    : type === 'infeed'
-    ? "w-full my-4 text-center"
     : "w-full my-6 text-center";
-
-  // Dynamic min-height based on ad type to avoid CLS
-  const minHeightClass = (type === 'square' || type === 'sidebar')
-    ? "min-h-[280px]"
-    : (type === 'infeed' || type === 'multiplex')
-    ? "min-h-[250px]"
-    : "min-h-[90px]";
 
   return (
     <div className={`adsense-wrapper relative overflow-hidden transition-all duration-200 ${containerClasses}`}>
       <span className="block text-[9px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase pb-2 select-none">
         ANUNCIO PATROCINADO
       </span>
-      <div className={`flex justify-center items-center ${minHeightClass} bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200/60 dark:border-slate-800/60 p-2`}>
+      <div className="flex justify-center items-center min-h-[90px] bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200/60 dark:border-slate-800/60 p-2">
         <ins 
           ref={adRef}
           className="adsbygoogle"

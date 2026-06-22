@@ -21,11 +21,7 @@ interface HorasExtrasOutput {
   salarioTotalConExtras: number;
 }
 
-interface Props {
-  onPrint?: (data: any) => void;
-}
-
-export default function HorasExtras({ onPrint }: Props = {}) {
+export default function HorasExtras() {
   const [input, setInput] = useState<HorasExtrasInput>({
     salarioMensual: '30000',
     horasExtrasOrdinarias: '10',
@@ -43,27 +39,23 @@ export default function HorasExtras({ onPrint }: Props = {}) {
     const horasNocturnas = parseFloat(input.horasNocturnas) || 0;
     const horasFeriadas = parseFloat(input.horasFeriadas) || 0;
 
-    // Calcular costo por hora (salario mensual / 23.83 / 8 horas de ley)
-    const sueldoDiario = salario / LEGAL_CONFIG.diasLaborablesMes;
-    const costoHora = sueldoDiario / LEGAL_CONFIG.horasJornadaDiaria;
+    // Calcular sueldo diario promedio y luego por hora ordinaria
+    // Se asume semana de 44 horas y mes laboral estándar.
+    // En RD, la jornada es de 8 horas diarias. El valor por hora estándar es:
+    const sueldoDiario = salario / LEGAL_CONFIG.prestaciones.divisorSalarial;
+    const sueldoPorHora = sueldoDiario / 8;
 
-    // Recargo del 35% para las primeras 24 horas extras (sobre la jornada de 44 horas hasta 68 semanales)
-    const ordinariasRecargo = horasOrdinarias * (costoHora * 1.35);
-
-    // Recargo del 100% para horas extras por encima de 68 semanales
-    const extremasRecargo = horasExtremas * (costoHora * 2.0);
-
-    // Recargo del 15% para jornada nocturna (9:00 PM a 7:00 AM)
-    const nocturnidadRecargo = horasNocturnas * (costoHora * 0.15);
-
-    // Recargo del 100% para trabajo en días feriados o descanso semanal
-    const feriadosRecargo = horasFeriadas * (costoHora * 2.0);
+    // Calculos con recargos oficiales en República Dominicana (Código Laboral Art. 203)
+    const ordinariasRecargo = sueldoPorHora * 1.35 * horasOrdinarias; // +35%
+    const extremasRecargo = sueldoPorHora * 2.0 * horasExtremas;       // +100% (excede 68h)
+    const nocturnidadRecargo = sueldoPorHora * 0.15 * horasNocturnas;  // +15% sueldo base nocturno
+    const feriadosRecargo = sueldoPorHora * 2.0 * horasFeriadas;       // +100% días feriados o descanso
 
     const totalAdicional = ordinariasRecargo + extremasRecargo + nocturnidadRecargo + feriadosRecargo;
     const salarioTotalConExtras = salario + totalAdicional;
 
     setOutput({
-      salarioPorHora: costoHora,
+      salarioPorHora: sueldoPorHora,
       montoExtrasOrdinarias: ordinariasRecargo,
       montoExtrasExtremas: extremasRecargo,
       montoNocturnas: nocturnidadRecargo,
@@ -75,41 +67,6 @@ export default function HorasExtras({ onPrint }: Props = {}) {
 
   const handleInputChange = (field: keyof HorasExtrasInput, value: string) => {
     setInput(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handlePrint = () => {
-    if (!output) return;
-    try {
-      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      const hh = String(today.getHours()).padStart(2, '0');
-      const min = String(today.getMinutes()).padStart(2, '0');
-      const ss = String(today.getSeconds()).padStart(2, '0');
-      const reportSerial = `SF-HEX-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
-
-      const payload = {
-        input,
-        output,
-        reportSerial
-      };
-      
-      if (onPrint) {
-        onPrint(payload);
-        return;
-      }
-
-      const payloadStr = JSON.stringify(payload);
-      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      
-      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=horas_extras&token=${token}&data=${encodeURIComponent(dataString)}`, '_blank');
-    } catch (e) {
-      console.error("Error setting print calculations", e);
-    }
   };
 
   return (
@@ -284,7 +241,7 @@ export default function HorasExtras({ onPrint }: Props = {}) {
 
         <div className="pt-4 border-t border-slate-800">
           <button
-            onClick={handlePrint}
+            onClick={() => window.print()}
             className="w-full bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700"
           >
             Imprimir Reporte de Horas

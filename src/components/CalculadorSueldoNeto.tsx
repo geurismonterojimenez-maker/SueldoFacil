@@ -11,10 +11,9 @@ interface Props {
   onSaveCalculation: (calc: { type: string; label: string; result: number; timestamp: string; details: any }) => void;
   initialState?: any;
   onAskSavingTips?: (netSalary: number) => void;
-  onPrint?: (data: any) => void;
 }
 
-export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, onAskSavingTips, onPrint }: Props) {
+export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, onAskSavingTips }: Props) {
   const [input, setInput] = useState<SalarioInput>(() => {
     const savedSalario = localStorage.getItem('sueldofacil_prof_salario') || '45000';
     return {
@@ -26,44 +25,6 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
   const [output, setOutput] = useState<SalarioOutput | null>(null);
   const [showShareTooltip, setShowShareTooltip] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
-
-  const [reportSerial] = useState(() => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const hh = String(today.getHours()).padStart(2, '0');
-    const min = String(today.getMinutes()).padStart(2, '0');
-    const ss = String(today.getSeconds()).padStart(2, '0');
-    return `SF-SN-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
-  });
-
-  const handlePrint = () => {
-    if (!output) return;
-    analytics.logPdfDescargado('salario', 'Sueldo Neto');
-    try {
-      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      const payload = {
-        input,
-        output,
-        reportSerial
-      };
-      
-      if (onPrint) {
-        onPrint(payload);
-        return;
-      }
-
-      const payloadStr = JSON.stringify(payload);
-      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      
-      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=salario&token=${token}&data=${encodeURIComponent(dataString)}`, '_blank');
-    } catch (e) {
-      console.error("Error setting print calculations", e);
-    }
-  };
 
   useEffect(() => {
     try {
@@ -121,12 +82,13 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <label htmlFor="salario-bruto" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Salario Bruto Mensual (RD$)
             </label>
             <div className="relative">
               <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
               <input
+                id="salario-bruto"
                 type="number"
                 placeholder="Ej: 45000"
                 value={input.salarioBruto}
@@ -141,12 +103,13 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <label htmlFor="ingresos-adicionales" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Ingresos Adicionales Mensuales (Comisiones, Incentivos, etc.)
             </label>
             <div className="relative">
               <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
               <input
+                id="ingresos-adicionales"
                 type="number"
                 placeholder="Ej: 5000 (Opcional)"
                 value={input.ingresosAdicionales}
@@ -286,7 +249,10 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
 
         <div className="flex flex-wrap gap-2.5 mt-6 border-t border-slate-800 pt-5">
           <button
-            onClick={handlePrint}
+            onClick={() => {
+              analytics.logPdfDescargado('salario', 'Sueldo Neto');
+              window.print();
+            }}
             className="flex-1 min-w-[90px] bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all border border-slate-700 font-sans"
           >
             <Printer className="w-4 h-4" />

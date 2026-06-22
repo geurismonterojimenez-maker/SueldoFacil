@@ -70,12 +70,6 @@ function numeroALetras(num: number): string {
   };
 
   const seccion = (num: number, divisor: number, strSingular: string, strPlural: string): string => {
-    if (divisor === 1) {
-      if (num < 10) return unidades(num);
-      if (num < 100) return decenas(num);
-      return centenas(num);
-    }
-
     const c = Math.floor(num / divisor);
     const rest = num % divisor;
     let label = '';
@@ -88,6 +82,12 @@ function numeroALetras(num: number): string {
       }
     } else {
       label = '';
+    }
+
+    if (divisor === 1) {
+      if (num < 10) return unidades(num);
+      if (num < 100) return decenas(num);
+      return centenas(num);
     }
 
     return label + (rest > 0 ? ' ' + seccion(rest, 1, 'UN', '') : '');
@@ -134,7 +134,7 @@ function numeroALetras(num: number): string {
   return `${result} ${suffix} CON ${centavosStr}/100`;
 }
 
-export function PrestacionesPrintReport({ directData }: { directData?: any }) {
+export function PrestacionesPrintReport() {
   const [data, setData] = useState<{
     input: PrestacionesInput;
     output: PrestacionesOutput;
@@ -145,31 +145,12 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (directData) {
-      setData(directData);
-      setLoading(false);
-      return;
-    }
     try {
       const params = new URLSearchParams(window.location.search);
-      const dataParam = params.get('data');
       const token = params.get('token');
       let stored = null;
-
-      if (dataParam) {
-        try {
-          const normalizedBase64 = dataParam.replace(/ /g, '+');
-          stored = decodeURIComponent(escape(atob(normalizedBase64)));
-        } catch (err) {
-          console.error("Error decoding base64 data parameter", err);
-        }
-      }
-
-      if (!stored && token) {
+      if (token) {
         stored = sessionStorage.getItem(`sueldofacil_report_${token}`);
-        if (!stored) {
-          stored = localStorage.getItem(`sueldofacil_report_${token}`);
-        }
       }
       if (!stored) {
         // Fallback matching to previous key for backwards compatibility
@@ -183,13 +164,11 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
     } finally {
       setLoading(false);
     }
-  }, [directData]);
+  }, []);
 
   // Run automatically when document is ready & fully rendered, and register afterprint event
   useEffect(() => {
     if (data) {
-      if (directData) return;
-
       const timer = setTimeout(() => {
         window.print();
       }, 900);
@@ -240,7 +219,7 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
     );
   }
 
-  if (!data || !data.input || !data.output) {
+  if (!data) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans p-6 text-center">
         <div className="max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-4">
@@ -330,7 +309,7 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
       `}} />
 
       {/* FLOAT ACTION TOOLBAR (VISIBLE ONLY ON SCREEN PREVIEW) */}
-      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-3xl shadow-md flex items-center justify-between print-hidden">
+      <div className="max-w-[8.5in] mx-auto mb-6 p-4 bg-white border border-slate-200 rounded-3xl shadow-md flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
@@ -358,214 +337,233 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
       </div>
 
       {/* THE STATEMENT SHEET FOR SHEET SIZE 8.5in x 11in (A4/Letter Container) */}
-      <div className={`print-clean bg-white max-w-[8.5in] mx-auto ${pdfType === 'ejecutivo' ? 'p-5' : 'p-8'} border border-slate-205 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0`}>
+      <div className="bg-white max-w-[8.5in] mx-auto p-8 border border-slate-205 rounded-xl shadow-lg print:border-0 print:shadow-none print:p-0">
+        
         {/* ==================== PAGINA 1: RESUMEN CORPORATIVO / REPORTE EJECUTIVO ==================== */}
-        <div className={`flex flex-col justify-between ${pdfType === 'educativo' ? 'page-break min-h-[10in]' : 'min-h-[7.8in]'} pb-2`}>
+        <div className="page-break flex flex-col justify-between min-h-[10in] pb-4">
           <div>
             {/* CABECERA INSTITUCIONAL */}
-            <div className="flex justify-between items-center border-b-2 border-slate-900 pb-2 mb-3">
-              <div className="space-y-1 max-w-[50%]">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <div className="bg-slate-900 text-white p-1 rounded flex items-center justify-center font-bold font-mono tracking-tight text-[10px]">
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-5">
+              <div className="space-y-1.5 max-w-[65%]">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="bg-slate-900 text-white p-1.5 rounded-lg flex items-center justify-center font-bold font-mono tracking-tight text-sm">
                     <span className="text-blue-400">S</span>F
                   </div>
-                  <span className="text-xs font-extrabold tracking-tight text-slate-900 uppercase font-sans">SueldoFácil.com</span>
+                  <span className="text-base font-extrabold tracking-tight text-slate-900 uppercase font-sans">SueldoFácil.com</span>
                 </div>
-                <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none uppercase">Reporte de Prestaciones Laborales</h1>
-                <p className="text-[8.5px] text-slate-500 font-medium font-sans leading-tight">
-                  Cálculo de prestaciones conforme al Código de Trabajo de la República Dominicana (Ley No. 16-92) y TSS.
+                <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Reporte de Prestaciones Laborales</h1>
+                <p className="text-[9.5px] text-slate-500 font-medium font-sans leading-relaxed">
+                  Cálculo matemático de prestaciones conforme al Código de Trabajo de la República Dominicana (Ley No. 16-92) y directrices de la TSS.
+                </p>
+                <p className="text-[8.5px] text-slate-400 font-medium font-sans italic">
+                  Vigencia Normativa: Actualizada al {hoyFormatted}.
                 </p>
               </div>
 
-              {/* VECTOR QR CODE DE VERIFICACIÓN (INLINE EN CABECERA) */}
-              <div className="flex items-center gap-1.5 border border-slate-200 p-1 rounded-xl bg-white shadow-sm max-w-[25%]">
-                <a href={`https://sueldofacil.com/verificar?codigo=${reportSerial}`} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                  <svg className="w-8 h-8 text-slate-800" viewBox="0 0 100 100">
-                    <rect width="100" height="100" fill="none" />
-                    <rect x="5" y="5" width="22" height="22" fill="currentColor" />
-                    <rect x="9" y="9" width="14" height="14" fill="white" />
-                    <rect x="12" y="12" width="8" height="8" fill="currentColor" />
-                    <rect x="73" y="5" width="22" height="22" fill="currentColor" />
-                    <rect x="77" y="9" width="14" height="14" fill="white" />
-                    <rect x="80" y="12" width="8" height="8" fill="currentColor" />
-                    <rect x="5" y="73" width="22" height="22" fill="currentColor" />
-                    <rect x="9" y="77" width="14" height="14" fill="white" />
-                    <rect x="12" y="80" width="8" height="8" fill="currentColor" />
-                    <rect x="77" y="77" width="8" height="8" fill="currentColor" />
-                    <rect x="79" y="79" width="4" height="4" fill="white" />
-                    <rect x="80" y="80" width="2" height="2" fill="currentColor" />
-                    <path d="M35 5h5v5h-5zm0 10h5v10h-5zm10-5h5v5h-5zm10 5h5v5h-5zm10-10h5v5h-5zm-15 15h10v5H50zm15 10h5v5h-5zm-20 5h10v5h-10zm25 15h5v5h-5zm-15 10h10v5h-10zm-15 5h5v5h-5zm-10-25h10v5h-10zm15-5h5v5h-5zm25-10h5v5h-5zm-15 5h5v5h-5z" fill="currentColor" />
-                    <path d="M40 12h5v3H40zm10 5h5v3h-5zm-10 15h5v5H40zm15 10h5v5h-5zm5-20h5v5h-5zm10 35h5v5h-5zm-25 5h5v5h-5zm15 5h15v5H50zm-15 0h5v5H35zm-5-30h5v5h-5zm15-5h5v5h-5zm25-10h5v5h-5zm-15 5h5v5h-5z" fill="currentColor" />
-                  </svg>
-                </a>
-                <div className="flex flex-col min-w-0 font-sans">
-                  <span className="text-[6px] font-bold text-slate-500 uppercase tracking-wide leading-none">Verificación</span>
-                  <span className="text-[6px] text-blue-600 font-mono tracking-tighter truncate max-w-[65px] block font-bold leading-normal mt-0.5">
-                    {reportSerial}
-                  </span>
-                </div>
-              </div>
-
               {/* CONTROL DE VERSIONES Y METADATA DEL REPORTE */}
-              <div className="text-right text-[8px] space-y-0.5 font-mono text-slate-600 border border-slate-200 p-1.5 rounded-xl bg-slate-50 max-w-[25%]">
+              <div className="text-right text-[10px] space-y-1 font-mono text-slate-600 border border-slate-200 p-3 rounded-2xl bg-slate-50">
                 <div><strong className="text-slate-800">Reporte:</strong> {reportSerial}</div>
+                <div><strong className="text-slate-800">Versión:</strong> 2026.06</div>
+                <div><strong className="text-slate-800 font-bold">Tipo:</strong> {pdfType === 'ejecutivo' ? 'Reporte Ejecutivo' : 'Guía Educativa'}</div>
                 <div><strong className="text-slate-800">Fecha:</strong> {hoyFormatted}</div>
+                <div><strong className="text-slate-800">Hora:</strong> {horaFormatted}</div>
                 <div><strong className="text-emerald-700 font-bold">Norma:</strong> Ley 16-92 RD</div>
               </div>
             </div>
 
+            {/* PRESENTACIÓN INSTITUCIONAL */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 mb-5 items-center">
+              <div className="md:col-span-8 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                <h3 className="text-xs font-bold text-slate-800 tracking-wider uppercase font-mono">Presentación del Documento</h3>
+                <p className="text-[10.5px] text-slate-650 leading-normal font-sans text-justify">
+                  Este documento de simulación laboral expone determinadamente el desglose de los derechos adquiridos e indemnizaciones acumuladas por el trabajador bajo las escalas del Código Laboral de la República Dominicana. El motor matemático ha sido auditado contra topes legales y normativas aplicables de la Seguridad Social (TSS).
+                </p>
+              </div>
+
+              {/* VECTOR QR CODE DE VERIFICACIÓN */}
+              <div className="md:col-span-4 flex flex-col justify-center items-center p-2 border border-slate-200 rounded-2xl bg-white space-y-0.5 text-center font-sans shadow-sm">
+                <a href={`https://sueldofacil.com/verificar?codigo=${reportSerial}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center">
+                  <svg className="w-12 h-12 text-slate-800" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="none" />
+                    <rect x="5" y="5" width="22" height="22" fill="currentColor" />
+                    <rect x="9" y="9" width="14" height="14" fill="white" />
+                    <rect x="12" y="12" width="8" height="8" fill="currentColor" />
+
+                    <rect x="73" y="5" width="22" height="22" fill="currentColor" />
+                    <rect x="77" y="9" width="14" height="14" fill="white" />
+                    <rect x="80" y="12" width="8" height="8" fill="currentColor" />
+
+                    <rect x="5" y="73" width="22" height="22" fill="currentColor" />
+                    <rect x="9" y="77" width="14" height="14" fill="white" />
+                    <rect x="12" y="80" width="8" height="8" fill="currentColor" />
+
+                    <rect x="77" y="77" width="8" height="8" fill="currentColor" />
+                    <rect x="79" y="79" width="4" height="4" fill="white" />
+                    <rect x="80" y="80" width="2" height="2" fill="currentColor" />
+
+                    <path d="M35 5h5v5h-5zm0 10h5v10h-5zm10-5h5v5h-5zm10 5h5v5h-5zm10-10h5v5h-5zm-15 15h10v5H50zm15 10h5v5h-5zm-20 5h10v5h-10zm25 15h5v5h-5zm-15 10h10v5h-10zm-15 5h5v5h-5zm-10-25h10v5h-10zm15-5h5v5h-5zm25-10h5v5h-5zm-15 5h5v5h-5z" fill="currentColor" />
+                    <path d="M40 12h5v3H40zm10 5h5v3h-5zm-10 15h5v5H40zm15 10h5v5h-5zm5-20h5v5h-5zm10 35h5v5h-5zm-25 5h5v5h-5zm15 5h15v5H50zm-15 0h5v5H35zm-5-30h5v5h-5zm15-5h5v5h-5zm25-10h5v5h-5zm-15 5h5v5h-5z" fill="currentColor" />
+                  </svg>
+                </a>
+                <span className="text-[7px] font-bold text-slate-500 uppercase tracking-wide leading-none">Código Verificador</span>
+                <span className="text-[7px] text-blue-600 font-mono tracking-tighter truncate max-w-[110px] block font-bold">
+                  {reportSerial}
+                </span>
+              </div>
+            </div>
+
             {/* FICHA TÉCNICA DEL TRABAJADOR */}
-            <div className="mb-3">
-              <h2 className="text-[10px] font-bold text-slate-850 tracking-wider uppercase font-mono mb-1 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-slate-900 rounded-full"></span>
+            <div className="mb-5">
+              <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-2.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-slate-900 rounded-full"></span>
                 Ficha Técnica de Relación Laboral
               </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[9.5px]">
-                <div className="space-y-0.5">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Fecha Ingreso</span>
-                  <span className="text-xs font-extrabold text-slate-800 font-mono leading-none">{input.fechaIngreso}</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Fecha Ingreso</span>
+                  <span className="text-xs font-extrabold text-slate-800 font-mono">{input.fechaIngreso}</span>
                 </div>
-                <div className="space-y-0.5">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Fecha Salida</span>
-                  <span className="text-xs font-extrabold text-slate-800 font-mono leading-none">{input.fechaSalida}</span>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Fecha Salida</span>
+                  <span className="text-xs font-extrabold text-slate-800 font-mono">{input.fechaSalida}</span>
                 </div>
-                <div className="space-y-0.5 col-span-1">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Tiempo Laborado</span>
-                  <span className="text-xs font-extrabold text-slate-850 leading-none">
-                    {output.tiempoServicio.anos}a, {output.tiempoServicio.meses}m y {output.tiempoServicio.dias}d
+                <div className="space-y-1">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Tiempo Laborado</span>
+                  <span className="text-xs font-extrabold text-slate-800">
+                    {output.tiempoServicio.anos} año(s), {output.tiempoServicio.meses} mes(es) y {output.tiempoServicio.dias} día(s)
                   </span>
                 </div>
-                <div className="space-y-0.5 col-span-1">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Tipo de Salida</span>
-                  <span className="text-xs font-extrabold text-slate-850 truncate block leading-none">
-                    {input.tipoSalida === 'desahucio_patronal' ? 'Desahucio Patronal' : 
+                <div className="space-y-1">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Tipo de Salida</span>
+                  <span className="text-xs font-extrabold text-slate-800 truncate block">
+                    {input.tipoSalida === 'desahucio_patronal' ? 'Desahucio Patronal (Despido Unilateral)' : 
                      input.tipoSalida === 'desahucio_trabajador' ? 'Renuncia Voluntaria' : 
                      input.tipoSalida === 'despido_justificado' ? 'Despido Justificado' : 'Dimisión Justificada'}
                   </span>
                 </div>
-                <div className="space-y-0.5 border-t border-slate-200/60 pt-1.5 col-span-1">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Salario Ordinario</span>
-                  <span className="text-xs font-extrabold text-slate-800 font-mono leading-none">RD$ {parseFloat(input.salarioMensual).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <div className="space-y-1 border-t border-slate-200/60 pt-2 col-span-1">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Salario Ordinario</span>
+                  <span className="text-xs font-extrabold text-slate-800 font-mono">RD$ {parseFloat(input.salarioMensual).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
-                <div className="space-y-0.5 border-t border-slate-200/60 pt-1.5 col-span-1">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Salario Diario Promedio</span>
-                  <span className="text-xs font-extrabold text-slate-800 font-mono leading-none">RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <div className="space-y-1 border-t border-slate-200/60 pt-2 col-span-1">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Salario Diario Promedio</span>
+                  <span className="text-xs font-extrabold text-slate-800 font-mono">RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
-                <div className="space-y-0.5 border-t border-slate-200/60 pt-1.5 col-span-2">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase block">Estatus de Vacaciones</span>
-                  <span className="text-xs font-extrabold text-slate-850 leading-none truncate block leading-none">
-                    {input.vacacionesTomadas ? 'Disfrutadas físicamente' : 
-                     input.diasVacacionesPendientes > 0 ? `Pendientes (${input.diasVacacionesPendientes} días)` : 
-                     'Estimación proporcional de Ley'}
+                <div className="space-y-1 border-t border-slate-200/60 pt-2 col-span-2">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Estatus de Vacaciones</span>
+                  <span className="text-xs font-extrabold text-slate-800">
+                    {input.vacacionesTomadas ? 'Disfrutadas físicamente (Sin compensación adeudada)' : 
+                     input.diasVacacionesPendientes > 0 ? `Pendientes por compensar (${input.diasVacacionesPendientes} días)` : 
+                     'Estimación proporcional de Ley por tiempo laborado'}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* MONTO PRINCIPAL DESTACADO */}
-            <div className="bg-slate-50 text-slate-900 border border-slate-200 rounded-xl p-3 text-center mb-3 space-y-1 print:bg-slate-50">
-              <span className="text-[8.5px] font-extrabold uppercase tracking-widest text-slate-500 block font-mono">Monto Total Estimado de Liquidación Laboral</span>
-              <div className="text-2xl font-black text-blue-800 font-sans tracking-tight leading-none my-0.5">
+            <div className="bg-slate-50 text-slate-900 border-2 border-slate-900 rounded-2xl p-5 text-center mb-5 space-y-1.5 print:bg-slate-50">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 block font-mono">Monto Total Estimado de Liquidación Laboral</span>
+              <div className="text-3xl font-black text-blue-800 font-sans tracking-tight leading-none my-1">
                 RD$ {output.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <div className="text-[8.5px] font-bold text-slate-655 uppercase font-sans tracking-wider pt-0.5 border-t border-slate-200 max-w-xl mx-auto">
-                SON: {numeroALetras(output.total)}
+              <div className="text-[9.5px] font-bold text-slate-700 uppercase font-serif tracking-wider pt-1 border-t border-slate-200 max-w-xl mx-auto">
+                {numeroALetras(output.total)}
               </div>
             </div>
 
             {/* TABLA DE CONCEPTOS DETALLADOS */}
-            <div className="mb-3">
-              <h2 className="text-[10px] font-bold text-slate-850 tracking-wider uppercase font-mono mb-1 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-slate-900 rounded-full"></span>
+            <div className="mb-4">
+              <h2 className="text-xs font-bold text-slate-800 tracking-widest uppercase font-mono mb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-slate-900 rounded-full"></span>
                 Desglose Analítico de Liquidaciones
               </h2>
-              <table className="w-full text-left border-collapse border border-slate-200 rounded-lg overflow-hidden text-[10.5px]">
+              <table className="w-full text-left border-collapse border border-slate-300 rounded-xl overflow-hidden">
                 <thead>
-                  <tr className="bg-slate-900 text-white font-sans uppercase text-[8px] font-extrabold tracking-wider">
-                    <th className="p-1.5 border border-slate-200">Concepto de Ley</th>
-                    <th className="p-1.5 border border-slate-200">Base Diario</th>
-                    <th className="p-1.5 border border-slate-200 text-center">Días Computados</th>
-                    <th className="p-1.5 border border-slate-200 text-right">Subtotal Estimado</th>
+                  <tr className="bg-slate-900 text-white font-sans uppercase text-[9px] font-extrabold tracking-wider">
+                    <th className="p-2 border border-slate-300">Concepto de Ley</th>
+                    <th className="p-2 border border-slate-300">Base Diario</th>
+                    <th className="p-2 border border-slate-300 text-center">Días Computados</th>
+                    <th className="p-2 border border-slate-300 text-right">Subtotal Estimado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b border-slate-200">
-                    <td className="p-1.5 border border-slate-200 font-bold text-slate-800">
-                      Preaviso Omisión {pdfType !== 'ejecutivo' && <span className="text-[8.5px] font-normal text-slate-450 block font-sans">Falta de notificación del despido (Art. 76 Co. Trab.)</span>}
+                    <td className="p-2 border border-slate-300 font-bold text-slate-800">
+                      Preaviso Omisión <span className="text-[9.5px] font-normal text-slate-450 block font-sans">Art. 76 Co. Trab. (Falta de notificación del despido)</span>
                     </td>
-                    <td className="p-1.5 border border-slate-200 font-semibold font-mono text-slate-600">
+                    <td className="p-2 border border-slate-300 font-semibold font-mono text-slate-600">
                       RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-center font-bold font-mono text-slate-800">
+                    <td className="p-2 border border-slate-300 text-center font-bold font-mono text-slate-800">
                       {diasPreaviso} días
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-right font-extrabold font-mono text-slate-900">
+                    <td className="p-2 border border-slate-300 text-right font-extrabold font-mono text-slate-900">
                       RD$ {output.preaviso.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr className="border-b border-slate-200 bg-slate-50/50">
-                    <td className="p-1.5 border border-slate-200 font-bold text-slate-800">
-                      Auxilio de Cesantía {pdfType !== 'ejecutivo' && <span className="text-[8.5px] font-normal text-slate-450 block font-sans">Indemnización por pérdida de empleo (Art. 80 Co. Trab.)</span>}
+                    <td className="p-2 border border-slate-300 font-bold text-slate-800">
+                      Auxilio de Cesantía <span className="text-[9.5px] font-normal text-slate-450 block font-sans">Art. 80 Co. Trab. (Indemnización por pérdida de empleo)</span>
                     </td>
-                    <td className="p-1.5 border border-slate-200 font-semibold font-mono text-slate-600">
+                    <td className="p-2 border border-slate-300 font-semibold font-mono text-slate-600">
                       RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-center font-bold font-mono text-slate-800">
+                    <td className="p-2 border border-slate-300 text-center font-bold font-mono text-slate-800">
                       {diasCesantia} días
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-right font-extrabold font-mono text-slate-900">
+                    <td className="p-2 border border-slate-300 text-right font-extrabold font-mono text-slate-900">
                       RD$ {output.cesantia.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr className="border-b border-slate-200">
-                    <td className="p-1.5 border border-slate-200 font-bold text-slate-800">
-                      Vacaciones Proporcionales {pdfType !== 'ejecutivo' && <span className="text-[8.5px] font-normal text-slate-450 block font-sans">Derecho adquirido anual proporcional (Art. 177 Co. Trab.)</span>}
+                    <td className="p-2 border border-slate-300 font-bold text-slate-800">
+                      Vacaciones Proporcionales <span className="text-[9.5px] font-normal text-slate-450 block font-sans">Art. 177 Co. Trab. (Derecho adquirido inviolable)</span>
                     </td>
-                    <td className="p-1.5 border border-slate-200 font-semibold font-mono text-slate-600">
+                    <td className="p-2 border border-slate-300 font-semibold font-mono text-slate-600">
                       RD$ {output.salarioDiario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-center font-bold font-mono text-slate-800">
+                    <td className="p-2 border border-slate-300 text-center font-bold font-mono text-slate-800">
                       {diasVacaciones} días
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-right font-extrabold font-mono text-slate-900">
+                    <td className="p-2 border border-slate-300 text-right font-extrabold font-mono text-slate-900">
                       RD$ {output.vacaciones.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr className="border-b border-slate-200 bg-slate-50/50">
-                    <td className="p-1.5 border border-slate-200 font-bold text-slate-800">
-                      Regalía Pascual (Sueldo 13) {pdfType !== 'ejecutivo' && <span className="text-[8.5px] font-normal text-slate-450 block font-sans">Proporción anual acumulada de sueldo 13 (Art. 219 Co. Trab.)</span>}
+                    <td className="p-2 border border-slate-300 font-bold text-slate-800">
+                      Regalía Pascual (Sueldo 13) <span className="text-[9.5px] font-normal text-slate-450 block font-sans">Art. 219 Co. Trab. (Proporción anual libre de impuestos)</span>
                     </td>
-                    <td className="p-1.5 border border-slate-200 font-semibold font-mono text-slate-600">
+                    <td className="p-2 border border-slate-300 font-semibold font-mono text-slate-600">
                       Sueldo Ordinario
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-center font-bold font-mono text-slate-800">
+                    <td className="p-2 border border-slate-300 text-center font-bold font-mono text-slate-800">
                       Proporcional
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-right font-extrabold font-mono text-slate-900">
+                    <td className="p-2 border border-slate-300 text-right font-extrabold font-mono text-slate-900">
                       RD$ {output.regalia.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   {output.bonificacion > 0 && (
                     <tr className="border-b border-slate-200">
-                      <td className="p-1.5 border border-slate-200 font-bold text-slate-800">
-                        Bonificación de Utilidades {pdfType !== 'ejecutivo' && <span className="text-[8.5px] font-normal text-slate-450 block font-sans">Participación en utilidades de la empresa (Art. 223)</span>}
+                      <td className="p-2 border border-slate-300 font-bold text-slate-800">
+                        Bonificación de Utilidades <span className="text-[9.5px] font-normal text-slate-450 block font-sans">Art. 223 - Participación en beneficios de la empresa</span>
                       </td>
-                      <td className="p-1.5 border border-slate-200 font-semibold font-mono text-slate-600">
+                      <td className="p-2 border border-slate-300 font-semibold font-mono text-slate-600">
                         Incentivo ordinario
                       </td>
-                      <td className="p-1.5 border border-slate-200 text-center font-bold font-mono text-slate-800">
+                      <td className="p-2 border border-slate-300 text-center font-bold font-mono text-slate-800">
                         Proporcional
                       </td>
-                      <td className="p-1.5 border border-slate-200 text-right font-extrabold font-mono text-slate-900">
+                      <td className="p-2 border border-slate-300 text-right font-extrabold font-mono text-slate-900">
                         RD$ {output.bonificacion.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   )}
-                  <tr className="bg-slate-100 font-bold text-[10px]">
-                    <td colSpan={3} className="p-1.5 border border-slate-200 text-slate-900 uppercase text-right tracking-wider">
+                  <tr className="bg-slate-100 font-bold">
+                    <td colSpan={3} className="p-2.5 border border-slate-300 text-slate-900 text-[10px] uppercase text-right tracking-wider">
                       Suma de Conceptos Liquidados:
                     </td>
-                    <td className="p-1.5 border border-slate-200 text-right text-xs text-slate-950 font-black font-mono">
+                    <td className="p-2.5 border border-slate-300 text-right text-base text-slate-950 font-black font-mono">
                       RD$ {output.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -573,123 +571,127 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
               </table>
             </div>
 
-            {/* GRÁFICO EJECUTIVO - DISTRIBUCIÓN PROPORCIONAL SÓLIDA (SOLO GUIA EDUCATIVA COMPLETA) */}
-            {pdfType === 'educativo' && (
-              <div className="mb-3 p-3 border border-slate-200 bg-slate-50/50 rounded-xl">
-                <h3 className="text-[10px] font-bold text-slate-800 tracking-wider uppercase font-mono mb-1.5">Composición del Capital Liquidado</h3>
-                
-                <div className="w-full h-5 rounded bg-slate-200 overflow-hidden flex shadow-inner mb-2">
-                  {output.preaviso > 0 && (
-                    <div 
-                      style={{ width: `${pctPreaviso}%` }} 
-                      className="bg-blue-600 h-full relative group transition-all"
-                      title={`Preaviso: ${pctPreaviso}%`}
-                    >
-                      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-white truncate px-1">
-                        {pctPreaviso}%
-                      </span>
-                    </div>
-                  )}
-                  {output.cesantia > 0 && (
-                    <div 
-                      style={{ width: `${pctCesantia}%` }} 
-                      className="bg-sky-500 h-full relative group transition-all"
-                      title={`Cesantía: ${pctCesantia}%`}
-                    >
-                      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-white truncate px-1">
-                        {pctCesantia}%
-                      </span>
-                    </div>
-                  )}
-                  {output.vacaciones > 0 && (
-                    <div 
-                      style={{ width: `${pctVacaciones}%` }} 
-                      className="bg-amber-500 h-full relative group transition-all"
-                      title={`Vacaciones: ${pctVacaciones}%`}
-                    >
-                      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-white truncate px-1">
-                        {pctVacaciones}%
-                      </span>
-                    </div>
-                  )}
-                  {output.regalia > 0 && (
-                    <div 
-                      style={{ width: `${pctRegalia}%` }} 
-                      className="bg-emerald-600 h-full relative group transition-all"
-                      title={`Regalía: ${pctRegalia}%`}
-                    >
-                      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-white truncate px-1">
-                        {pctRegalia}%
-                      </span>
-                    </div>
-                  )}
-                  {output.bonificacion > 0 && (
-                    <div 
-                      style={{ width: `${pctBonif}%` }} 
-                      className="bg-purple-600 h-full relative group transition-all"
-                      title={`Bonificación: ${pctBonif}%`}
-                    >
-                      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-white truncate px-1">
-                        {pctBonif}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-[8.5px] font-sans">
-                  {output.preaviso > 0 && (
-                    <div className="flex items-center gap-1 font-medium text-slate-755">
-                      <span className="inline-block w-2 h-2 bg-blue-600 rounded"></span>
-                      <span>Preaviso ({pctPreaviso}%)</span>
-                    </div>
-                  )}
-                  {output.cesantia > 0 && (
-                    <div className="flex items-center gap-1 font-medium text-slate-755">
-                      <span className="inline-block w-2 h-2 bg-sky-500 rounded"></span>
-                      <span>Cesantía ({pctCesantia}%)</span>
-                    </div>
-                  )}
-                  {output.vacaciones > 0 && (
-                    <div className="flex items-center gap-1 font-medium text-slate-755">
-                      <span className="inline-block w-2 h-2 bg-amber-500 rounded"></span>
-                      <span>Vacaciones ({pctVacaciones}%)</span>
-                    </div>
-                  )}
-                  {output.regalia > 0 && (
-                    <div className="flex items-center gap-1 font-medium text-slate-755">
-                      <span className="inline-block w-2 h-2 bg-emerald-600 rounded"></span>
-                      <span>Regalía ({pctRegalia}%)</span>
-                    </div>
-                  )}
-                  {output.bonificacion > 0 && (
-                    <div className="flex items-center gap-1 font-medium text-slate-755">
-                      <span className="inline-block w-2.5 h-2.5 bg-purple-600 rounded"></span>
-                      <span>Bonif. ({pctBonif}%)</span>
-                    </div>
-                  )}
-                </div>
+            {/* GRÁFICO EJECUTIVO - DISTRIBUCIÓN PROPORCIONAL SÓLIDA DESACOPLADA */}
+            <div className="mb-5 p-4.5 border border-slate-200 bg-slate-50/50 rounded-2xl">
+              <h3 className="text-xs font-bold text-slate-800 tracking-wider uppercase font-mono mb-2">Composición del Capital Liquidado</h3>
+              
+              {/* Proportional visual horizontal bar graph */}
+              <div className="w-full h-6 rounded-lg bg-slate-200 overflow-hidden flex shadow-inner mb-3">
+                {output.preaviso > 0 && (
+                  <div 
+                    style={{ width: `${pctPreaviso}%` }} 
+                    className="bg-blue-600 h-full relative group transition-all"
+                    title={`Preaviso: ${pctPreaviso}%`}
+                  >
+                    <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-mono font-bold text-white truncate px-1">
+                      {pctPreaviso}%
+                    </span>
+                  </div>
+                )}
+                {output.cesantia > 0 && (
+                  <div 
+                    style={{ width: `${pctCesantia}%` }} 
+                    className="bg-sky-500 h-full relative group transition-all"
+                    title={`Cesantía: ${pctCesantia}%`}
+                  >
+                    <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-mono font-bold text-white truncate px-1">
+                      {pctCesantia}%
+                    </span>
+                  </div>
+                )}
+                {output.vacaciones > 0 && (
+                  <div 
+                    style={{ width: `${pctVacaciones}%` }} 
+                    className="bg-amber-500 h-full relative group transition-all"
+                    title={`Vacaciones: ${pctVacaciones}%`}
+                  >
+                    <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-mono font-bold text-white truncate px-1">
+                      {pctVacaciones}%
+                    </span>
+                  </div>
+                )}
+                {output.regalia > 0 && (
+                  <div 
+                    style={{ width: `${pctRegalia}%` }} 
+                    className="bg-emerald-600 h-full relative group transition-all"
+                    title={`Sueldo 13 / Regalía: ${pctRegalia}%`}
+                  >
+                    <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-mono font-bold text-white truncate px-1">
+                      {pctRegalia}%
+                    </span>
+                  </div>
+                )}
+                {output.bonificacion > 0 && (
+                  <div 
+                    style={{ width: `${pctBonif}%` }} 
+                    className="bg-purple-600 h-full relative group transition-all"
+                    title={`Bonificaciones: ${pctBonif}%`}
+                  >
+                    <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-mono font-bold text-white truncate px-1">
+                      {pctBonif}%
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Legends with colored blocks */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[9px] font-sans">
+                {output.preaviso > 0 && (
+                  <div className="flex items-center gap-1.5 font-medium text-slate-750">
+                    <span className="inline-block w-2.5 h-2.5 bg-blue-600 rounded"></span>
+                    <span>Preaviso ({pctPreaviso}%)</span>
+                  </div>
+                )}
+                {output.cesantia > 0 && (
+                  <div className="flex items-center gap-1.5 font-medium text-slate-750">
+                    <span className="inline-block w-2.5 h-2.5 bg-sky-500 rounded"></span>
+                    <span>Cesantía ({pctCesantia}%)</span>
+                  </div>
+                )}
+                {output.vacaciones > 0 && (
+                  <div className="flex items-center gap-1.5 font-medium text-slate-750">
+                    <span className="inline-block w-2.5 h-2.5 bg-amber-500 rounded"></span>
+                    <span>Vacaciones ({pctVacaciones}%)</span>
+                  </div>
+                )}
+                {output.regalia > 0 && (
+                  <div className="flex items-center gap-1.5 font-medium text-slate-750">
+                    <span className="inline-block w-2.5 h-2.5 bg-emerald-600 rounded"></span>
+                    <span>Regalía ({pctRegalia}%)</span>
+                  </div>
+                )}
+                {output.bonificacion > 0 && (
+                  <div className="flex items-center gap-1.5 font-medium text-slate-750">
+                    <span className="inline-block w-2.5 h-2.5 bg-purple-600 rounded"></span>
+                    <span>Bonificación ({pctBonif}%)</span>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* ESPACIOS DE COMPROMISO CORPORATIVO Y FIRMAS */}
-            <div className="mt-4 border-t border-slate-205 pt-3">
-              <h3 className="text-[10px] font-bold text-slate-800 tracking-wider uppercase font-mono mb-2 text-center">Firma de Formalización y Conformidad</h3>
-              <div className="grid grid-cols-2 gap-6 pt-1">
+            <div className="mt-8 border-t border-slate-200 pt-6">
+              <h3 className="text-xs font-bold text-slate-800 tracking-wider uppercase font-mono mb-5 text-center">Firma de Formalización y Conformidad</h3>
+              <div className="grid grid-cols-2 gap-8 pt-4">
                 {/* TRABAJADOR */}
-                <div className="flex flex-col justify-end items-center text-center space-y-2">
-                  <div className="w-[80%] border-b border-slate-350 h-5"></div>
-                  <div className="space-y-0.5 font-sans text-[8.5px]">
-                    <span className="font-extrabold text-slate-900 block">Trabajador Firmante</span>
-                    <span className="text-slate-400 block leading-none">Cédula: _______________________</span>
+                <div className="flex flex-col justify-end items-center text-center space-y-4">
+                  <div className="w-[85%] border-b border-slate-705 h-8"></div>
+                  <div className="space-y-0.5 font-sans">
+                    <span className="font-extrabold text-[10.5px] text-slate-900 block">Trabajador Firmante</span>
+                    <span className="text-[9.5px] text-slate-500 block">Nombre Completo</span>
+                    <span className="text-[9.5px] font-mono text-slate-400 block">Cédula: _______________________</span>
+                    <span className="text-[9.5px] text-slate-400 block">Fecha: ____ / ____ / ________</span>
                   </div>
                 </div>
 
                 {/* EMPLEADOR */}
-                <div className="flex flex-col justify-end items-center text-center space-y-2">
-                  <div className="w-[80%] border-b border-slate-350 h-5"></div>
-                  <div className="space-y-0.5 font-sans text-[8.5px]">
-                    <span className="font-extrabold text-slate-900 block">Por el Empleador / Representante</span>
-                    <span className="text-slate-400 block leading-none">RNC / Cédula: __________________</span>
+                <div className="flex flex-col justify-end items-center text-center space-y-4">
+                  <div className="w-[85%] border-b border-slate-705 h-8"></div>
+                  <div className="space-y-0.5 font-sans">
+                    <span className="font-extrabold text-[10.5px] text-slate-900 block">Por el Empleador / Representante Legal</span>
+                    <span className="text-[9.5px] text-slate-500 block">Sello y Firma Autorizada</span>
+                    <span className="text-[9.5px] font-mono text-slate-400 block">RNC / Cédula: __________________</span>
+                    <span className="text-[9.5px] text-slate-400 block">Fecha: ____ / ____ / ________</span>
                   </div>
                 </div>
               </div>
@@ -698,14 +700,14 @@ export function PrestacionesPrintReport({ directData }: { directData?: any }) {
           </div>
 
           {/* FOOTER DE PAGINA 1 */}
-          <div className="pt-2 border-t border-slate-200 space-y-0.5 text-center font-sans">
-            <div className="text-[8px] font-bold text-amber-700/85 uppercase tracking-wider dark:text-amber-600/85">
+          <div className="pt-3 border-t border-slate-150 space-y-1 text-center font-sans">
+            <div className="text-[8.5px] font-bold text-amber-700/85 uppercase tracking-wider dark:text-amber-600/85 mb-1">
               SIMULACIÓN EDUCATIVA • NO CONSTITUYE DOCUMENTO OFICIAL
             </div>
-            <p className="text-[7.5px] text-slate-450 leading-relaxed italic max-w-xl mx-auto font-medium font-sans">
-              Declaración: Este informe es una simulación estimativa basada en el Código de Trabajo de RD y no sustituye el laudo oficial dictaminado ante el Ministerio de Trabajo.
+            <p className="text-[8px] text-slate-450 leading-relaxed italic max-w-xl mx-auto font-medium">
+              Declaración: Este informe constituye una simulación estimativa basada en regulaciones de la República Dominicana y no sustituye de ninguna forma el laudo legal dictaminado ante el Ministerio de Trabajo. Actualizado conforme a la normativa laboral vigente.
             </p>
-            <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-500 pt-1">
+            <div className="flex justify-between items-center text-[7.5px] font-mono text-slate-400 dark:text-slate-500 pt-1.5">
               <span className="font-semibold">SueldoFácil | www.sueldofacil.com</span>
               <span className="uppercase tracking-widest font-bold">Página 1 de {pdfType === 'ejecutivo' ? '1' : '3'} • REF: {reportSerial}</span>
             </div>

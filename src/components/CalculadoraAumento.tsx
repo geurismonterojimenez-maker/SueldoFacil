@@ -3,11 +3,7 @@ import { Sparkles, Calculator, Share2, Download, Check, RefreshCw, Info, ArrowUp
 import { calcularSalarioNeto } from '../utils/calculator';
 import AdsenseMock from './AdsenseMock';
 
-interface Props {
-  onPrint?: (data: any) => void;
-}
-
-export default function CalculadoraAumento({ onPrint }: Props = {}) {
+export default function CalculadoraAumento() {
   const [salarioActual, setSalarioActual] = useState('45000');
   const [porcentajeAumento, setPorcentajeAumento] = useState('15');
   const [aumentoFijo, setAumentoFijo] = useState('0');
@@ -42,37 +38,31 @@ export default function CalculadoraAumento({ onPrint }: Props = {}) {
     const nuevoBruto = Math.max(0, actual + aumentoSuma);
 
     // Calculate before vs after tax
-    try {
-      const resultActual = calcularSalarioNeto({ salarioBruto: salarioActual, ingresosAdicionales: '0', percepcionISR: true });
-      const resultNuevo = calcularSalarioNeto({ salarioBruto: nuevoBruto.toString(), ingresosAdicionales: '0', percepcionISR: true });
+    const calcActual = calcularSalarioNeto({ salarioBruto: actual.toString() });
+    const calcNuevo = calcularSalarioNeto({ salarioBruto: nuevoBruto.toString() });
 
-      setResultados({
-        cambioAfp: resultNuevo.afp - resultActual.afp,
-        cambioSfs: resultNuevo.sfs - resultActual.sfs,
-        cambioIsr: resultNuevo.isr - resultActual.isr,
-        incrementoNeto: resultNuevo.salarioNeto - resultActual.salarioNeto,
-        actualNeto: resultActual.salarioNeto,
-        actualBruto: actual,
-        nuevoNeto: resultNuevo.salarioNeto,
-        nuevoBruto: nuevoBruto,
-        incrementoAnualNeto: (resultNuevo.salarioNeto - resultActual.salarioNeto) * 12,
-        
-        salarioBrutoActual: actual,
-        aumentoBruto: aumentoSuma,
-        salarioBrutoNuevo: nuevoBruto,
-        netoActual: resultActual.salarioNeto,
-        netoNuevo: resultNuevo.salarioNeto,
-        aumentoNetoEfectivo: resultNuevo.salarioNeto - resultActual.salarioNeto,
-        isrActual: resultActual.isr,
-        isrNuevo: resultNuevo.isr,
-        afpActual: resultActual.afp,
-        afpNuevo: resultNuevo.afp,
-        sfsActual: resultActual.sfs,
-        sfsNuevo: resultNuevo.sfs
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    setResultados({
+      actualBruto: actual,
+      nuevoBruto: nuevoBruto,
+      incrementoBruto: nuevoBruto - actual,
+      
+      actualNeto: calcActual.salarioNeto,
+      nuevoNeto: calcNuevo.salarioNeto,
+      incrementoNeto: calcNuevo.salarioNeto - calcActual.salarioNeto,
+      incrementoAnualNeto: (calcNuevo.salarioNeto - calcActual.salarioNeto) * 12,
+
+      actualAfp: calcActual.afp,
+      nuevoAfp: calcNuevo.afp,
+      cambioAfp: calcNuevo.afp - calcActual.afp,
+
+      actualSfs: calcActual.sfs,
+      nuevoSfs: calcNuevo.sfs,
+      cambioSfs: calcNuevo.sfs - calcActual.sfs,
+
+      actualIsr: calcActual.isr,
+      nuevoIsr: calcNuevo.isr,
+      cambioIsr: calcNuevo.isr - calcActual.isr,
+    });
   }, [salarioActual, porcentajeAumento, aumentoFijo]);
 
   const handleCompartir = () => {
@@ -92,42 +82,7 @@ export default function CalculadoraAumento({ onPrint }: Props = {}) {
   };
 
   const handleDownloadPDF = () => {
-    if (!resultados) return;
-    try {
-      const token = 'SF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11).toUpperCase();
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      const hh = String(today.getHours()).padStart(2, '0');
-      const min = String(today.getMinutes()).padStart(2, '0');
-      const ss = String(today.getSeconds()).padStart(2, '0');
-      const reportSerial = `SF-AUM-${yyyy}${mm}${dd}-${hh}${min}${ss}-V2026`;
-
-      const payload = {
-        input: {
-          salarioActual,
-          porcentajeAumento,
-          aumentoFijo
-        },
-        output: resultados,
-        reportSerial
-      };
-      
-      if (onPrint) {
-        onPrint(payload);
-        return;
-      }
-      
-      const payloadStr = JSON.stringify(payload);
-      sessionStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      localStorage.setItem(`sueldofacil_report_${token}`, payloadStr);
-      
-      const dataString = btoa(unescape(encodeURIComponent(payloadStr)));
-      window.open(window.location.origin + window.location.pathname + `?print_report=true&type=aumento&token=${token}&data=${encodeURIComponent(dataString)}`, '_blank');
-    } catch (e) {
-      console.error("Error setting print calculations", e);
-    }
+    window.print();
   };
 
   return (
