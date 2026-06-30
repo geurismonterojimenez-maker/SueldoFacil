@@ -389,5 +389,59 @@ El monto restante es el **salario neto sujeto al ISR**.
       { label: 'Deducción SFS', value: '3.04% del Salario' },
       { label: 'Exención mínima mensual', value: 'RD$ 34,685.00' }
     ]
+  },
+  {
+    slug: 'computo-horas-extras-segun-codigo-de-trabajo-dominicano',
+    title: 'Como calcular horas extras de manera correcta en la nomina dominicana',
+    excerpt: 'Guia practica para entender recargos de horas extras, trabajo nocturno y feriados conforme al Codigo de Trabajo dominicano.',
+    category: 'rrhh',
+    date: 'Mayo 2026',
+    readingTime: '6 min de lectura',
+    content: `Las **horas extras** deben calcularse partiendo del salario ordinario y del valor real de la hora de trabajo. En Republica Dominicana, la jornada ordinaria y sus recargos deben revisarse con cuidado para evitar pagos incompletos en la nomina.
+
+### 1. Identifica el valor de la hora ordinaria
+Para estimar el valor horario, divide el salario mensual entre la base de horas laborales usada por la empresa. La calculadora de SueldoFacil ayuda a simular el valor para escenarios comunes y facilita comparar el resultado con el volante de pago.
+
+### 2. Aplica el recargo correcto
+Las horas adicionales, nocturnas, dominicales o feriadas pueden tener recargos distintos. El calculo debe separar cada tipo de hora para evitar mezclar una hora ordinaria con una hora extraordinaria.
+
+### 3. Documenta el soporte
+El trabajador debe conservar horarios, turnos aprobados y recibos de pago. El empleador debe reflejar los conceptos claramente en la nomina para que el monto sea auditable.`,
+    faq: [
+      { q: 'Todas las horas adicionales tienen el mismo recargo?', a: 'No. Debe distinguirse entre hora ordinaria extendida, nocturna, feriado o descanso semanal.' },
+      { q: 'Que pasa si el volante no separa las horas extras?', a: 'Conviene solicitar el desglose a recursos humanos para verificar base, cantidad de horas y recargo aplicado.' }
+    ],
+    summaryTable: [
+      { label: 'Base del calculo', value: 'Valor hora ordinaria' },
+      { label: 'Dato clave', value: 'Tipo de hora trabajada' },
+      { label: 'Soporte recomendado', value: 'Turnos y volante de pago' }
+    ]
+  },
+  {
+    slug: 'plan-ahorro-inteligente-cooperativas-dominicanas',
+    title: 'Beneficios de ahorrar en cooperativas frente a bancos tradicionales en RD',
+    excerpt: 'Estrategias practicas para comparar aportaciones, certificados, cuentas de ahorro y metas personales en cooperativas dominicanas.',
+    category: 'finanzas',
+    date: 'Abril 2026',
+    readingTime: '5 min de lectura',
+    content: `Ahorrar en una **cooperativa dominicana** puede ser una opcion util para trabajadores que buscan disciplina, aportaciones periodicas y acceso a productos financieros comunitarios. La decision debe compararse con bancos tradicionales segun liquidez, rendimiento, costos y seguridad.
+
+### 1. Aportaciones y cultura de ahorro
+Muchas cooperativas permiten aportaciones mensuales que funcionan como habito financiero. Para una persona asalariada, automatizar un monto fijo despues de cada pago ayuda a construir fondo de emergencia.
+
+### 2. Rendimiento y liquidez
+No basta mirar la tasa. Tambien hay que revisar plazo, penalidades, disponibilidad del dinero y requisitos para retirar aportaciones o certificados.
+
+### 3. Seguridad y transparencia
+Antes de depositar, verifica la reputacion de la entidad, sus estados, reglas de retiro y canales de servicio. Una buena meta de ahorro debe ser entendible y verificable.`,
+    faq: [
+      { q: 'Una cooperativa siempre paga mas que un banco?', a: 'No necesariamente. Depende del producto, plazo, reglas de retiro, costos y perfil de riesgo.' },
+      { q: 'Cuanto deberia ahorrar de mi salario?', a: 'Una referencia simple es comenzar con 10% y ajustar segun deudas, gastos fijos y fondo de emergencia.' }
+    ],
+    summaryTable: [
+      { label: 'Meta inicial', value: '3 a 6 meses de gastos' },
+      { label: 'Habito recomendado', value: 'Aporte automatico mensual' },
+      { label: 'Comparar antes', value: 'Tasa, plazo y liquidez' }
+    ]
   }
 ];

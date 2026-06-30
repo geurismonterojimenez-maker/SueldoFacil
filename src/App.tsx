@@ -34,6 +34,15 @@ import YmylDisclaimer from './components/YmylDisclaimer';
 const VerificadorReporte = React.lazy(() => import('./components/VerificadorReporte'));
 import { PrestacionesPrintReport } from './components/PrestacionesPrintReport';
 
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
+const GOOGLE_ANALYTICS_ID = 'G-L9T464EH7C';
+const NOINDEX_TABS: TabType[] = ['dashboard', 'ai_assistant'];
+
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -144,6 +153,14 @@ export default function App() {
     updateOrCreateMeta('name', 'twitter:card', 'summary_large_image');
     updateOrCreateMeta('name', 'twitter:title', seo.ogTitle || seo.title);
     updateOrCreateMeta('name', 'twitter:description', seo.ogDescription || seo.description);
+
+    let metaRobots = document.querySelector('meta[name="robots"]');
+    if (!metaRobots) {
+      metaRobots = document.createElement('meta');
+      metaRobots.setAttribute('name', 'robots');
+      document.head.appendChild(metaRobots);
+    }
+    metaRobots.setAttribute('content', NOINDEX_TABS.includes(tab) ? 'noindex,follow' : 'index,follow,max-image-preview:large');
 
     // Update canonical link element
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -289,6 +306,17 @@ export default function App() {
       "@graph": graph
     });
 
+  }, [tab]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+      return;
+    }
+
+    window.gtag('config', GOOGLE_ANALYTICS_ID, {
+      page_path: `${window.location.pathname}${window.location.search}`,
+      page_title: document.title,
+    });
   }, [tab]);
 
   // Handle Search Input real-time filtering (Like Google Instant search)

@@ -13,7 +13,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
 
   const getTargetTab = (category: string): TabType => {
     if (category === 'prestaciones') return 'prestaciones';
-    if (category === 'isr') return 'isr';
+    if (category === 'isr') return 'salario';
     return 'salario';
   };
 

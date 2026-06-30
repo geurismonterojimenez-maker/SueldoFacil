@@ -56,6 +56,8 @@ const SEO_MAP: Record<string, SEOMetadata> = {
   }
 };
 
+const NOINDEX_PATHS = new Set(["/panel", "/asistente-ia"]);
+
 function getSEOMetadata(urlPath: string): SEOMetadata {
   const cleanPath = urlPath.split('?')[0].replace(/\/$/, "");
   return SEO_MAP[cleanPath] || SEO_MAP["/"];
@@ -63,9 +65,12 @@ function getSEOMetadata(urlPath: string): SEOMetadata {
 
 function injectSEOMetadata(html: string, urlPath: string): string {
   const seo = getSEOMetadata(urlPath);
+  const cleanPath = urlPath.split('?')[0].replace(/\/$/, "") || "/";
+  const robots = NOINDEX_PATHS.has(cleanPath) ? "noindex,follow" : "index,follow,max-image-preview:large";
   const metaTags = `
     <title>${seo.title}</title>
     <meta name="description" content="${seo.description}" />
+    <meta name="robots" content="${robots}" />
     <link rel="canonical" href="${seo.canonical}" />
     
     <!-- Open Graph (Facebook / WhatsApp / Digital Cards) -->
@@ -240,7 +245,7 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { index: false }));
     app.get('*', (req, res) => {
       try {
         const filePath = path.join(distPath, 'index.html');
