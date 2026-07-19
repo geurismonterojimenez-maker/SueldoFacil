@@ -307,10 +307,13 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
             <section className="space-y-3.5">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="w-5.5 h-5.5 text-blue-600 shrink-0" />
-                Guía de Retenciones de Nómina y Salario Neto en República Dominicana
+                Cómo pasar de salario bruto a sueldo neto en República Dominicana
               </h2>
               <p className="text-xs text-slate-550 dark:text-slate-300 leading-relaxed">
-                El cálculo definitivo de un <strong>salario neto</strong> en la República Dominicana implica una serie de deducciones obligatorias por ley. Lo que percibe un empleado formal en su cuenta de nómina mensual no equivale a su salario bruto total acordado en el contrato de trabajo, sino al sueldo resultante tras deducir las contribuciones al Sistema Dominicano de Seguridad Social (Ley 87-01) y las retenciones del Impuesto Sobre la Renta (ISR) que establece la Dirección General de Impuestos Internos (DGII).
+                El <strong>salario bruto</strong> es el monto acordado antes de descuentos. El sueldo neto es lo que finalmente
+                recibes después de AFP, Seguro Familiar de Salud y, cuando corresponde, Impuesto Sobre la Renta. La calculadora
+                hace ese recorrido en el mismo orden usado para una nómina: primero estima las cotizaciones de seguridad social
+                y luego aplica el ISR sobre la base resultante. También incorpora otros ingresos gravables que hayas indicado.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
@@ -342,7 +345,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
 
             {/* CASOS PRÁCTICOS DE CÁLCULO */}
             <section className="space-y-3.5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Casos Prácticos de Deducciones Reales</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Dos ejemplos para leer el resultado</h3>
               
               <div className="space-y-3">
                 <div className="p-4 bg-blue-50/30 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/50 rounded-2xl">
@@ -363,15 +366,15 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
 
             {/* ERRORES FRECUENTES */}
             <section className="space-y-2.5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Errores Frecuentes al Estimar tus Finanzas</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Errores frecuentes al revisar una nómina</h3>
               <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-350">
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
-                  <span><strong>Aplicar el ISR directamente al Salario Bruto:</strong> Este es el error más recurrente. La DGII solo calcula el tramo impositivo una vez que el empleador descuenta el 5.91% total de cotización médica de la TSS (AFP + SFS) al sueldo.</span>
+                  <span><strong>Aplicar el ISR directamente al salario bruto:</strong> antes de determinar la retención se excluyen las cotizaciones del trabajador a la seguridad social. Además, otros pagos gravables del mismo empleador pueden sumarse a la base del mes.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
-                  <span><strong>Desconocer los topes límites de cotización:</strong> El seguro familiar de salud (SFS) tiene un tope de cotización limitado a un máximo de 10 salarios mínimos estatales acumulados. AFP se limita a 20 salarios mínimos. Sueldos extremadamente altos no pagan el porcentaje directo lineal de su salario total.</span>
+                  <span><strong>Ignorar los topes de cotización:</strong> AFP y SFS no siempre se calculan sobre todo el salario cuando este supera los límites publicados por la TSS. Por eso una multiplicación simple puede diferir del recibo real.</span>
                 </li>
               </ul>
             </section>
@@ -403,7 +406,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                   },
                   {
                     q: "¿Qué ocurre si tengo varios empleadores?",
-                    a: "Por ley, debes reportar el pluriempleo para evitar la duplicidad impositiva innecesaria, de modo que un único empleador designado acumule tu escala real de ISR mensual."
+                    a: "Debes elegir como agente de retención al empleador del que recibes el mayor salario y completar el formulario IR-10. Los demás empleadores informan los pagos al agente elegido para calcular la retención consolidada."
                   }
                 ].map((item, idx) => {
                   const isOpen = activeFaq === idx;
@@ -446,6 +449,21 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
           </div>
 
         </div>
+
+        <nav aria-label="Herramientas relacionadas con salario neto" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <a href="/prestaciones/" className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/30 hover:border-blue-400 transition-colors">
+            <strong className="text-sm text-slate-900 dark:text-white block">Calcular prestaciones</strong>
+            <span className="text-xs text-slate-500">Cesantía, preaviso, vacaciones y regalía proporcional.</span>
+          </a>
+          <a href="/horas-extras/" className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/30 hover:border-blue-400 transition-colors">
+            <strong className="text-sm text-slate-900 dark:text-white block">Calcular horas extras</strong>
+            <span className="text-xs text-slate-500">Compara el pago adicional con tu salario ordinario.</span>
+          </a>
+          <a href="/calcular-aumento/" className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/30 hover:border-blue-400 transition-colors">
+            <strong className="text-sm text-slate-900 dark:text-white block">Evaluar un aumento</strong>
+            <span className="text-xs text-slate-500">Mide cuánto cambia realmente tu ingreso después de descuentos.</span>
+          </a>
+        </nav>
 
         {/* COMPONENTE EEAT AUTORÍA */}
         <EditorialAuthBox

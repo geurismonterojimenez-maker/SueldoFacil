@@ -43,6 +43,27 @@ declare global {
 const GOOGLE_ANALYTICS_ID = 'G-3GY1XW8780';
 const NOINDEX_TABS: TabType[] = ['dashboard', 'ai_assistant'];
 
+const normalizePath = (path: string) => {
+  const normalized = path.replace(/\/+$/, '');
+  return normalized || '/';
+};
+
+const getTabFromPath = (path: string): TabType | null => {
+  const normalizedPath = normalizePath(path);
+
+  if (normalizedPath.startsWith('/blog/')) return 'blog';
+
+  const match = Object.entries(SEO_TAB_CONFIGS).find(([, config]) => {
+    try {
+      return normalizePath(new URL(config.canonical).pathname) === normalizedPath;
+    } catch {
+      return false;
+    }
+  });
+
+  return match ? match[0] as TabType : null;
+};
+
 export default function App() {
   const [tab, setTab] = useState<TabType>('home');
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -68,6 +89,16 @@ export default function App() {
     }
   }, [darkMode]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const routeTab = getTabFromPath(window.location.pathname);
+      if (routeTab) setTab(routeTab);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Load history on load
   useEffect(() => {
     try {
@@ -81,6 +112,10 @@ export default function App() {
 
     // Check path or query parameters for verification code
     const pathname = window.location.pathname;
+    const routeTab = getTabFromPath(pathname);
+    if (routeTab) {
+      setTab(routeTab);
+    }
     const pathMatch = pathname.match(/^\/verificar\/(SF-\d{8}-\d{6}(?:-V\d{4})?)$/i);
     let codeFromPath = null;
     if (pathMatch) {
@@ -355,6 +390,13 @@ export default function App() {
 
   const selectTab = (t: TabType) => {
     setTab(t);
+    const canonical = SEO_TAB_CONFIGS[t]?.canonical;
+    if (canonical) {
+      const destination = new URL(canonical).pathname;
+      if (normalizePath(window.location.pathname) !== normalizePath(destination)) {
+        window.history.pushState({ tab: t }, '', destination);
+      }
+    }
     setSearchQuery('');
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });

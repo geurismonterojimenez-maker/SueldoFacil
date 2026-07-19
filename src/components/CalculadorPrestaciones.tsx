@@ -515,10 +515,14 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
             <section className="space-y-3.5">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="w-5.5 h-5.5 text-blue-600 shrink-0" />
-                Guía Completa de Prestaciones Laborales en República Dominicana
+                Qué incluye una liquidación laboral en República Dominicana
               </h2>
               <p className="text-xs text-slate-550 dark:text-slate-300 leading-relaxed">
-                En la República Dominicana, la terminación contractual por tiempo indefinido genera obligaciones de carácter indemnizatorio que regulan el equilibrio social entre trabajadores y empleadores. Este conjunto de compensaciones económicas se conoce universalmente como <strong>prestaciones laborales</strong>, y sus reglas primarias de cálculo se encuentran tipificadas detalladamente en los Artículos 76, 80, 86, 177 y 219 del Código de Trabajo de la República Dominicana (Ley N° 16-92).
+                Una liquidación no siempre incluye los mismos conceptos. El resultado cambia según la forma en que terminó el
+                contrato, el tiempo trabajado, el salario ordinario y los derechos ya disfrutados. En un desahucio ejercido por
+                el empleador pueden corresponder preaviso y cesantía; en una renuncia normalmente permanecen los derechos
+                adquiridos, como vacaciones pendientes y salario de Navidad proporcional. Los artículos 76, 80, 86, 177 y 219
+                del Código de Trabajo sirven de referencia para estas partidas.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -540,7 +544,7 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
 
             {/* CASOS PRÁCTICOS */}
             <section className="space-y-3.5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Casos Prácticos de Aplicación Real</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Cómo cambia el cálculo según la salida</h3>
               
               <div className="space-y-3">
                 <div className="p-4 bg-blue-50/30 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/50 rounded-2xl">
@@ -561,11 +565,11 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
 
             {/* ERRORES FRECUENTES */}
             <section className="space-y-2.5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Errores Frecuentes y Malinterpretaciones</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Errores frecuentes al estimar la liquidación</h3>
               <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-350">
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
-                  <span><strong>Pensar que la renuncia da derecho a todo:</strong> Salvo acuerdos voluntarios pactados de mutuo acuerdo con la directiva de la empresa, la renuncia voluntaria cancela el cobro por cesantía y preaviso.</span>
+                  <span><strong>Tratar toda salida como un despido:</strong> una renuncia, un desahucio y un despido justificado no generan automáticamente los mismos conceptos. Selecciona el escenario que realmente ocurrió.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
@@ -580,9 +584,12 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
 
             {/* CONSEJOS ÚTILES */}
             <section className="space-y-2.5 bg-slate-50 dark:bg-slate-900/20 p-5 rounded-2xl border border-slate-100 dark:border-slate-850">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 font-mono">Consejos Útiles para Trabajadores y RRHH</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 font-mono">Antes de aceptar o entregar una liquidación</h3>
               <p className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed">
-                Toda terminación de contrato por desahucio ejerce fuerza legal inmediata. A partir del día siguiente de la rescisión, la legislación estípula un plazo perentorio de <strong>10 días calendario</strong> para liquidar el pago final al trabajador. Transcurrido ese plazo sin efectuarse la compensación, entrarán en vigor las penalidades del Artículo 86, consistentes en el pago acumulativo de un día de salario ordinario completo por cada día hábil de retraso.
+                Conserva las fechas de ingreso y salida, recibos de pago, comunicaciones de terminación y evidencia de
+                comisiones habituales. Si el salario cambió durante el último año, no sustituyas ese historial por un único
+                monto sin revisar el criterio aplicable. El cálculo en línea es orientativo y no reemplaza la evaluación del
+                Ministerio de Trabajo o de un profesional cuando existe una disputa.
               </p>
             </section>
 
@@ -667,6 +674,21 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
           </div>
 
         </div>
+
+        <nav aria-label="Herramientas relacionadas con prestaciones" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <a href="/salario/" className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/30 hover:border-blue-400 transition-colors">
+            <strong className="text-sm text-slate-900 dark:text-white block">Calcular sueldo neto</strong>
+            <span className="text-xs text-slate-500">Revisa AFP, SFS e ISR antes de comparar ingresos.</span>
+          </a>
+          <a href="/mi-diciembre/" className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/30 hover:border-blue-400 transition-colors">
+            <strong className="text-sm text-slate-900 dark:text-white block">Estimar salario de Navidad</strong>
+            <span className="text-xs text-slate-500">Calcula la regalía pascual y otros ingresos de diciembre.</span>
+          </a>
+          <a href="/blog/guia-definitiva-liquidacion-prestaciones-dominicana" className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/30 hover:border-blue-400 transition-colors">
+            <strong className="text-sm text-slate-900 dark:text-white block">Leer la guía de liquidación</strong>
+            <span className="text-xs text-slate-500">Consulta conceptos, documentos y ejemplos paso a paso.</span>
+          </a>
+        </nav>
 
         {/* COMPONENTE EEAT AUTORÍA */}
         <EditorialAuthBox
