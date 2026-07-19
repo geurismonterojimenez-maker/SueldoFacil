@@ -128,10 +128,10 @@ export default function CalculadorPrestaciones({ onSaveCalculation, initialState
         {/* ENCABEZADO */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span className="w-2 h-5 bg-blue-600 rounded-full inline-block"></span>
-              Cálculo de Liquidación
-            </h2>
+              Calculadora de prestaciones laborales en República Dominicana
+            </h1>
             <p className="text-[10px] text-slate-500 mt-0.5">Ingresa tus datos y proyéctalo en tiempo real según el Código de Trabajo de RD.</p>
           </div>
         </div>

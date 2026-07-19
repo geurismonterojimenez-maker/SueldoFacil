@@ -73,10 +73,10 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
       {/* FORMULARIO IZQUIERDA */}
       <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
             <span className="w-2 h-5 bg-blue-600 rounded-full inline-block"></span>
-            Cálculo de Salario y Retenciones
-          </h2>
+            Calculadora de salario neto en República Dominicana
+          </h1>
           <p className="text-xs text-slate-400 mt-1">Calcula los descuentos legales de Seguridad Social (AFP, SFS) e Impuesto Sobre la Renta (ISR).</p>
         </div>
 
