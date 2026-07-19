@@ -40,7 +40,7 @@ declare global {
   }
 }
 
-const GOOGLE_ANALYTICS_ID = 'G-L9T464EH7C';
+const GOOGLE_ANALYTICS_ID = 'G-3GY1XW8780';
 const NOINDEX_TABS: TabType[] = ['dashboard', 'ai_assistant'];
 
 export default function App() {
