@@ -351,7 +351,7 @@ export default function CalculadorSueldoNeto({ onSaveCalculation, initialState, 
                 <div className="p-4 bg-blue-50/30 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/50 rounded-2xl">
                   <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-blue-600 block mb-1">Ejemplo 1: Salario de RD$ 30,000.00 (Exento de ISR)</span>
                   <p className="text-xs text-slate-650 dark:text-slate-305 leading-relaxed">
-                    Un trabajador formal con sueldo de <strong>RD$ 30,000.00</strong> mensuales experimentará deducciones fijas de AFP (2.87% = RD$ 861.00) y SFS (3.04% = RD$ 912.00). Al restar estos conceptos de la TSS, se genera una base tributaria de <strong>RD$ 28,227.00</strong>. Al ser este monto inferior al Tramo I de exención de la DGII (RD$ 34,685.00), el empleado queda libre de pago de ISR. Su salario neto final depositado en su cuenta de ahorro será exactamente de <strong>RD$ 28,227.00</strong>.
+                    En este ejemplo, un trabajador formal con sueldo de <strong>RD$ 30,000.00</strong> mensuales tendría deducciones de AFP (2.87% = RD$ 861.00) y SFS (3.04% = RD$ 912.00). Al restarlas se obtiene una base de <strong>RD$ 28,227.00</strong>. Si no existen otros ingresos o descuentos que alteren el mes, la estimación no genera ISR y muestra un neto de <strong>RD$ 28,227.00</strong>.
                   </p>
                 </div>
 

@@ -158,7 +158,7 @@ export default function CentroSalarios() {
                   Sueldo del {selectedProfession.name} en República Dominicana
                 </h1>
                 <p className="text-xs md:text-sm text-slate-400 max-w-2xl">
-                  Estudio oficial simulado de retenciones TSS, escala de impuesto sobre la renta (ISR de la Dirección General de Impuestos Internos) y diferencias geográficas en 2026.
+                  Comparación orientativa de retenciones TSS, escala del impuesto sobre la renta (ISR) y diferencias salariales por ubicación en 2026. No es una estadística oficial.
                 </p>
               </div>
             </div>

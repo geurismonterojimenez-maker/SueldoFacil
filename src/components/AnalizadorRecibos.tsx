@@ -310,7 +310,7 @@ export default function AnalizadorRecibos() {
               ) : (
                 <div className="flex gap-2.5 p-4 bg-emerald-950/35 text-emerald-300 border border-emerald-900/35 rounded-xl text-xs font-bold">
                   <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400" />
-                  <span>¡Enhorabuena! Las deducciones cargadas en tu recibo de nómina coinciden exactamente con los montos legalmente reglamentados por la TSS y la DGII. Todo está en orden.</span>
+                  <span>Las deducciones ingresadas coinciden con la estimación calculada para este escenario. Revisa también el periodo, los topes y cualquier descuento voluntario del recibo real.</span>
                 </div>
               )}
             </div>

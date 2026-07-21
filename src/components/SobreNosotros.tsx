@@ -10,13 +10,13 @@ export default function SobreNosotros() {
       <div className="text-center space-y-4 py-6">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-900/25 text-blue-700 dark:text-blue-400 border border-blue-200/50">
           <Users className="w-3.5 h-3.5" />
-          Conoce al Equipo Detrás de SueldoFácil
+          Conoce el proyecto SueldoFácil
         </span>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
           Sobre Nosotros
         </h1>
         <p className="text-base text-slate-500 max-w-2xl mx-auto leading-relaxed">
-          Educamos y creamos herramientas transparentes para empoderar a la fuerza laboral y corporativa dominicana.
+          Creamos herramientas transparentes para ayudar a trabajadores y empleadores dominicanos a revisar escenarios antes de acudir a una fuente oficial.
         </p>
       </div>
 
@@ -29,10 +29,10 @@ export default function SobreNosotros() {
           Nuestra Historia y Propósito de Proyecto
         </h2>
         <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed font-semibold">
-          SueldoFácil nació de una necesidad constante: facilitar cálculos laborales confiables bajo el Código de Trabajo dominicano (Ley 16-92) sin caer en confusiones matemáticas o tecnicismos gubernamentales inaccesibles.
+          SueldoFácil nació para explicar cálculos laborales frecuentes bajo el Código de Trabajo dominicano (Ley 16-92) con fórmulas visibles, ejemplos y advertencias claras.
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-          En República Dominicana, los despidientes, empleadores, jefes de nóminas y profesionales independientes a menudo se topaban con cálculos de retenciones de la TSS, salarios escalonados por escala de ISR o liquidación de prestaciones que resultaban difíciles de calcular sin planillas costosas. Desarrollamos esta suite de cálculo gratuita, intuitiva e interactiva de última generación para nivelar el campo de juego informacional de ambos lados de la moneda.
+          En República Dominicana, trabajadores, empleadores y responsables de nómina suelen revisar retenciones de la TSS, tramos de ISR o prestaciones con documentos y periodos distintos. Esta suite gratuita organiza los datos y muestra un desglose que puede contrastarse con recibos, contratos y publicaciones oficiales.
         </p>
       </div>
 
@@ -44,9 +44,9 @@ export default function SobreNosotros() {
           <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl w-fit">
             <Users className="w-5 h-5" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Experiencia Acumulada</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Cómo trabajamos</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Nuestro equipo está compuesto por desarrolladores de software enfocados en Fintech, economistas dedicados a la planificación de finanzas personales, y asesores legales especialistas en derecho laboral dominicano. Sumamos más de 10 años de experiencia conjunta en el diseño e implementación de sistemas de facturación corporativa, liquidaciones del sector privado y asesoramiento tributario directo en la DGII y la TSS.
+            El proyecto combina desarrollo de software, revisión editorial y pruebas automatizadas. Cada herramienta documenta su objetivo, sus variables y sus límites; cuando una tasa o regla depende del caso concreto, remitimos a la DGII, la TSS o el Ministerio de Trabajo para confirmación.
           </p>
         </div>
 
@@ -59,7 +59,7 @@ export default function SobreNosotros() {
           <ul className="space-y-2 text-xs text-slate-650 dark:text-slate-350">
             <li className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span><strong>Precisión Matemática:</strong> Erradicación absoluta de estimaciones aproximadas.</span>
+              <span><strong>Claridad matemática:</strong> fórmulas, bases y redondeos visibles para que el resultado pueda revisarse.</span>
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -84,7 +84,7 @@ export default function SobreNosotros() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-slate-800 dark:text-slate-250 block">Compromiso con la Precisión</span>
             <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-normal">
-              Revisamos cada cálculo bajo directrices vigentes de la DGII y Ministerios locales. Al menor cambio legislativo en las retenciones, reescribimos el código base y aplicamos auditorías cruzadas.
+              Contrastamos los cálculos con fuentes públicas de la DGII, la TSS y el Ministerio de Trabajo. Cada resultado sigue siendo orientativo y debe verificarse para decisiones legales o fiscales.
             </p>
           </div>
           <div className="space-y-1">

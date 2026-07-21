@@ -4,6 +4,7 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { BLOG_POSTS, SEO_TAB_CONFIGS } from "./src/constants";
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ interface SEOMetadata {
 const SEO_MAP: Record<string, SEOMetadata> = {
   "/": {
     title: "SueldoFácil - Calculadoras Laborales y Financieras Dominicana",
-    description: "Calculadora de prestaciones laborales, sueldo neto mensual, horas extras y retenciones de ley (AFP, SFS, ISR) en República Dominicana conforme a la Ley 16-92 y normativas de la DGII.",
+    description: "Estima prestaciones laborales, sueldo neto, horas extras y retenciones AFP, SFS e ISR en República Dominicana con fórmulas explicadas y fuentes para verificar.",
     canonical: "https://sueldofacil.com/"
   },
   "/prestaciones": {
@@ -35,18 +36,18 @@ const SEO_MAP: Record<string, SEOMetadata> = {
     canonical: "https://sueldofacil.com/panel/"
   },
   "/sobre-nosotros": {
-    title: "Sobre Nosotros y Equipo de Expertos | Sueldo Fácil",
-    description: "Conozca el equipo de economistas, ingenieros de sistemas y consultores laborales calificados que hacen posible Sueldo Fácil en República Dominicana.",
+    title: "Sobre Sueldo Fácil: propósito y metodología del proyecto",
+    description: "Conoce por qué existe Sueldo Fácil, cómo se desarrollan sus calculadoras y qué límites tienen sus estimaciones laborales y financieras.",
     canonical: "https://sueldofacil.com/sobre-nosotros/"
   },
   "/politica-editorial": {
     title: "Política Editorial de Transparencia Matemática | Sueldo Fácil",
-    description: "Metodologías de verificación, fuentes primarias del Ministerio de Trabajo y principios YMYL que avalan la precisión de nuestras calculadoras de nómina en RD.",
+    description: "Consulta cómo se revisan las fórmulas, qué fuentes primarias se enlazan y cuáles son los límites de las calculadoras laborales de Sueldo Fácil.",
     canonical: "https://sueldofacil.com/politica-editorial/"
   },
   "/contacto": {
     title: "Contacto y Soporte Institucional | Sueldo Fácil",
-    description: "Contacte al departamento de redacción y soporte analítico de Sueldo Fácil para sugerencias, aclaraciones legislativas o asesorías.",
+    description: "Contacta a Sueldo Fácil para reportar errores, sugerir mejoras o solicitar una revisión editorial de una explicación o calculadora.",
     canonical: "https://sueldofacil.com/contacto/"
   },
   "/mi-diciembre": {
@@ -59,12 +60,56 @@ const SEO_MAP: Record<string, SEOMetadata> = {
 const NOINDEX_PATHS = new Set(["/panel", "/asistente-ia"]);
 
 function getSEOMetadata(urlPath: string): SEOMetadata {
-  const cleanPath = urlPath.split('?')[0].replace(/\/$/, "");
-  return SEO_MAP[cleanPath] || SEO_MAP["/"];
+  const cleanPath = urlPath.split('?')[0].replace(/\/$/, "") || "/";
+  const directMatch = SEO_MAP[cleanPath];
+  if (directMatch) return directMatch;
+
+  if (cleanPath.startsWith("/blog/")) {
+    const slug = cleanPath.slice("/blog/".length);
+    const post = BLOG_POSTS.find((item) => item.slug === slug);
+    if (post) {
+      return {
+        title: `${post.title} | SueldoFácil`,
+        description: post.excerpt,
+        canonical: `https://sueldofacil.com/blog/${post.slug}`
+      };
+    }
+  }
+
+  const configMatch = Object.values(SEO_TAB_CONFIGS).find((config) => {
+    try {
+      const configPath = new URL(config.canonical).pathname.replace(/\/$/, "") || "/";
+      return configPath === cleanPath;
+    } catch {
+      return false;
+    }
+  });
+
+  if (configMatch) {
+    return {
+      title: configMatch.title,
+      description: configMatch.description,
+      canonical: configMatch.canonical
+    };
+  }
+
+  return SEO_MAP["/"];
+}
+
+function compactMetaText(value: string, maximum: number): string {
+  if (value.length <= maximum) return value;
+  const candidate = value.slice(0, maximum - 1);
+  const boundary = candidate.lastIndexOf(" ");
+  return `${candidate.slice(0, boundary > maximum * 0.7 ? boundary : candidate.length).trim()}…`;
 }
 
 function injectSEOMetadata(html: string, urlPath: string): string {
-  const seo = getSEOMetadata(urlPath);
+  const sourceSeo = getSEOMetadata(urlPath);
+  const seo = {
+    ...sourceSeo,
+    title: compactMetaText(sourceSeo.title, 65),
+    description: compactMetaText(sourceSeo.description, 160)
+  };
   const cleanPath = urlPath.split('?')[0].replace(/\/$/, "") || "/";
   const robots = NOINDEX_PATHS.has(cleanPath) ? "noindex,follow" : "index,follow,max-image-preview:large";
   const metaTags = `
@@ -99,8 +144,12 @@ function injectSEOMetadata(html: string, urlPath: string): string {
     </script>
   `;
 
-  // Remove original simple generic title tag to safeguard from duplication
-  let cleanHtml = html.replace(/<title>.*?<\/title>/gi, "");
+  // Remove any generic route tags before adding the route-specific set.
+  let cleanHtml = html
+    .replace(/<title>[\s\S]*?<\/title>/gi, "")
+    .replace(/<meta[^>]+name=["'](?:description|robots|twitter:card|twitter:title|twitter:description)["'][^>]*>\s*/gi, "")
+    .replace(/<link[^>]+rel=["']canonical["'][^>]*>\s*/gi, "")
+    .replace(/<meta[^>]+property=["']og:(?:type|title|description|url|site_name|image)["'][^>]*>\s*/gi, "");
   return cleanHtml.replace("</head>", `${metaTags}\n  </head>`);
 }
 

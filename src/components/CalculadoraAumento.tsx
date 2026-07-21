@@ -97,7 +97,7 @@ export default function CalculadoraAumento() {
             Simulador de Aumento de Sueldo
           </h2>
           <p className="text-xs text-slate-500">
-            Analiza el impacto neto exacto de tu aumento considerando los impuestos legales dominicanos (TSS y tramos de ISR).
+            Estima el impacto neto de tu aumento considerando los aportes TSS y los tramos de ISR aplicables al escenario ingresado.
           </p>
         </div>
 

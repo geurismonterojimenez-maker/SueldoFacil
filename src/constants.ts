@@ -177,7 +177,7 @@ export const FAQ_ITEMS: FAQItem[] = [
 export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
   home: {
     title: "SueldoFacil - Calculadora Laboral de República Dominicana",
-    description: "La plataforma número 1 para calcular salarios netos, prestaciones, ISR (DGII), AFP, SFS y consultar legislación con inteligencia artificial.",
+    description: "Calculadoras gratuitas para estimar salario neto, prestaciones, ISR, AFP y SFS en República Dominicana, con metodología y fuentes para revisar cada resultado.",
     ogTitle: "SueldoFacil.com | Calculadoras Laborales y Financieras Dominicanas",
     ogDescription: "Ahorra tiempo y evita errores calculando tu liquidación, retenciones impositivas y nómina en pocos clics de manera gratuita.",
     canonical: "https://sueldofacil.com/"
@@ -186,14 +186,14 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     title: "Calculadora de Prestaciones Laborales República Dominicana",
     description: "Calcula tu liquidación completa paso a paso: preaviso, cesantía, regalía y vacaciones acumuladas bajo el Código de Trabajo dominicano.",
     ogTitle: "Liquidación y Prestaciones Laborales RD - SueldoFacil",
-    ogDescription: "Simulador exacto de los derechos laborales conforme a la Ley 16-92 del Ministerio de Trabajo.",
+    ogDescription: "Estimación orientativa de derechos laborales basada en reglas generales de la Ley 16-92.",
     canonical: "https://sueldofacil.com/prestaciones/"
   },
   salario: {
     title: "Calculadora de Salario Neto RD - Sueldo Neto y Retenciones de Nómina",
     description: "Ingresa tu salario bruto mensual y conoce el desglose real restando AFP, Seguro Familiar de Salud (SFS) e Impuesto Sobre la Renta (ISR).",
     ogTitle: "Cálculo de Sueldo Neto Dominicana - SueldoFacil",
-    ogDescription: "Calculadora limpia y exacta con las tasas actualizadas de Seguridad Social y DGII.",
+    ogDescription: "Estimación desglosada con tasas documentadas de Seguridad Social y DGII.",
     canonical: "https://sueldofacil.com/salario/"
   },
   nominas: {
@@ -207,7 +207,7 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     title: "Calculadora de Costo Laboral de Empleados - SueldoFacil",
     description: "Calcula el costo total real de contratación en República Dominicana, incluyendo aportes TSS patronales (7.10% AFP, 7.09% SFS, ARL) y provisiones de ley.",
     ogTitle: "Costo Empresa por Colaborador RD - SueldoFacil",
-    ogDescription: "Herramienta avanzada para emprendedores y departamentos de Recursos Humanos para presupuestar nóminas de forma exacta.",
+    ogDescription: "Herramienta para que emprendedores y Recursos Humanos preparen un presupuesto laboral orientativo.",
     canonical: "https://sueldofacil.com/costos/"
   },
   horas_extras: {
@@ -240,7 +240,7 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
   },
   blog: {
     title: "Guías, Tutoriales y Consejos Laborales de República Dominicana",
-    description: "Infórmate de forma amigable sobre el impuesto de las bonificaciones, doble sueldo, despidos intempestivos y reglamentos TSS de vigencia activa.",
+    description: "Guías sobre bonificaciones, doble sueldo, terminación laboral y TSS en República Dominicana, con fechas, ejemplos y referencias para verificar.",
     ogTitle: "Blog Informativo de Derechos Laborales Dominicana - SueldoFacil",
     ogDescription: "Consejos prácticos para trabajadores y patronos Dominicanos.",
     canonical: "https://sueldofacil.com/blog/"
@@ -254,7 +254,7 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
   },
   salarios_profesiones: {
     title: "Guía de Salarios por Profesión en República Dominicana - SueldoFacil",
-    description: "Consulta cuánto gana un programador, contador, médico o abogado en RD. Estadísticas salariales reales y tendencias por provincia de vigencia activa.",
+    description: "Explora rangos salariales orientativos para programadores, contadores, médicos y abogados en RD, y compáralos por experiencia y provincia.",
     ogTitle: "Salarios por Profesión en República Dominicana",
     ogDescription: "Guía interactiva de compensación salarial media por sector, cargo e histórico.",
     canonical: "https://sueldofacil.com/salarios-profesion/"
@@ -263,7 +263,7 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     title: "Calculadora de Aumento Salarial República Dominicana - SueldoFacil",
     description: "Calcula en cuánto incrementa tu salario neto real tras un aumento de sueldo bruto. Desglose inmediato con impuestos (SFS, AFP, ISR).",
     ogTitle: "Simulador de Aumento de Sueldo RD - SueldoFacil",
-    ogDescription: "Calcula el retorno líquido exacto de tu aumento deduciendo retenciones.",
+    ogDescription: "Estima el efecto neto de un aumento después de las retenciones aplicables.",
     canonical: "https://sueldofacil.com/calcular-aumento/"
   },
   mi_diciembre: {
@@ -284,19 +284,19 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     title: "Auditor de Recibos de Nómina Dominicana - SueldoFacil",
     description: "Audita tus volantes de pago mensuales de forma digital. Descubre discrepancias en los descuentos de la TSS (AFP, SFS) o retenciones de ISR de la DGII.",
     ogTitle: "Auditor de Volantes de Pago RD - SueldoFacil",
-    ogDescription: "Detecta rápidamente retenciones ilegales o excesivas en tu sueldo.",
+    ogDescription: "Compara las deducciones del recibo con una estimación de AFP, SFS e ISR.",
     canonical: "https://sueldofacil.com/analizar-recibos/"
   },
   plan_ahorro: {
     title: "Plan de Ahorro RD | Sueldo Fácil",
-    description: "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana.",
+    description: "Define una meta, plazo y frecuencia de aporte para estimar cuánto ahorrar cada mes o quincena en República Dominicana.",
     ogTitle: "Plan de Ahorro RD | Sueldo Fácil",
     ogDescription: "Calcula tu plan de ahorro y organiza tu presupuesto anual de forma gratuita para República Dominicana.",
     canonical: "https://sueldofacil.com/plan-ahorro/"
   },
   presupuesto_anual: {
     title: "Presupuesto Anual RD | Sueldo Fácil",
-    description: "Calcula tu plan de ahorro y organiza tu presupuesto anual con herramientas gratuitas para República Dominicana.",
+    description: "Organiza ingresos y gastos de todo el año, identifica meses con déficit y proyecta un margen de ahorro para tu hogar en RD.",
     ogTitle: "Presupuesto Anual RD | Sueldo Fácil",
     ogDescription: "Calcula tu plan de ahorro y organiza tu presupuesto anual de forma gratuita para República Dominicana.",
     canonical: "https://sueldofacil.com/presupuesto-anual/"
@@ -310,9 +310,9 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
   },
   sobre_nosotros: {
     title: "Sobre Nosotros y Nuestro Equipo | Sueldo Fácil",
-    description: "Conozca al equipo multidisciplinario detrás de Sueldo Fácil: economistas, programadores y expertos legales dedicados a democratizar el derecho laboral en RD.",
+    description: "Conoce el propósito de Sueldo Fácil, cómo se desarrollan sus calculadoras y qué límites tienen sus estimaciones laborales y financieras.",
     ogTitle: "Sobre Nosotros | Sueldo Fácil",
-    ogDescription: "Nuestra misión, visión y los profesionales que hacen posible Sueldo Fácil.",
+    ogDescription: "Nuestra misión, metodología de trabajo y compromiso de explicar cada cálculo con claridad.",
     canonical: "https://sueldofacil.com/sobre-nosotros/"
   },
   contacto: {
