@@ -9,7 +9,22 @@ interface Props {
 }
 
 export default function BlogVirtual({ onSelectorClick }: Props) {
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const initialSlug = window.location.pathname.replace(/\/+$/, '').replace(/^\/blog\//, '');
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(
+    BLOG_POSTS.find((post) => post.slug === initialSlug) || null
+  );
+
+  const openPost = (post: BlogPost) => {
+    window.history.pushState({ blogSlug: post.slug }, '', `/blog/${post.slug}/`);
+    setSelectedPost(post);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closePost = () => {
+    window.history.pushState({ tab: 'blog' }, '', '/blog/');
+    setSelectedPost(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const getTargetTab = (category: string): TabType => {
     if (category === 'prestaciones') return 'prestaciones';
@@ -54,7 +69,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-900 leading-snug hover:text-blue-600 cursor-pointer" onClick={() => setSelectedPost(post)}>
+                <h3 className="text-lg font-bold text-slate-900 leading-snug hover:text-blue-600 cursor-pointer" onClick={() => openPost(post)}>
                   {post.title}
                 </h3>
                 
@@ -70,7 +85,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
                 </span>
 
                 <button 
-                  onClick={() => setSelectedPost(post)}
+                  onClick={() => openPost(post)}
                   className="text-xs font-semibold text-slate-900 hover:text-blue-600 flex items-center gap-1 hover:gap-1.5 transition-all text-[11px]"
                 >
                   Leer Artículo completo <ArrowRight className="w-4 h-4" />
@@ -115,7 +130,7 @@ export default function BlogVirtual({ onSelectorClick }: Props) {
           {/* CONTENIDO PRINCIPAL (IZQUIERDA) */}
           <div className="lg:col-span-8 bg-white border border-slate-200/85 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
             <button 
-              onClick={() => setSelectedPost(null)}
+                onClick={closePost}
               className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1"
             >
               ← Volver al Listado de Artículos

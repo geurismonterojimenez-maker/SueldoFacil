@@ -71,7 +71,7 @@ function getSEOMetadata(urlPath: string): SEOMetadata {
       return {
         title: `${post.title} | SueldoFácil`,
         description: post.excerpt,
-        canonical: `https://sueldofacil.com/blog/${post.slug}`
+        canonical: `https://sueldofacil.com/blog/${post.slug}/`
       };
     }
   }
@@ -94,6 +94,47 @@ function getSEOMetadata(urlPath: string): SEOMetadata {
   }
 
   return SEO_MAP["/"];
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildCrawlerContent(urlPath: string, seo: SEOMetadata): string {
+  const cleanPath = urlPath.split("?")[0].replace(/\/$/, "") || "/";
+  const postSlug = cleanPath.startsWith("/blog/") ? cleanPath.slice("/blog/".length) : "";
+  const post = postSlug ? BLOG_POSTS.find((item) => item.slug === postSlug) : undefined;
+  const navigation = Object.entries(SEO_TAB_CONFIGS)
+    .filter(([key]) => !["dashboard", "ai_assistant"].includes(key))
+    .map(([, config]) => `<li><a href="${escapeHtml(new URL(config.canonical).pathname)}">${escapeHtml(config.title)}</a></li>`)
+    .join("");
+  const articleLinks = BLOG_POSTS
+    .map((item) => `<li><a href="/blog/${escapeHtml(item.slug)}/">${escapeHtml(item.title)}</a></li>`)
+    .join("");
+  const supplemental = post
+    ? `<p>${escapeHtml(post.content)}</p>`
+    : `<p>Esta herramienta ofrece una explicación práctica para trabajadores y empleadores de República Dominicana. Los resultados son orientativos y deben verificarse con las fuentes oficiales de la DGII, la TSS y el Código de Trabajo.</p>`;
+
+  return `
+    <main class="seo-route-content" style="max-width:1100px;margin:0 auto;padding:24px;font-family:Inter,Arial,sans-serif;color:#0f172a">
+      <article>
+        <h1>${escapeHtml(seo.title)}</h1>
+        <p>${escapeHtml(seo.description)}</p>
+        ${supplemental}
+        <p>Última revisión editorial: julio de 2026. Sueldo Fácil presenta cálculos educativos y no sustituye asesoría legal, contable ni fiscal profesional.</p>
+      </article>
+      <nav aria-label="Herramientas y guías de Sueldo Fácil">
+        <h2>Calculadoras y recursos relacionados</h2>
+        <ul>${navigation}</ul>
+        <h2>Guías laborales destacadas</h2>
+        <ul>${articleLinks}</ul>
+      </nav>
+    </main>`;
 }
 
 function compactMetaText(value: string, maximum: number): string {
@@ -150,6 +191,11 @@ function injectSEOMetadata(html: string, urlPath: string): string {
     .replace(/<meta[^>]+name=["'](?:description|robots|twitter:card|twitter:title|twitter:description)["'][^>]*>\s*/gi, "")
     .replace(/<link[^>]+rel=["']canonical["'][^>]*>\s*/gi, "")
     .replace(/<meta[^>]+property=["']og:(?:type|title|description|url|site_name|image)["'][^>]*>\s*/gi, "");
+  const rootStart = cleanHtml.search(/<div id=["']root["']>/i);
+  const bodyEnd = cleanHtml.search(/<\/body>/i);
+  if (rootStart >= 0 && bodyEnd > rootStart) {
+    cleanHtml = `${cleanHtml.slice(0, rootStart)}<div id="root">${buildCrawlerContent(urlPath, seo)}</div>\n  ${cleanHtml.slice(bodyEnd)}`;
+  }
   return cleanHtml.replace("</head>", `${metaTags}\n  </head>`);
 }
 
@@ -297,6 +343,11 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
     app.use(express.static(distPath, { index: false }));
     app.get('*', (req, res) => {
       try {
+        if (req.path !== "/" && !req.path.endsWith("/")) {
+          const queryIndex = req.originalUrl.indexOf("?");
+          const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : "";
+          return res.redirect(301, `${req.path}/${query}`);
+        }
         const filePath = path.join(distPath, 'index.html');
         if (fs.existsSync(filePath)) {
           const rawHtml = fs.readFileSync(filePath, 'utf-8');

@@ -6,7 +6,7 @@ import {
   Gift, ShieldAlert, TrendingUp, Target, FileSpreadsheet
 } from 'lucide-react';
 import { TabType, SearchItem, SEOConfig } from './types';
-import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS } from './constants';
+import { SEARCH_ITEMS, FAQ_ITEMS, SEO_TAB_CONFIGS, BLOG_POSTS } from './constants';
 
 // Component imports
 const CalculadorPrestaciones = React.lazy(() => import('./components/CalculadorPrestaciones'));
@@ -152,7 +152,17 @@ export default function App() {
 
   // Update SEO Head metrics conforming to SEO specialist & CRO rules
   useEffect(() => {
-    const seo: SEOConfig = (SEO_TAB_CONFIGS[tab] as SEOConfig) || {
+    const blogSlug = normalizePath(window.location.pathname).startsWith('/blog/')
+      ? normalizePath(window.location.pathname).slice('/blog/'.length)
+      : '';
+    const blogPost = blogSlug ? BLOG_POSTS.find((post) => post.slug === blogSlug) : undefined;
+    const seo: SEOConfig = blogPost ? {
+      title: `${blogPost.title} | SueldoFácil`,
+      description: blogPost.excerpt,
+      ogTitle: blogPost.title,
+      ogDescription: blogPost.excerpt,
+      canonical: `https://sueldofacil.com/blog/${blogPost.slug}/`
+    } : (SEO_TAB_CONFIGS[tab] as SEOConfig) || {
       title: "SueldoFacil - Herramientas Laborales República Dominicana",
       description: "Calculadora de prestaciones, salarios, ISR y asistencia de inteligencia artificial en la República Dominicana.",
       ogTitle: "SueldoFacil - Herramientas Laborales República Dominicana",
