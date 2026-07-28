@@ -59,6 +59,25 @@ const SEO_MAP: Record<string, SEOMetadata> = {
 
 const NOINDEX_PATHS = new Set(["/panel", "/asistente-ia"]);
 
+function isKnownPublicPath(urlPath: string): boolean {
+  const cleanPath = urlPath.split("?")[0].replace(/\/+$/, "") || "/";
+  if (SEO_MAP[cleanPath]) return true;
+  if (["/feed.xml", "/rss.xml", "/feed"].includes(cleanPath)) return true;
+
+  if (cleanPath.startsWith("/blog/")) {
+    const slug = cleanPath.slice("/blog/".length);
+    return BLOG_POSTS.some((item) => item.slug === slug);
+  }
+
+  return Object.values(SEO_TAB_CONFIGS).some((config) => {
+    try {
+      return (new URL(config.canonical).pathname.replace(/\/+$/, "") || "/") === cleanPath;
+    } catch {
+      return false;
+    }
+  });
+}
+
 function getSEOMetadata(urlPath: string): SEOMetadata {
   const cleanPath = urlPath.split('?')[0].replace(/\/$/, "") || "/";
   const directMatch = SEO_MAP[cleanPath];
@@ -221,6 +240,12 @@ function getGenAI(): GoogleGenAI {
 
 async function startServer() {
   const app = express();
+  app.use((req, res, next) => {
+    if (req.hostname.toLowerCase() === "www.sueldofacil.com") {
+      return res.redirect(301, `https://sueldofacil.com${req.originalUrl}`);
+    }
+    next();
+  });
   app.use(express.json());
   const PORT = Number(process.env.PORT) || 3000;
 
@@ -343,6 +368,14 @@ Pautas críticas para tus respuestas (¡EXTREMADAMENTE IMPORTANTES PARA EL RENDI
     app.use(express.static(distPath, { index: false }));
     app.get('*', (req, res) => {
       try {
+        if (!isKnownPublicPath(req.path)) {
+          const rawHtml = fs.readFileSync(path.join(distPath, "index.html"), "utf-8");
+          const notFoundHtml = injectSEOMetadata(rawHtml, "/")
+            .replace(/<title>[\s\S]*?<\/title>/i, "<title>Página no encontrada | SueldoFácil</title>")
+            .replace(/<meta name="robots" content="[^"]*"\s*\/?>/i, '<meta name="robots" content="noindex,follow" />')
+            .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, "");
+          return res.status(404).type("text/html").send(notFoundHtml);
+        }
         if (req.path !== "/" && !req.path.endsWith("/")) {
           const queryIndex = req.originalUrl.indexOf("?");
           const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : "";
