@@ -26,8 +26,8 @@ const SEO_MAP: Record<string, SEOMetadata> = {
     canonical: "https://sueldofacil.com/prestaciones/"
   },
   "/salario": {
-    title: "Calculadora de Salario Neto Dominicano y Retenciones 2026 - SueldoFácil",
-    description: "Desglosa tus deducciones mensuales TSS (AFP 2.87%, SFS 3.04%) e Impuesto Sobre la Renta (ISR) de la DGII según tu nivel salarial en RD.",
+    title: "Calculadora de Salario Neto RD 2026: AFP, SFS e ISR",
+    description: "Calcula tu sueldo neto en República Dominicana desde el salario bruto. Consulta AFP, SFS, ISR, descuentos totales y pago mensual estimado.",
     canonical: "https://sueldofacil.com/salario/"
   },
   "/panel": {

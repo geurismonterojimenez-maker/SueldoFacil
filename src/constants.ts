@@ -190,10 +190,10 @@ export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
     canonical: "https://sueldofacil.com/prestaciones/"
   },
   salario: {
-    title: "Calculadora de Salario Neto RD - Sueldo Neto y Retenciones de Nómina",
-    description: "Ingresa tu salario bruto mensual y conoce el desglose real restando AFP, Seguro Familiar de Salud (SFS) e Impuesto Sobre la Renta (ISR).",
-    ogTitle: "Cálculo de Sueldo Neto Dominicana - SueldoFacil",
-    ogDescription: "Estimación desglosada con tasas documentadas de Seguridad Social y DGII.",
+    title: "Calculadora de Salario Neto RD 2026: AFP, SFS e ISR",
+    description: "Calcula tu sueldo neto en República Dominicana desde el salario bruto. Consulta AFP, SFS, ISR, descuentos totales y pago mensual estimado.",
+    ogTitle: "Calculadora de Sueldo Neto RD 2026 - SueldoFacil",
+    ogDescription: "Convierte salario bruto en neto con un desglose verificable de AFP, SFS e ISR.",
     canonical: "https://sueldofacil.com/salario/"
   },
   nominas: {
