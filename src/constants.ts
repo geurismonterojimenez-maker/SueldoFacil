@@ -176,22 +176,22 @@ export const FAQ_ITEMS: FAQItem[] = [
 
 export const SEO_TAB_CONFIGS: Record<string, SEOConfig> = {
   home: {
-    title: "SueldoFacil - Calculadora Laboral de República Dominicana",
-    description: "Calculadoras gratuitas para estimar salario neto, prestaciones, ISR, AFP y SFS en República Dominicana, con metodología y fuentes para revisar cada resultado.",
+    title: "Calculadoras laborales RD 2026: sueldo y prestaciones",
+    description: "Calcula gratis salario neto, prestaciones, liquidación, ISR, AFP y SFS en República Dominicana. Resultados desglosados con fórmulas y fuentes.",
     ogTitle: "SueldoFacil.com | Calculadoras Laborales y Financieras Dominicanas",
     ogDescription: "Ahorra tiempo y evita errores calculando tu liquidación, retenciones impositivas y nómina en pocos clics de manera gratuita.",
     canonical: "https://sueldofacil.com/"
   },
   prestaciones: {
-    title: "Calculadora de Prestaciones Laborales República Dominicana",
-    description: "Calcula tu liquidación completa paso a paso: preaviso, cesantía, regalía y vacaciones acumuladas bajo el Código de Trabajo dominicano.",
+    title: "Calculadora de prestaciones laborales RD 2026",
+    description: "Calcula gratis tu liquidación en RD: preaviso, cesantía, vacaciones y regalía proporcional. Obtén el desglose paso a paso y verifica la fórmula.",
     ogTitle: "Liquidación y Prestaciones Laborales RD - SueldoFacil",
     ogDescription: "Estimación orientativa de derechos laborales basada en reglas generales de la Ley 16-92.",
     canonical: "https://sueldofacil.com/prestaciones/"
   },
   salario: {
-    title: "Calculadora de Salario Neto RD 2026: AFP, SFS e ISR",
-    description: "Calcula tu sueldo neto en República Dominicana desde el salario bruto. Consulta AFP, SFS, ISR, descuentos totales y pago mensual estimado.",
+    title: "Calculadora de sueldo neto RD 2026: AFP, SFS e ISR",
+    description: "Convierte tu salario bruto en sueldo neto en RD. Calcula AFP, SFS, ISR y descuentos totales con un desglose mensual gratuito e inmediato.",
     ogTitle: "Calculadora de Sueldo Neto RD 2026 - SueldoFacil",
     ogDescription: "Convierte salario bruto en neto con un desglose verificable de AFP, SFS e ISR.",
     canonical: "https://sueldofacil.com/salario/"
