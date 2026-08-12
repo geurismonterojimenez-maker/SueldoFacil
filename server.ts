@@ -16,13 +16,13 @@ interface SEOMetadata {
 
 const SEO_MAP: Record<string, SEOMetadata> = {
   "/": {
-    title: "SueldoFácil - Calculadoras Laborales y Financieras Dominicana",
-    description: "Estima prestaciones laborales, sueldo neto, horas extras y retenciones AFP, SFS e ISR en República Dominicana con fórmulas explicadas y fuentes para verificar.",
+    title: "Calculadoras laborales RD 2026: sueldo y prestaciones",
+    description: "Calcula gratis salario neto, prestaciones, liquidación, ISR, AFP y SFS en República Dominicana. Resultados desglosados con fórmulas y fuentes.",
     canonical: "https://sueldofacil.com/"
   },
   "/prestaciones": {
-    title: "Calculadora de Prestaciones Laborales y Liquidación RD - SueldoFácil",
-    description: "Calcula tus prestaciones de ley RD (cesantía, preaviso, regalía y vacaciones) conforme al Código de Trabajo (Ley 16-92) dominicano.",
+    title: "Calculadora de prestaciones laborales RD 2026",
+    description: "Calcula gratis tu liquidación en RD: preaviso, cesantía, vacaciones y regalía proporcional. Obtén el desglose paso a paso y verifica la fórmula.",
     canonical: "https://sueldofacil.com/prestaciones/"
   },
   "/salario": {
