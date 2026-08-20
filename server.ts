@@ -240,9 +240,22 @@ function getGenAI(): GoogleGenAI {
 
 async function startServer() {
   const app = express();
+  app.disable("x-powered-by");
   app.use((req, res, next) => {
     if (req.hostname.toLowerCase() === "www.sueldofacil.com") {
       return res.redirect(301, `https://sueldofacil.com${req.originalUrl}`);
+    }
+    next();
+  });
+  app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    if (/\.[a-f0-9_-]{6,}\.(?:js|css|png|jpe?g|webp|svg|ico|woff2?)$/i.test(req.path)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    } else {
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
     }
     next();
   });
